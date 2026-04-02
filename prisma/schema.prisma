@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  password          String
+  prenom            String
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  plan              Plan      @default(FREE)
+  planExpiresAt     DateTime?
+
+  stripeCustomerId  String?
+
+  profile       UserProfile?
+  analyses      Analyse[]
+  trades        Trade[]
+  subscription  Subscription?
+
+  analysesToday   Int      @default(0)
+  analysesResetAt DateTime @default(now())
+  idjorMsgToday   Int      @default(0)
+  idjorMsgResetAt DateTime @default(now())
+}
+
+enum Plan {
+  FREE
+  BASIC
+  PRO
+  TRADER
+}
+
+model UserProfile {
+  id                      String   @id @default(cuid())
+  userId                  String   @unique
+  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  age                     String?
+  pays                    String?
+  ville                   String?
+  niveauTrading           String?
+  anneesExperience        String?
+  aDejaPerduCapital       Boolean?
+  sourceApprentissage     String[]
+  marchesTraites          String[]
+  marchePrefere           String?
+  styleTrading            String?
+  plateformesUtilisees    String[]
+  capitalRange            String?
+  revenuRange             String?
+  risquePct               Float?
+  objectifMensuel         String?
+  tradingEstRevenu        Boolean?
+  reactionPerte           String?
+  comportementDefaite     String?
+  reactionFOMO            String?
+  respecteSL              String?
+  patientEntree           String?
+  gestionStress           String?
+  profilPsycho            String?
+  heuresParJour           String?
+  sessionsPreferees       String[]
+  joursDisponibles        String[]
+  objectifPrincipal       String?
+
+  onboardingDone          Boolean  @default(false)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
+
+model Analyse {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  asset           String
+  timeframe       String
+  mode            String
+  signal          String
+  confidence      Int
+  entry           Float
+  stopLoss        Float
+  tp1             Float
+  tp2             Float?
+  rrRatio         Float
+  positionSize    Float
+  positionUnit    String
+  riskFCFA        Int
+  gainTP1FCFA     Int
+  gainTP2FCFA     Int?
+  tendance        String?
+  patternDetected String?
+  rsiInfo         String?
+  macdInfo        String?
+  bollingerInfo   String?
+  reasons         Json
+
+  trade           Trade?
+
+  createdAt       DateTime @default(now())
+}
+
+model Trade {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analyseId   String?   @unique
+  analyse     Analyse?  @relation(fields: [analyseId], references: [id])
+
+  asset       String
+  direction   String
+  entry       Float
+  exit        Float?
+  pnlFCFA     Int?
+  rRealized   Float?
+  source      String    @default("IA")
+  status      String    @default("open")
+  notes       String?
+
+  openedAt    DateTime  @default(now())
+  closedAt    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Subscription {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  plan          Plan
+  status                  String    @default("active")
+  paymentMethod           String?
+  amountFCFA              Int?
+
+  stripeSubscriptionId    String?
+  cinetpayTransactionId   String?
+  nowpaymentsPaymentId    String?
+
+  startedAt     DateTime  @default(now())
+  expiresAt     DateTime?
+  cancelledAt   DateTime?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
