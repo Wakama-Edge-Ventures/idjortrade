@@ -41,6 +41,8 @@ const MOCK_QUOTES: Record<string, Quote> = {
   "XAU/USD":   { symbol: "XAU/USD",   name: "Or / USD",        price: 2315.50,  change: 18.40,   percent_change: 0.80,  high: 2325.00,  low: 2298.00,  volume: 0,              timestamp: Date.now(), is_market_open: false },
   "XAG/USD":   { symbol: "XAG/USD",   name: "Argent / USD",    price: 27.42,    change: 0.35,    percent_change: 1.29,  high: 27.80,    low: 27.10,    volume: 0,              timestamp: Date.now(), is_market_open: false },
   "USOIL":     { symbol: "USOIL",     name: "Pétrole Brut WTI", price: 82.15,   change: -1.25,   percent_change: -1.50, high: 83.80,    low: 81.50,    volume: 0,              timestamp: Date.now(), is_market_open: false },
+  "COPPER":    { symbol: "COPPER",    name: "Cuivre",           price: 4.25,    change: 0.08,    percent_change: 1.92,  high: 4.30,     low: 4.18,     volume: 0,              timestamp: Date.now(), is_market_open: false },
+  "NATGAS":    { symbol: "NATGAS",    name: "Gaz Naturel",      price: 2.18,    change: -0.05,   percent_change: -2.24, high: 2.26,     low: 2.15,     volume: 0,              timestamp: Date.now(), is_market_open: false },
 };
 
 // ─── Parse raw API response into Quote ──────────────────────────────────────
@@ -155,7 +157,7 @@ export const SYMBOLS = {
   crypto:     ["BTC/USD", "ETH/USD", "SOL/USD", "BNB/USD", "XRP/USD", "ADA/USD", "AVAX/USD", "MATIC/USD"],
   forex:      ["EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", "EUR/GBP"],
   actions:    ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "NVDA"],
-  matieres:   ["XAU/USD", "XAG/USD", "USOIL"],
+  matieres:   ["XAU/USD", "XAG/USD", "USOIL", "COPPER", "NATGAS"],
 } as const;
 
 export type Category = keyof typeof SYMBOLS;

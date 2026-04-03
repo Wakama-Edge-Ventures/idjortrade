@@ -211,11 +211,55 @@ export async function POST(req: NextRequest) {
       gainTP2FCFA = Math.round(riskFCFA * tp2RR);
     }
 
-    const id = `analyse_${Date.now()}`;
     const timestamp = new Date().toISOString();
 
+    // ── Sauvegarder en DB de façon synchrone pour obtenir le vrai ID Prisma ──
+    let analyseId: string = `analyse_${Date.now()}`;
+    if (session?.user?.id) {
+      const userId = session.user.id;
+      const now = new Date();
+      try {
+        const savedAnalyse = await prisma.analyse.create({
+          data: {
+            userId,
+            asset: body.asset,
+            timeframe: body.timeframe,
+            mode: body.mode,
+            signal: parsed.signal || "NEUTRE",
+            confidence: parsed.confidence ?? 50,
+            entry: parsed.entry,
+            stopLoss: parsed.stopLoss,
+            tp1: parsed.tp1,
+            tp2: parsed.tp2 ?? null,
+            rrRatio: parsed.rrRatio || ratioRR,
+            positionSize: parsed.positionSize ?? 0,
+            positionUnit: parsed.positionUnit || body.asset.split("/")[0],
+            riskFCFA,
+            gainTP1FCFA,
+            gainTP2FCFA: gainTP2FCFA ?? null,
+            tendance: parsed.tendance || "Indéterminée",
+            patternDetected: parsed.patternDetected || "Aucun pattern clair",
+            rsiInfo: parsed.rsiInfo || "Non analysé",
+            macdInfo: parsed.macdInfo || "Non analysé",
+            bollingerInfo: parsed.bollingerInfo || "Non analysé",
+            reasons: parsed.reasons || [],
+          },
+        });
+        analyseId = savedAnalyse.id;
+        // Incrémenter le compteur d'analyses (fire-and-forget)
+        prisma.user
+          .update({
+            where: { id: userId },
+            data: { analysesToday: { increment: 1 }, analysesResetAt: now },
+          })
+          .catch(() => {});
+      } catch {
+        // DB failure non-bloquante — on continue avec l'ID temporaire
+      }
+    }
+
     const response: AnalyseResponse = {
-      id,
+      id: analyseId,
       signal: parsed.signal || "NEUTRE",
       confidence: parsed.confidence ?? 50,
       entry: parsed.entry,
@@ -240,51 +284,6 @@ export async function POST(req: NextRequest) {
       timeframe: body.timeframe,
       mode: body.mode,
     };
-
-    // Save to DB + increment counter (fire-and-forget, don't block response)
-    if (session?.user?.id) {
-      const userId = session.user.id;
-      const now = new Date();
-      prisma.analyse
-        .create({
-          data: {
-            userId,
-            asset: body.asset,
-            timeframe: body.timeframe,
-            mode: body.mode,
-            signal: response.signal,
-            confidence: response.confidence,
-            entry: response.entry,
-            stopLoss: response.stopLoss,
-            tp1: response.tp1,
-            tp2: response.tp2 ?? null,
-            rrRatio: response.rrRatio,
-            positionSize: response.positionSize ?? 0,
-            positionUnit: response.positionUnit,
-            riskFCFA: response.riskFCFA,
-            gainTP1FCFA: response.gainTP1FCFA,
-            gainTP2FCFA: response.gainTP2FCFA ?? null,
-            tendance: response.tendance,
-            patternDetected: response.patternDetected,
-            rsiInfo: response.rsiInfo,
-            macdInfo: response.macdInfo,
-            bollingerInfo: response.bollingerInfo,
-            reasons: response.reasons,
-          },
-        })
-        .then(() =>
-          prisma.user.update({
-            where: { id: userId },
-            data: {
-              analysesToday: { increment: 1 },
-              analysesResetAt: now,
-            },
-          })
-        )
-        .catch(() => {
-          // Non-blocking: DB save failure doesn't break the user's flow
-        });
-    }
 
     return NextResponse.json(response);
   } catch (err) {
