@@ -29,12 +29,23 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+
     try {
-      const result = await signIn("credentials", {
+      const signInPromise = signIn("credentials", {
         email,
         password,
         redirect: false,
       });
+
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        controller.signal.addEventListener("abort", () =>
+          reject(new Error("timeout"))
+        );
+      });
+
+      const result = await Promise.race([signInPromise, timeoutPromise]);
 
       console.log("signIn result:", result);
 
@@ -47,10 +58,11 @@ export default function LoginPage() {
         router.push("/dashboard");
         router.refresh();
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Login error:", err);
       setError("Erreur de connexion. Réessaie.");
     } finally {
+      clearTimeout(timeout);
       setLoading(false);
     }
   };
