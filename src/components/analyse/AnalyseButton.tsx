@@ -6,6 +6,45 @@ import type { ChartUploadRef } from "./ChartUploadZone";
 import type { RiskFormRef } from "./RiskForm";
 import type { AnalyseResponse } from "@/app/api/analyse/types";
 
+type ErrorType = "NOT_A_CHART" | "CHART_TOO_OLD" | "GENERIC" | null;
+
+function ErrorModal({ type, message, onClose }: { type: ErrorType; message: string; onClose: () => void }) {
+  if (!type) return null;
+  const isNotChart = type === "NOT_A_CHART";
+  const accentColor = isNotChart ? "#F5A623" : "#FF3B5C";
+  const borderColor = isNotChart ? "rgba(245,166,35,0.25)" : "rgba(255,59,92,0.25)";
+  const bgColor = isNotChart ? "rgba(245,166,35,0.06)" : "rgba(255,59,92,0.06)";
+  const icon = isNotChart ? "⚠️" : "🕐";
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.7)" }}
+      onClick={onClose}>
+      <div className="max-w-sm w-full rounded-2xl p-6 space-y-4"
+        style={{ background: "var(--surface-high)", border: `1px solid ${borderColor}`, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}
+        onClick={e => e.stopPropagation()}>
+        <div className="flex items-start gap-3">
+          <span className="text-2xl flex-shrink-0">{icon}</span>
+          <div className="space-y-1">
+            <p className="text-sm font-bold text-white">
+              {isNotChart ? "Ce n'est pas un graphique de trading" : "Graphique trop ancien"}
+            </p>
+            <p className="text-xs leading-relaxed" style={{ color: "var(--on-surface-dim)" }}>
+              {message}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={onClose}
+          className="w-full py-2.5 rounded-xl text-sm font-bold transition-all"
+          style={{ background: bgColor, color: accentColor, border: `1px solid ${borderColor}` }}>
+          Réessayer
+        </button>
+      </div>
+    </div>
+  );
+}
+
 interface AnalyseButtonProps {
   getFormData: () => ReturnType<RiskFormRef["getFormData"]>;
   getImageData: () => ReturnType<ChartUploadRef["getImageData"]>;
@@ -16,12 +55,14 @@ export default function AnalyseButton({ getFormData, getImageData, mode }: Analy
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorType, setErrorType] = useState<ErrorType>(null);
 
   const accentColor = mode === "scalp" ? "#F5A623" : "#00FF88";
   const accentBg = mode === "scalp" ? "#F5A623" : "#00FF88";
 
   async function handleAnalyse() {
     setError(null);
+    setErrorType(null);
 
     const imageData = getImageData();
     if (!imageData) {
@@ -72,10 +113,17 @@ export default function AnalyseButton({ getFormData, getImageData, mode }: Analy
         }),
       });
 
-      const result: AnalyseResponse & { error?: string } = await response.json();
+      const result: AnalyseResponse & { error?: string; message?: string } = await response.json();
 
       if (!response.ok || result.error) {
-        setError(result.error || "Erreur lors de l'analyse. Réessayez.");
+        const errType = result.error as ErrorType;
+        if (errType === "NOT_A_CHART" || errType === "CHART_TOO_OLD") {
+          setErrorType(errType);
+          setError(result.message ?? result.error ?? "Erreur.");
+        } else {
+          setErrorType("GENERIC");
+          setError(result.error || "Erreur lors de l'analyse. Réessayez.");
+        }
         return;
       }
 
@@ -92,6 +140,14 @@ export default function AnalyseButton({ getFormData, getImageData, mode }: Analy
   }
 
   return (
+    <>
+    {(errorType === "NOT_A_CHART" || errorType === "CHART_TOO_OLD") && error && (
+      <ErrorModal
+        type={errorType}
+        message={error}
+        onClose={() => { setError(null); setErrorType(null); }}
+      />
+    )}
     <div className="space-y-3">
       <button
         onClick={handleAnalyse}
@@ -130,12 +186,13 @@ export default function AnalyseButton({ getFormData, getImageData, mode }: Analy
         </p>
       )}
 
-      {error && (
+      {error && errorType === "GENERIC" && (
         <div className="px-4 py-3 rounded-xl text-xs font-medium"
           style={{ background: "rgba(255,59,92,0.08)", border: "1px solid rgba(255,59,92,0.2)", color: "#FF3B5C" }}>
           {error}
         </div>
       )}
     </div>
+    </>
   );
 }

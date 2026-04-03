@@ -1,6 +1,6 @@
 import type { AnalyseRequest } from "@/app/api/analyse/types";
 
-export function buildAnalysePrompt(req: AnalyseRequest): string {
+export function buildAnalysePrompt(req: AnalyseRequest, currentPrice?: number | null): string {
   const riskFCFA = Math.round(req.capitalFCFA * req.risquePct / 100);
   const gainTP1FCFA = Math.round(riskFCFA * req.ratioRR);
 
@@ -23,9 +23,9 @@ Toutes tes analyses sont en français, tous les montants en FCFA.
 ${profileSection}
 PARAMÈTRES DU TRADE:
 - Actif: ${req.asset}
-- Timeframe: ${req.timeframe}
-- Mode: ${req.mode === "scalp" ? "Scalp (niveaux serrés, précision intraday)" : "Swing (niveaux larges, tendances multi-jours)"}
-- Marché: ${req.marche}
+- Timeframe exact: ${req.timeframe}
+- Style de trading: ${req.mode === "scalp" ? "Scalp (niveaux serrés, précision intraday)" : "Swing (niveaux larges, tendances multi-jours)"}
+- Marché: ${req.marche}${currentPrice != null ? `\n- PRIX ACTUEL EN TEMPS RÉEL: ${currentPrice} (utilise ce prix pour valider la cohérence des niveaux du chart)` : ""}
 - Capital: ${req.capitalFCFA.toLocaleString("fr-FR")} FCFA
 - Risque par trade: ${req.risquePct}% = ${riskFCFA.toLocaleString("fr-FR")} FCFA
 - Ratio R/R cible: 1:${req.ratioRR}
@@ -75,6 +75,6 @@ RÈGLES:
 - 4 à 6 reasons, toujours au moins 1 "warning"
 - Si le signal n'est pas clair: signal "NEUTRE" confidence < 50
 - Ne jamais inventer des indicateurs non visibles — si RSI non visible, note "Non visible sur le chart"
-- Tous les prix doivent être cohérents avec le graphique visible
+- Tous les prix doivent être cohérents avec le graphique visible${currentPrice != null ? `\n- Le prix actuel fourni est ${currentPrice}. Si les niveaux du chart sont incohérents avec ce prix (chart trop ancien), retourne signal "NEUTRE" avec explication dans les reasons` : ""}
 - Si le signal est BUY mais que la tendance structurelle est baissière, indique dans le champ "tendance": "Rebond haussier contre-tendance" plutôt que "Baissière" seul — pour ne pas créer de confusion`;
 }

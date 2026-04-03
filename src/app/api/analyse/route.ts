@@ -1,9 +1,12 @@
+export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import anthropic from "@/lib/anthropic";
 import { buildAnalysePrompt } from "@/lib/prompts/analyse-chart";
 import type { AnalyseRequest, AnalyseResponse } from "./types";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { fetchQuote } from "@/lib/twelvedata";
+import { FRESHNESS_LIMITS } from "@/lib/timeframes";
 
 export const maxDuration = 60;
 
@@ -59,7 +62,103 @@ export async function POST(req: NextRequest) {
     const ratioRR = body.ratioRR || 2;
     const riskFCFA = Math.round(capitalFCFA * risquePct / 100);
 
-    const prompt = buildAnalysePrompt({ ...body, capitalFCFA, risquePct, ratioRR });
+    // ── ÉTAPE A : vérifier que c'est bien un chart de trading ──────────────
+    const validationMsg = await anthropic.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 100,
+      messages: [{
+        role: "user",
+        content: [
+          {
+            type: "image",
+            source: { type: "base64", media_type: body.imageMediaType || "image/png", data: body.imageBase64 },
+          },
+          {
+            type: "text",
+            text: 'Cette image est-elle un graphique de trading financier (candlesticks/bougies japonaises) avec des indicateurs techniques ? Réponds UNIQUEMENT par JSON: { "isChart": true/false, "reason": string }',
+          },
+        ],
+      }],
+    });
+
+    const validationText = validationMsg.content
+      .filter(b => b.type === "text")
+      .map(b => (b as { type: "text"; text: string }).text)
+      .join("");
+
+    let isChart = true;
+    try {
+      const vMatch = validationText.match(/\{[\s\S]*\}/);
+      if (vMatch) {
+        const vParsed = JSON.parse(vMatch[0]);
+        isChart = vParsed.isChart !== false;
+      }
+    } catch { /* keep isChart = true on parse error */ }
+
+    if (!isChart) {
+      return NextResponse.json(
+        {
+          error: "NOT_A_CHART",
+          message: "Veuillez uploader un graphique de trading avec des bougies japonaises et des indicateurs techniques (RSI, MACD, Bollinger).",
+        },
+        { status: 400 }
+      );
+    }
+
+    // ── ÉTAPE B : vérifier la fraîcheur du chart ───────────────────────────
+    const freshnessMsg = await anthropic.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 150,
+      messages: [{
+        role: "user",
+        content: [
+          {
+            type: "image",
+            source: { type: "base64", media_type: body.imageMediaType || "image/png", data: body.imageBase64 },
+          },
+          {
+            type: "text",
+            text: 'Regarde la date/heure visible sur ce graphique. Quel est le timestamp de la dernière bougie ? Réponds UNIQUEMENT par JSON: { "lastCandleDate": string (format ISO ou "unknown"), "timeframeDetected": string, "isRecent": boolean }',
+          },
+        ],
+      }],
+    });
+
+    const freshnessText = freshnessMsg.content
+      .filter(b => b.type === "text")
+      .map(b => (b as { type: "text"; text: string }).text)
+      .join("");
+
+    try {
+      const fMatch = freshnessText.match(/\{[\s\S]*\}/);
+      if (fMatch) {
+        const fParsed = JSON.parse(fMatch[0]);
+        const lastCandleDate = fParsed.lastCandleDate as string;
+        if (lastCandleDate && lastCandleDate !== "unknown") {
+          const ageMs = Date.now() - new Date(lastCandleDate).getTime();
+          const ageMin = ageMs / 60000;
+          const limit = FRESHNESS_LIMITS[body.timeframe] ?? Infinity;
+          if (ageMin > limit) {
+            return NextResponse.json(
+              {
+                error: "CHART_TOO_OLD",
+                message: `Ce graphique semble trop ancien pour un timeframe ${body.timeframe}. Veuillez capturer un graphique récent.`,
+              },
+              { status: 400 }
+            );
+          }
+        }
+      }
+    } catch { /* skip freshness check on parse error */ }
+
+    // ── ÉTAPE C : récupérer le prix actuel (best-effort) ──────────────────
+    let currentPrice: number | null = null;
+    try {
+      const quote = await fetchQuote(body.asset);
+      currentPrice = quote?.price ?? null;
+    } catch { /* skip if Twelvedata unavailable */ }
+
+    const prompt = buildAnalysePrompt({ ...body, capitalFCFA, risquePct, ratioRR }, currentPrice);
 
     const message = await anthropic.messages.create({
       model: "claude-opus-4-5",

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useImperativeHandle, forwardRef } from "react";
+import { TIMEFRAME_GROUPS, defaultTimeframeForMode } from "@/lib/timeframes";
+import type { TradingMode } from "@/lib/timeframes";
 
 export type RiskFormData = {
   asset: string;
@@ -9,6 +11,7 @@ export type RiskFormData = {
   risquePct: number;
   ratioRR: number;
   marche: string;
+  tradingMode: TradingMode;
 };
 
 export type RiskFormRef = {
@@ -18,13 +21,13 @@ export type RiskFormRef = {
 interface RiskFormProps {
   mode: "swing" | "scalp";
 }
-
-const swingTimeframes = ["4H", "D1", "W1"];
-const scalpTimeframes = ["M1", "M5", "M15", "M30"];
 const marches = ["Crypto", "Forex", "Actions", "Indices"];
 const rrOptions = ["1:1", "1:2", "1:3", "Custom"];
 const modesAnalyse = ["⚡ Rapide", "🔬 Approfondi"];
 const FCFA_PER_USD = 655;
+
+const defaultTradingMode = (mode: "swing" | "scalp"): TradingMode =>
+  mode === "swing" ? "swing" : "scalp";
 
 const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
   function RiskForm({ mode }, ref) {
@@ -33,7 +36,8 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
     const [risque, setRisque] = useState(1);
     const [rr, setRr] = useState("1:2");
     const [marche, setMarche] = useState("Crypto");
-    const [timeframe, setTimeframe] = useState(mode === "swing" ? "D1" : "M5");
+    const [tradingMode, setTradingMode] = useState<TradingMode>(defaultTradingMode(mode));
+    const [timeframe, setTimeframe] = useState(defaultTimeframeForMode(defaultTradingMode(mode)));
     const [modeAnalyse, setModeAnalyse] = useState("⚡ Rapide");
 
     const capitalNum = parseFloat(capital.replace(/\s/g, "")) || 250000;
@@ -41,7 +45,13 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
     const rrNum = rr === "Custom" ? 2 : parseInt(rr.split(":")[1]);
     const gainFCFA = riskFCFA * rrNum;
     const capitalUSD = Math.round(capitalNum / FCFA_PER_USD);
-    const timeframes = mode === "swing" ? swingTimeframes : scalpTimeframes;
+
+    const currentGroup = TIMEFRAME_GROUPS.find(g => g.mode === tradingMode) ?? TIMEFRAME_GROUPS[0];
+
+    function handleTradingModeChange(newMode: TradingMode) {
+      setTradingMode(newMode);
+      setTimeframe(defaultTimeframeForMode(newMode));
+    }
 
     useImperativeHandle(ref, () => ({
       getFormData: () => {
@@ -53,6 +63,7 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
           risquePct: risque,
           ratioRR: rrNum,
           marche,
+          tradingMode,
         };
       },
     }));
@@ -171,15 +182,27 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
           </div>
         </div>
 
-        {/* Timeframe */}
+        {/* Trading Mode + Timeframe */}
         <div className="space-y-2">
           <label className="text-xs font-semibold uppercase tracking-widest"
             style={{ color: "var(--on-surface-dim)" }}>
-            Timeframe
+            Style · Timeframe
           </label>
-          <div className="flex gap-2 flex-wrap">
-            {timeframes.map(tf => (
-              <button key={tf} className={btnBase}
+          {/* Mode pills */}
+          <div className="flex gap-1.5">
+            {TIMEFRAME_GROUPS.map(g => (
+              <button key={g.mode} className={btnBase}
+                style={tradingMode === g.mode ? btnActive : btnInactive}
+                onClick={() => handleTradingModeChange(g.mode)}>
+                {g.label}
+              </button>
+            ))}
+          </div>
+          {/* Timeframe pills — scrollable */}
+          <div className="flex gap-1.5 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
+            {currentGroup.frames.map((tf: string) => (
+              <button key={tf}
+                className="flex-shrink-0 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
                 style={timeframe === tf ? btnActive : btnInactive}
                 onClick={() => setTimeframe(tf)}>
                 {tf}
