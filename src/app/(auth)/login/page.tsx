@@ -29,40 +29,28 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
-
     try {
-      const signInPromise = signIn("credentials", {
+      const result = await signIn("credentials", {
         email,
         password,
         redirect: false,
       });
 
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        controller.signal.addEventListener("abort", () =>
-          reject(new Error("timeout"))
-        );
-      });
-
-      const result = await Promise.race([signInPromise, timeoutPromise]);
-
-      console.log("signIn result:", result);
-
       if (result?.error) {
-        setError("Email ou mot de passe incorrect.");
+        setError("Email ou mot de passe incorrect");
         return;
       }
 
       if (result?.ok) {
         router.push("/dashboard");
         router.refresh();
+      } else {
+        setError("Erreur de connexion. Réessaie.");
       }
-    } catch (err: unknown) {
+    } catch (err) {
       console.error("Login error:", err);
-      setError("Erreur de connexion. Réessaie.");
+      setError("Erreur réseau. Vérifie ta connexion.");
     } finally {
-      clearTimeout(timeout);
       setLoading(false);
     }
   };
