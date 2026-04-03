@@ -7,6 +7,9 @@ import { prisma } from "@/lib/prisma";
 import { sendVerificationEmail } from "@/lib/emails/verification";
 
 export async function POST(req: NextRequest) {
+  console.log('Register POST called');
+  console.log('RESEND_API_KEY present:', !!process.env.RESEND_API_KEY);
+
   try {
     const { email, password, prenom } = await req.json();
 
@@ -29,29 +32,36 @@ export async function POST(req: NextRequest) {
 
     const hashed = await bcrypt.hash(password, 12);
 
+    // Generate a 6-digit verification code valid for 10 minutes
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = new Date(Date.now() + 10 * 60 * 1000);
+
+    // Create user + verification code in one step
     await prisma.user.create({
       data: {
         email,
         password: hashed,
         prenom,
+        verifyCode: code,
+        verifyExpires: expires,
         profile: { create: {} },
       },
     });
 
-    // Generate a 6-digit verification code valid for 10 minutes
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expires = new Date(Date.now() + 10 * 60 * 1000);
+    console.log('User created, sending verification email to:', email);
 
-    await prisma.user.update({
-      where: { email },
-      data: { verifyCode: code, verifyExpires: expires },
-    });
-
-    // Send verification email — do not block on failure
+    // Send verification email — if it fails, delete the user and return 500
     try {
       await sendVerificationEmail(email, prenom, code);
+      console.log('Verification email sent successfully');
     } catch (emailErr) {
-      console.error('Email send failed:', emailErr);
+      console.error('Email send error:', emailErr);
+      // Rollback: delete the user so they can retry
+      await prisma.user.delete({ where: { email } }).catch(() => {});
+      return NextResponse.json(
+        { error: "Impossible d'envoyer l'email de vérification. Réessaie." },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({
@@ -59,7 +69,8 @@ export async function POST(req: NextRequest) {
       requiresVerification: true,
       message: "Vérifie ton email",
     });
-  } catch {
+  } catch (error) {
+    console.error('Register error full:', error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }
 }
