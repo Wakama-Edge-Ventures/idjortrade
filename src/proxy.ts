@@ -16,11 +16,12 @@ export async function proxy(req: NextRequest) {
   }
 
   // NextAuth v5 utilise "authjs.*", v4 utilisait "next-auth.*"
+  // Vérifier d'abord les cookies sécurisés pour la production
   const sessionToken =
-    req.cookies.get("authjs.session-token") ||
-    req.cookies.get("__Secure-authjs.session-token") ||
-    req.cookies.get("next-auth.session-token") ||
-    req.cookies.get("__Secure-next-auth.session-token");
+    req.cookies.get('__Secure-authjs.session-token') ||
+    req.cookies.get('authjs.session-token') ||
+    req.cookies.get('__Secure-next-auth.session-token') ||
+    req.cookies.get('next-auth.session-token');
 
   if (!sessionToken) {
     return NextResponse.redirect(new URL("/login", req.nextUrl));
