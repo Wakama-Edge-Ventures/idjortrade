@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
   return (
@@ -60,6 +60,38 @@ export default function PreferencesForm() {
   const [notifPush, setNotifPush] = useState(true);
   const [emailQuot, setEmailQuot] = useState(false);
   const [alertesMarche, setAlertesMarche] = useState(false);
+  const [savedMsg, setSavedMsg] = useState(false);
+
+  // Load preferences from the API on mount
+  useEffect(() => {
+    fetch('/api/user/profile')
+      .then((r) => r.json())
+      .then((data) => {
+        const p = data.profile;
+        if (!p) return;
+        if (p.devise) setDevise(p.devise);
+        if (p.langue) setLangue(p.langue === "fr" ? "🇫🇷 Français" : "🇬🇧 English");
+        if (p.modeAnalyse) setModeAnalyse(p.modeAnalyse === "rapide" ? "Rapide" : "Approfondi");
+        if (p.risqueDefaut !== null && p.risqueDefaut !== undefined) setRisque(p.risqueDefaut);
+        if (p.notifPush !== null) setNotifPush(p.notifPush);
+        if (p.resumeEmail !== null) setEmailQuot(p.resumeEmail);
+        if (p.alerteMarche !== null) setAlertesMarche(p.alerteMarche);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Auto-save a patch to the API and show confirmation
+  async function savePrefs(patch: Record<string, unknown>) {
+    try {
+      await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+      setSavedMsg(true);
+      setTimeout(() => setSavedMsg(false), 2000);
+    } catch { /* ignore */ }
+  }
 
   const rowClass = "flex items-center justify-between py-4";
   const separatorStyle: React.CSSProperties = { borderTop: "1px solid rgba(255,255,255,0.05)" };
@@ -69,12 +101,23 @@ export default function PreferencesForm() {
   return (
     <div className="space-y-1 max-w-lg">
 
+      {/* Saved confirmation */}
+      {savedMsg && (
+        <p className="text-xs font-semibold" style={{ color: "#00FF88" }}>
+          Sauvegardé ✓
+        </p>
+      )}
+
       <div className={rowClass}>
         <div>
           <p className={labelStyle}>Devise</p>
           <p style={subStyle}>Affichage des montants</p>
         </div>
-        <ButtonGroup options={["FCFA", "USD"]} value={devise} onChange={setDevise} />
+        <ButtonGroup
+          options={["FCFA", "USD"]}
+          value={devise}
+          onChange={(v) => { setDevise(v); savePrefs({ devise: v }); }}
+        />
       </div>
 
       <div style={separatorStyle} className={rowClass}>
@@ -82,7 +125,11 @@ export default function PreferencesForm() {
           <p className={labelStyle}>Langue</p>
           <p style={subStyle}>Interface et analyses</p>
         </div>
-        <ButtonGroup options={["🇫🇷 Français", "🇬🇧 English"]} value={langue} onChange={setLangue} />
+        <ButtonGroup
+          options={["🇫🇷 Français", "🇬🇧 English"]}
+          value={langue}
+          onChange={(v) => { setLangue(v); savePrefs({ langue: v === "🇫🇷 Français" ? "fr" : "en" }); }}
+        />
       </div>
 
       <div style={separatorStyle} className={rowClass}>
@@ -90,7 +137,11 @@ export default function PreferencesForm() {
           <p className={labelStyle}>Mode analyse</p>
           <p style={subStyle}>Défaut pour les nouvelles analyses</p>
         </div>
-        <ButtonGroup options={["Rapide", "Approfondi"]} value={modeAnalyse} onChange={setModeAnalyse} />
+        <ButtonGroup
+          options={["Rapide", "Approfondi"]}
+          value={modeAnalyse}
+          onChange={(v) => { setModeAnalyse(v); savePrefs({ modeAnalyse: v === "Rapide" ? "rapide" : "approfondi" }); }}
+        />
       </div>
 
       <div style={separatorStyle} className="py-4 space-y-2">
@@ -103,9 +154,13 @@ export default function PreferencesForm() {
         </div>
         <input
           type="range"
-          min="0.25" max="5" step="0.25"
+          min="0.25"
+          max="5"
+          step="0.25"
           value={risque}
           onChange={(e) => setRisque(parseFloat(e.target.value))}
+          onMouseUp={() => savePrefs({ risqueDefaut: risque })}
+          onTouchEnd={() => savePrefs({ risqueDefaut: risque })}
           className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
           style={{
             accentColor: "var(--primary)",
@@ -119,7 +174,10 @@ export default function PreferencesForm() {
           <p className={labelStyle}>Notifications push</p>
           <p style={subStyle}>Signaux et alertes temps réel</p>
         </div>
-        <Toggle on={notifPush} onToggle={() => setNotifPush(!notifPush)} />
+        <Toggle
+          on={notifPush}
+          onToggle={() => { setNotifPush(!notifPush); savePrefs({ notifPush: !notifPush }); }}
+        />
       </div>
 
       <div style={separatorStyle} className={rowClass}>
@@ -127,7 +185,10 @@ export default function PreferencesForm() {
           <p className={labelStyle}>Résumé email quotidien</p>
           <p style={subStyle}>Récap de votre journée trading</p>
         </div>
-        <Toggle on={emailQuot} onToggle={() => setEmailQuot(!emailQuot)} />
+        <Toggle
+          on={emailQuot}
+          onToggle={() => { setEmailQuot(!emailQuot); savePrefs({ resumeEmail: !emailQuot }); }}
+        />
       </div>
 
       <div style={separatorStyle} className={rowClass}>
@@ -143,7 +204,10 @@ export default function PreferencesForm() {
             PRO
           </span>
         </div>
-        <Toggle on={alertesMarche} onToggle={() => setAlertesMarche(!alertesMarche)} />
+        <Toggle
+          on={alertesMarche}
+          onToggle={() => { setAlertesMarche(!alertesMarche); savePrefs({ alerteMarche: !alertesMarche }); }}
+        />
       </div>
 
     </div>

@@ -1,15 +1,4 @@
-// Heatmap des 90 derniers jours — données hardcodées représentatives
-type DayData = { day: number; value: number }; // value: -1 perte, 0 vide, 1-3 gain intensité
-
-function generateHeatmapData(): DayData[] {
-  // 13 semaines × 7 jours = 91 jours
-  const data: DayData[] = [];
-  const pattern = [0, 2, -1, 1, 0, 3, 1, 0, -1, 2, 1, 0, 2, -1, 0, 1, 3, 0, -1, 1, 2];
-  for (let i = 0; i < 91; i++) {
-    data.push({ day: i, value: pattern[i % pattern.length] });
-  }
-  return data;
-}
+type TradePoint = { openedAt: Date | string; pnlFCFA: number | null; status: string };
 
 /** Maps a performance value to its cell background color */
 function cellColor(value: number): string {
@@ -20,9 +9,38 @@ function cellColor(value: number): string {
   return '#00FF88';
 }
 
-const days = generateHeatmapData();
+export default function HeatmapCalendar({ trades }: { trades: TradePoint[] }) {
+  // Group closed trades by date
+  const pnlByDate: Record<string, number> = {};
+  trades
+    .filter((t) => t.status === "closed" && t.pnlFCFA !== null)
+    .forEach((t) => {
+      const date = new Date(t.openedAt).toISOString().slice(0, 10);
+      pnlByDate[date] = (pnlByDate[date] ?? 0) + (t.pnlFCFA ?? 0);
+    });
 
-export default function HeatmapCalendar() {
+  // Generate 91 days back from today
+  function generateHeatmapData(): { day: number; value: number; date: string }[] {
+    const data: { day: number; value: number; date: string }[] = [];
+    const today = new Date();
+    for (let i = 90; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().slice(0, 10);
+      const pnl = pnlByDate[dateStr];
+      let value = 0;
+      if (pnl !== undefined) {
+        if (pnl < 0) value = -1;
+        else if (pnl < 10000) value = 1;
+        else if (pnl < 30000) value = 2;
+        else value = 3;
+      }
+      data.push({ day: i, value, date: dateStr });
+    }
+    return data;
+  }
+
+  const days = generateHeatmapData();
   const weeks = Array.from({ length: 13 }, (_, i) => days.slice(i * 7, i * 7 + 7));
 
   return (
@@ -43,7 +61,7 @@ export default function HeatmapCalendar() {
             {week.map((d) => (
               <div
                 key={d.day}
-                title={d.value === 0 ? 'Pas de trade' : d.value === -1 ? 'Trade perdant' : 'Trade gagnant'}
+                title={`${d.date} — ${d.value === 0 ? 'Pas de trade' : d.value === -1 ? 'Trade perdant' : 'Trade gagnant'}`}
                 className="w-3.5 h-3.5 rounded-sm flex-shrink-0"
                 style={{ background: cellColor(d.value) }}
               />

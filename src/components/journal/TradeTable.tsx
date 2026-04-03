@@ -1,6 +1,17 @@
 "use client";
 
-import type { TradeEntry } from '@/lib/mock-journal';
+type TradeEntry = {
+  id: string;
+  date: string;
+  asset: string;
+  direction: 'BUY' | 'SELL';
+  entry: number;
+  exit: number | null;
+  pnlFCFA: number | null;
+  rRealized: number | null;
+  source: 'IA' | 'Manuel';
+  status: 'closed' | 'open';
+};
 
 /** Formats a price number based on its magnitude */
 function formatPrice(price: number): string {
@@ -27,6 +38,14 @@ export default function TradeTable({ trades }: { trades: TradeEntry[] }) {
           </tr>
         </thead>
         <tbody>
+          {trades.length === 0 && (
+            <tr>
+              <td colSpan={8} className="px-4 py-12 text-center text-sm" style={{ color: 'var(--on-surface-dim)' }}>
+                Aucun trade pour l'instant. Fais ta première analyse sur{" "}
+                <a href="/swing" style={{ color: '#00FF88' }}>Swing Trading</a>
+              </td>
+            </tr>
+          )}
           {trades.map((trade) => (
             <tr
               key={trade.id}

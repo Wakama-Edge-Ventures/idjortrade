@@ -1,13 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { sendVerificationEmail } from "@/lib/emails/verification";
 
 export async function POST(req: NextRequest) {
   try {
     const { email, password, prenom } = await req.json();
 
-    // Validate
+    // Validate required fields
     if (!email || !password || !prenom) {
       return NextResponse.json({ error: "Tous les champs sont requis" }, { status: 400 });
     }
@@ -18,7 +21,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Le mot de passe doit faire au moins 8 caractères" }, { status: 400 });
     }
 
-    // Check existing
+    // Check for existing account
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
       return NextResponse.json({ error: "Cet email est déjà utilisé" }, { status: 400 });
@@ -35,7 +38,27 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true, message: "Compte créé avec succès" });
+    // Generate a 6-digit verification code valid for 10 minutes
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = new Date(Date.now() + 10 * 60 * 1000);
+
+    await prisma.user.update({
+      where: { email },
+      data: { verifyCode: code, verifyExpires: expires },
+    });
+
+    // Send verification email — do not block on failure
+    try {
+      await sendVerificationEmail(email, prenom, code);
+    } catch (emailErr) {
+      console.error('Email send failed:', emailErr);
+    }
+
+    return NextResponse.json({
+      success: true,
+      requiresVerification: true,
+      message: "Vérifie ton email",
+    });
   } catch {
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }

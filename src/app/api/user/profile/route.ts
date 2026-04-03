@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -9,38 +11,44 @@ export async function GET() {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
   }
 
-  const profile = await prisma.userProfile.findUnique({
-    where: { userId: session.user.id },
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    include: { profile: true },
   });
 
-  return NextResponse.json(profile ?? {});
+  if (!user) return NextResponse.json({}, { status: 404 });
+
+  // Omit sensitive fields before returning
+  const { password, verifyCode, ...safeUser } = user;
+  return NextResponse.json(safeUser);
 }
 
 export async function PUT(req: NextRequest) {
-  console.log("PUT /api/user/profile called");
-
   const session = await auth();
-  console.log("session:", session?.user?.id);
-
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
   }
 
   const body = await req.json();
-  console.log("body:", body);
 
   // Separate User-level fields from UserProfile fields
-  const { prenom, ...profileFields } = body as { prenom?: string } & Record<string, unknown>;
+  const { prenom, phoneNumber, ...profileFields } = body as {
+    prenom?: string;
+    phoneNumber?: string;
+  } & Record<string, unknown>;
 
-  // Update User.prenom if provided
-  if (prenom) {
+  // Update User-level fields if provided
+  if (prenom || phoneNumber !== undefined) {
     await prisma.user.update({
       where: { id: session.user.id },
-      data: { prenom },
+      data: {
+        ...(prenom ? { prenom } : {}),
+        ...(phoneNumber !== undefined ? { phoneNumber } : {}),
+      },
     });
   }
 
-  // Upsert UserProfile with remaining fields
+  // Upsert UserProfile with remaining fields (including langue, devise, modeAnalyse, risqueDefaut, notifPush, resumeEmail, alerteMarche)
   await prisma.userProfile.upsert({
     where: { userId: session.user.id },
     update: profileFields,

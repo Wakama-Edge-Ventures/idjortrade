@@ -1,13 +1,28 @@
-const assetData = [
-  { symbol: 'SOL/USDT', pnl: 51800 },
-  { symbol: 'BTC/USDT', pnl: 15500 },
-  { symbol: 'EUR/USD', pnl: 18750 },
-  { symbol: 'ETH/USDT', pnl: 0 },
-  { symbol: 'ADA/USDT', pnl: -8200 },
-];
+type TradePoint = { asset: string; pnlFCFA: number | null; status: string };
 
-/** Bar chart showing P&L per trading asset */
-export default function AssetPerf() {
+/** Bar chart showing P&L per trading asset — calculated from real trades */
+export default function AssetPerf({ trades }: { trades: TradePoint[] }) {
+  // Group P&L by asset for closed trades
+  const byAsset: Record<string, number> = {};
+  trades
+    .filter((t) => t.status === "closed")
+    .forEach((t) => {
+      byAsset[t.asset] = (byAsset[t.asset] ?? 0) + (t.pnlFCFA ?? 0);
+    });
+
+  const assetData = Object.entries(byAsset)
+    .map(([symbol, pnl]) => ({ symbol, pnl }))
+    .sort((a, b) => b.pnl - a.pnl)
+    .slice(0, 5);
+
+  if (assetData.length === 0) {
+    return (
+      <div className="card p-5 flex items-center justify-center">
+        <p className="text-xs text-center" style={{ color: 'var(--on-surface-dim)' }}>Aucune donnée</p>
+      </div>
+    );
+  }
+
   const maxAbs = Math.max(...assetData.map((d) => Math.abs(d.pnl)));
 
   return (

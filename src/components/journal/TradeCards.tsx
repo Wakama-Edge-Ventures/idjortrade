@@ -1,9 +1,28 @@
-import type { TradeEntry } from '@/lib/mock-journal';
+type TradeEntry = {
+  id: string;
+  date: string;
+  asset: string;
+  direction: 'BUY' | 'SELL';
+  entry: number;
+  exit: number | null;
+  pnlFCFA: number | null;
+  rRealized: number | null;
+  source: 'IA' | 'Manuel';
+  status: 'closed' | 'open';
+};
 
 /** Mobile card list — shown on small screens, hidden on md+ (complement to TradeTable) */
 export default function TradeCards({ trades }: { trades: TradeEntry[] }) {
   return (
     <div className="space-y-3 md:hidden">
+      {trades.length === 0 && (
+        <div className="py-12 text-center">
+          <p className="text-sm" style={{ color: 'var(--on-surface-dim)' }}>
+            Aucun trade pour l'instant. Fais ta première analyse sur{" "}
+            <a href="/swing" style={{ color: '#00FF88' }}>Swing Trading</a>
+          </p>
+        </div>
+      )}
       {trades.map((trade) => (
         <div key={trade.id} className="card p-4 flex items-center gap-4">
           {/* Asset abbreviation icon */}

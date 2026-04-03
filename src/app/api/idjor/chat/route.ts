@@ -108,6 +108,15 @@ export async function POST(req: Request) {
     .map((b) => (b.type === "text" ? b.text : ""))
     .join("");
 
+  // Save conversation exchange to DB (fire-and-forget)
+  const userMessage = messages[messages.length - 1].content;
+  prisma.idjorMessage.createMany({
+    data: [
+      { userId, role: "user", content: userMessage },
+      { userId, role: "assistant", content },
+    ],
+  }).catch(() => {});
+
   return NextResponse.json({
     content,
     quotaInfo: isPro

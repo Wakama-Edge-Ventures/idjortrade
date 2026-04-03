@@ -31,6 +31,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           console.log("password match:", match);
           if (!match) return null;
 
+          // Block login if email has not been verified
+          if (!user.emailVerified) {
+            throw new Error('EMAIL_NOT_VERIFIED');
+          }
+
           return {
             id: user.id,
             email: user.email,

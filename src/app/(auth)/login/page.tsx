@@ -2,15 +2,20 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { Suspense } from "react";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Show success message if redirected from /verify
+  const verified = searchParams.get("verified") === "1";
 
   const inputStyle = {
     background: "var(--surface-highest)",
@@ -37,6 +42,11 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
+        // Redirect to verification page if email not yet verified
+        if (result.error === 'EMAIL_NOT_VERIFIED') {
+          router.push('/verify?email=' + encodeURIComponent(email));
+          return;
+        }
         setError("Email ou mot de passe incorrect");
         return;
       }
@@ -63,6 +73,16 @@ export default function LoginPage() {
           Accédez à votre espace trading
         </p>
       </div>
+
+      {/* Email verified success banner */}
+      {verified && (
+        <div
+          className="px-4 py-3 rounded-xl text-xs font-medium"
+          style={{ background: "rgba(0,255,136,0.08)", border: "1px solid rgba(0,255,136,0.2)", color: "#00FF88" }}
+        >
+          ✓ Email vérifié ! Connecte-toi maintenant.
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
@@ -128,5 +148,13 @@ export default function LoginPage() {
         </Link>
       </p>
     </>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }

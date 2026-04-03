@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
 
 function passwordStrength(pw: string): { label: string; color: string; width: string } {
   if (pw.length === 0) return { label: "", color: "transparent", width: "0%" };
@@ -57,7 +56,7 @@ export default function RegisterPage() {
       body: JSON.stringify({ prenom, email, password }),
     });
 
-    const data = await res.json();
+    const data = await res.json() as { success?: boolean; error?: string; requiresVerification?: boolean };
 
     if (!res.ok) {
       setError(data.error ?? "Erreur lors de la création du compte.");
@@ -65,17 +64,16 @@ export default function RegisterPage() {
       return;
     }
 
-    // Auto sign-in after registration
-    const signInRes = await signIn("credentials", { email, password, redirect: false });
-    setLoading(false);
-
-    if (signInRes?.error) {
-      router.push("/login");
+    // If API requires email verification, redirect to verify page
+    if (data.requiresVerification) {
+      localStorage.setItem('pending_verify_email', email);
+      router.push('/verify?email=' + encodeURIComponent(email));
+      setLoading(false);
       return;
     }
 
-    router.push("/onboarding");
-    router.refresh();
+    // Fallback: redirect to login (should not happen with current API)
+    router.push("/login");
   }
 
   return (

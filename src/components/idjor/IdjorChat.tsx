@@ -3,7 +3,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles } from 'lucide-react';
 import Link from 'next/link';
-import type { Message } from '@/lib/mock-idjor';
+
+type Message = {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+};
 
 /** Renders basic markdown bold (**text**) into React nodes */
 function renderMarkdown(text: string): React.ReactNode[] {
@@ -43,8 +48,29 @@ export default function IdjorChat({ initialMessages, quickPrompts }: IdjorChatPr
   const [isLoading, setIsLoading] = useState(false);
   const [quotaInfo, setQuotaInfo] = useState<QuotaInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Track whether history has been loaded to avoid showing welcome msg if history exists
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Load message history from the API on mount
+  useEffect(() => {
+    fetch('/api/idjor/history')
+      .then((r) => r.json())
+      .then((history: Array<{ id: string; role: string; content: string }>) => {
+        if (history.length > 0) {
+          setMessages(
+            history.map((m) => ({
+              id: m.id,
+              role: m.role as 'user' | 'assistant',
+              content: m.content,
+            }))
+          );
+        }
+        setHistoryLoaded(true);
+      })
+      .catch(() => setHistoryLoaded(true));
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -131,6 +157,12 @@ export default function IdjorChat({ initialMessages, quickPrompts }: IdjorChatPr
     <div className="flex flex-col h-full">
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Show skeleton while loading history */}
+        {!historyLoaded && (
+          <div className="flex justify-center py-4">
+            <span className="text-xs" style={{ color: 'var(--on-surface-dim)' }}>Chargement de l'historique…</span>
+          </div>
+        )}
         {messages.map((msg) => (
           <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             {msg.role === 'assistant' ? (

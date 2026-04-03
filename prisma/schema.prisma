@@ -28,6 +28,12 @@ model User {
   analysesResetAt DateTime @default(now())
   idjorMsgToday   Int      @default(0)
   idjorMsgResetAt DateTime @default(now())
+
+  emailVerified    Boolean   @default(false)
+  verifyCode       String?
+  verifyExpires    DateTime?
+  phoneNumber      String?
+  idjorMessages    IdjorMessage[]
 }
 
 enum Plan {
@@ -69,6 +75,14 @@ model UserProfile {
   sessionsPreferees       String[]
   joursDisponibles        String[]
   objectifPrincipal       String?
+
+  langue           String?   @default("fr")
+  devise           String?   @default("FCFA")
+  modeAnalyse      String?   @default("rapide")
+  risqueDefaut     Float?    @default(1)
+  notifPush        Boolean   @default(true)
+  resumeEmail      Boolean   @default(false)
+  alerteMarche     Boolean   @default(false)
 
   onboardingDone          Boolean  @default(false)
   createdAt               DateTime @default(now())
@@ -150,4 +164,13 @@ model Subscription {
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+}
+
+model IdjorMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String
+  content   String
+  createdAt DateTime @default(now())
 }

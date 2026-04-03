@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
@@ -19,6 +19,17 @@ export default function ProfileForm() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Load saved profile data on mount
+  useEffect(() => {
+    fetch('/api/user/profile')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.phoneNumber) setPhone(data.phoneNumber);
+        if (data.profile?.pays) setCountry(data.profile.pays);
+      })
+      .catch(() => {});
+  }, []);
 
   const initials = prenom
     ? prenom.slice(0, 2).toUpperCase()
@@ -58,13 +69,12 @@ export default function ProfileForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           prenom: prenom.trim() || undefined,
+          phoneNumber: phone.trim() || undefined,
           pays: country,
         }),
       });
 
-      console.log("Save response status:", res.status);
       const data = await res.json();
-      console.log("Save response data:", data);
 
       if (!res.ok) {
         setError(data.error ?? "Erreur lors de la sauvegarde.");
@@ -97,8 +107,10 @@ export default function ProfileForm() {
         >
           <span className={`transition-opacity ${hovered ? "opacity-0" : "opacity-100"}`}>{initials}</span>
           {hovered && (
-            <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white"
-              style={{ background: "rgba(0,0,0,0.6)" }}>
+            <div
+              className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white"
+              style={{ background: "rgba(0,0,0,0.6)" }}
+            >
               Modifier
             </div>
           )}
@@ -174,8 +186,10 @@ export default function ProfileForm() {
       </div>
 
       {error && (
-        <p className="text-xs font-semibold px-4 py-3 rounded-xl"
-          style={{ background: "rgba(255,59,92,0.08)", color: "#FF3B5C", border: "1px solid rgba(255,59,92,0.2)" }}>
+        <p
+          className="text-xs font-semibold px-4 py-3 rounded-xl"
+          style={{ background: "rgba(255,59,92,0.08)", color: "#FF3B5C", border: "1px solid rgba(255,59,92,0.2)" }}
+        >
           {error}
         </p>
       )}

@@ -1,18 +1,96 @@
 import Link from "next/link";
 import { Lock } from "lucide-react";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
 import AnalysisHistoryCard from "@/components/historique/AnalysisHistoryCard";
-import { mockAnalyses } from "@/lib/mock-historique";
+import type { AnalysisEntry } from "@/lib/mock-historique";
 
-const visible = mockAnalyses.filter((a) => !a.locked);
-const locked = mockAnalyses.filter((a) => a.locked);
+export default async function HistoriquePage() {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
 
-const stats = [
-  { label: "Analyses ce mois", value: "6" },
-  { label: "Signaux BUY", value: "67%" },
-  { label: "Win rate suivi", value: "63%" },
-];
+  const plan = session.user.plan as string;
 
-export default function HistoriquePage() {
+  // Determine history window by plan
+  let createdAfter: Date | undefined;
+  if (plan === "FREE") {
+    createdAfter = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  } else if (plan === "BASIC") {
+    createdAfter = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+  }
+
+  const analyses = await prisma.analyse.findMany({
+    where: {
+      userId: session.user.id,
+      ...(createdAfter ? { createdAt: { gte: createdAfter } } : {}),
+    },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+  });
+
+  // For FREE: show 3 max + lock the rest
+  const visibleRaw = plan === "FREE" ? analyses.slice(0, 3) : analyses;
+  const lockedRaw = plan === "FREE" ? analyses.slice(3) : [];
+
+  // Map to AnalysisEntry shape for AnalysisHistoryCard
+  const toEntry = (a: typeof analyses[0], isLocked: boolean): AnalysisEntry => ({
+    id: a.id,
+    asset: a.asset,
+    timeframe: a.timeframe,
+    mode: a.mode as "swing" | "scalp",
+    signal: a.signal as "BUY" | "SELL" | "NEUTRE",
+    confidence: a.confidence,
+    date: new Date(a.createdAt).toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+    rRealized: null,
+    tracked: false,
+    locked: isLocked,
+  });
+
+  // Calculate real stats
+  const thisMonth = analyses.filter(
+    (a) => new Date(a.createdAt).getMonth() === new Date().getMonth()
+  );
+  const buyCount = analyses.filter((a) => a.signal === "BUY").length;
+  const buyPct = analyses.length > 0 ? Math.round((buyCount / analyses.length) * 100) : 0;
+
+  const stats = [
+    { label: "Analyses ce mois", value: String(thisMonth.length) },
+    { label: "Signaux BUY", value: `${buyPct}%` },
+    { label: "Win rate suivi", value: "—" },
+  ];
+
+  // Empty state
+  if (analyses.length === 0) {
+    return (
+      <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-6">
+        <div>
+          <h1 className="font-headline font-bold text-2xl text-white">Historique</h1>
+          <p className="text-xs mt-1" style={{ color: "var(--on-surface-dim)" }}>
+            Toutes vos analyses précédentes
+          </p>
+        </div>
+        <div className="flex flex-col items-center gap-4 py-16 text-center">
+          <p className="text-sm" style={{ color: "var(--on-surface-dim)" }}>
+            Aucune analyse pour l'instant.
+          </p>
+          <Link
+            href="/swing"
+            className="px-5 py-2.5 rounded-xl text-sm font-bold"
+            style={{ background: "#00FF88", color: "#0A0E1A" }}
+          >
+            Faire ma première analyse →
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-6">
 
@@ -37,37 +115,39 @@ export default function HistoriquePage() {
       </div>
 
       {/* Free tier notice */}
-      <div
-        className="flex items-center justify-between px-4 py-3 rounded-xl"
-        style={{
-          background: "rgba(245,166,35,0.05)",
-          border: "1px solid rgba(245,166,35,0.15)",
-        }}
-      >
-        <p className="text-xs" style={{ color: "var(--on-surface-dim)" }}>
-          Plan Gratuit · 7 jours d&apos;historique seulement
-        </p>
-        <Link href="/plans" className="text-xs font-bold" style={{ color: "#F5A623" }}>
-          Upgrader →
-        </Link>
-      </div>
+      {plan === "FREE" && (
+        <div
+          className="flex items-center justify-between px-4 py-3 rounded-xl"
+          style={{
+            background: "rgba(245,166,35,0.05)",
+            border: "1px solid rgba(245,166,35,0.15)",
+          }}
+        >
+          <p className="text-xs" style={{ color: "var(--on-surface-dim)" }}>
+            Plan Gratuit · 7 jours d&apos;historique seulement
+          </p>
+          <Link href="/plans" className="text-xs font-bold" style={{ color: "#F5A623" }}>
+            Upgrader →
+          </Link>
+        </div>
+      )}
 
       {/* Analyses visibles */}
       <section className="space-y-3">
         <h2 className="font-headline font-bold text-lg text-white">Analyses récentes</h2>
-        {visible.map((a) => (
-          <AnalysisHistoryCard key={a.id} analysis={a} />
+        {visibleRaw.map((a) => (
+          <AnalysisHistoryCard key={a.id} analysis={toEntry(a, false)} />
         ))}
       </section>
 
       {/* Analyses locked */}
-      {locked.length > 0 && (
+      {lockedRaw.length > 0 && (
         <section className="space-y-3">
           <h2 className="font-headline font-bold text-lg" style={{ color: "var(--on-surface-dim)" }}>
             Analyses précédentes (verrouillées)
           </h2>
-          {locked.map((a) => (
-            <AnalysisHistoryCard key={a.id} analysis={a} />
+          {lockedRaw.map((a) => (
+            <AnalysisHistoryCard key={a.id} analysis={toEntry(a, true)} />
           ))}
         </section>
       )}

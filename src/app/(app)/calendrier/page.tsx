@@ -1,22 +1,59 @@
 import CalendarFilter from "@/components/calendrier/CalendarFilter";
 import EventRow from "@/components/calendrier/EventRow";
 import ImpactBadge from "@/components/calendrier/ImpactBadge";
-import { mockEvents } from "@/lib/economic-calendar";
+import { mockEvents, type EconomicEvent } from "@/lib/economic-calendar";
 
-// Reference dates for label formatting
-const today = "2026-04-02";
-const tomorrow = "2026-04-03";
+const countryFlags: Record<string, string> = {
+  USD: "🇺🇸",
+  EUR: "🇪🇺",
+  GBP: "🇬🇧",
+  JPY: "🇯🇵",
+  CAD: "🇨🇦",
+  AUD: "🇦🇺",
+  CHF: "🇨🇭",
+  NZD: "🇳🇿",
+};
 
-// Group events by date
-const grouped = mockEvents.reduce<Record<string, typeof mockEvents>>((acc, e) => {
-  if (!acc[e.date]) acc[e.date] = [];
-  acc[e.date].push(e);
-  return acc;
-}, {});
+async function getCalendarEvents(): Promise<EconomicEvent[]> {
+  try {
+    const res = await fetch(
+      "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
+      { next: { revalidate: 3600 } }
+    );
+    if (!res.ok) throw new Error("Failed");
+    const raw = await res.json() as Array<{
+      date: string;
+      time: string;
+      country: string;
+      title: string;
+      impact: string;
+      forecast: string;
+      previous: string;
+    }>;
+    return raw.map((e, i) => ({
+      id: String(i),
+      date: e.date?.slice(0, 10) ?? "",
+      time: e.time ?? "00:00",
+      country: e.country ?? "",
+      flag: countryFlags[e.country] ?? "🌐",
+      event: e.title ?? "",
+      impact: (
+        e.impact?.toLowerCase() === "high"
+          ? "high"
+          : e.impact?.toLowerCase() === "medium"
+          ? "medium"
+          : "low"
+      ) as "low" | "medium" | "high",
+      forecast: e.forecast || null,
+      previous: e.previous || null,
+      actual: null,
+    }));
+  } catch {
+    return mockEvents;
+  }
+}
 
-const highImpactToday = mockEvents.filter((e) => e.date === today && e.impact === "high").length;
-
-function formatDateLabel(date: string): string {
+function formatDateLabel(date: string, today: string, tomorrow: string): string {
   // Use noon UTC to avoid timezone-induced off-by-one on the day
   const d = new Date(date + "T12:00:00Z");
   if (date === today) {
@@ -28,7 +65,23 @@ function formatDateLabel(date: string): string {
   return d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 }
 
-export default function CalendrierPage() {
+export default async function CalendrierPage() {
+  const events = await getCalendarEvents();
+
+  // Dynamic today/tomorrow
+  const today = new Date().toISOString().slice(0, 10);
+  const tomorrowDate = new Date();
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const tomorrow = tomorrowDate.toISOString().slice(0, 10);
+
+  // Group events by date
+  const grouped = events.reduce<Record<string, EconomicEvent[]>>((acc, e) => {
+    if (!acc[e.date]) acc[e.date] = [];
+    acc[e.date].push(e);
+    return acc;
+  }, {});
+
+  const highImpactToday = events.filter((e) => e.date === today && e.impact === "high").length;
   const dates = Object.keys(grouped).sort();
 
   return (
@@ -42,16 +95,20 @@ export default function CalendrierPage() {
             Événements macroéconomiques impactant vos marchés
           </p>
         </div>
-        <span className="text-xs font-semibold px-3 py-1.5 rounded-lg"
-          style={{ background: "var(--surface-highest)", color: "var(--on-surface-dim)" }}>
+        <span
+          className="text-xs font-semibold px-3 py-1.5 rounded-lg"
+          style={{ background: "var(--surface-highest)", color: "var(--on-surface-dim)" }}
+        >
           Via Forex Factory
         </span>
       </div>
 
       {/* High-impact alert banner */}
       {highImpactToday > 0 && (
-        <div className="flex items-center gap-3 px-4 py-3 rounded-xl"
-          style={{ background: "rgba(255,59,92,0.06)", border: "1px solid rgba(255,59,92,0.2)" }}>
+        <div
+          className="flex items-center gap-3 px-4 py-3 rounded-xl"
+          style={{ background: "rgba(255,59,92,0.06)", border: "1px solid rgba(255,59,92,0.2)" }}
+        >
           <ImpactBadge impact="high" />
           <p className="text-sm font-semibold" style={{ color: "#FF3B5C" }}>
             ⚠️ {highImpactToday} événement{highImpactToday > 1 ? "s" : ""} à fort impact {"aujourd'hui"} — Soyez prudents sur vos positions
@@ -67,8 +124,11 @@ export default function CalendrierPage() {
         <div key={date} className="space-y-3">
           {/* Date separator */}
           <div className="flex items-center gap-3">
-            <h2 className="text-sm font-bold capitalize" style={{ color: date === today ? "#00FF88" : "var(--on-surface-dim)" }}>
-              {formatDateLabel(date)}
+            <h2
+              className="text-sm font-bold capitalize"
+              style={{ color: date === today ? "#00FF88" : "var(--on-surface-dim)" }}
+            >
+              {formatDateLabel(date, today, tomorrow)}
             </h2>
             <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.05)" }} />
             <span className="text-xs" style={{ color: "var(--on-surface-dim)" }}>
@@ -82,8 +142,11 @@ export default function CalendrierPage() {
               <thead>
                 <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                   {["Heure", "Devise", "Événement", "Impact", "Prévision", "Précédent", "Actuel"].map((h) => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-widest"
-                      style={{ color: "var(--on-surface-dim)" }}>
+                    <th
+                      key={h}
+                      className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-widest"
+                      style={{ color: "var(--on-surface-dim)" }}
+                    >
                       {h}
                     </th>
                   ))}

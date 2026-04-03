@@ -1,7 +1,14 @@
 import { Sparkles } from 'lucide-react';
-import { courses, initialMessages, quickPrompts } from '@/lib/mock-idjor';
+import { courses, quickPrompts } from '@/lib/mock-idjor';
 import CourseLibrary from '@/components/idjor/CourseLibrary';
 import IdjorChat from '@/components/idjor/IdjorChat';
+
+// Default welcome message shown before history is loaded
+const welcomeMessage = {
+  id: 'welcome',
+  role: 'assistant' as const,
+  content: `Bonjour ! Je suis **Idjor**, ton conseiller IA en trading.\n\nJe peux t'aider à :\n- Comprendre les indicateurs (RSI, MACD, Bollinger)\n- Analyser ton journal de trading\n- Te proposer des stratégies adaptées à ton profil\n- Répondre à toutes tes questions en français\n\nComment puis-je t'aider aujourd'hui ?`,
+};
 
 export default function IdjorPage() {
   return (
@@ -68,9 +75,9 @@ export default function IdjorPage() {
           <CourseLibrary courses={courses} />
         </div>
 
-        {/* Chat */}
+        {/* Chat — history is loaded client-side via useEffect in IdjorChat */}
         <div className="card flex flex-col overflow-hidden">
-          <IdjorChat initialMessages={initialMessages} quickPrompts={quickPrompts} />
+          <IdjorChat initialMessages={[welcomeMessage]} quickPrompts={quickPrompts} />
         </div>
       </div>
     </div>

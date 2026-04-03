@@ -14,6 +14,8 @@ export default function ResultatPage() {
 
   const [result, setResult] = useState<AnalyseResponse | null>(null);
   const [error, setError] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     try {
@@ -24,6 +26,28 @@ export default function ResultatPage() {
       setError(true);
     }
   }, [id]);
+
+  async function saveToJournal() {
+    if (!result || saving || saved) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/trades', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          analyseId: result.id,
+          asset: result.asset,
+          direction: result.signal === 'BUY' ? 'BUY' : 'SELL',
+          entry: result.entry,
+          source: 'IA',
+          status: 'open',
+        }),
+      });
+      if (res.ok) setSaved(true);
+    } catch { /* ignore */ } finally {
+      setSaving(false);
+    }
+  }
 
   if (error) {
     return (
@@ -290,6 +314,20 @@ export default function ResultatPage() {
             className="flex-1 py-3 rounded-2xl text-sm font-bold font-headline transition-all"
             style={{ background: signalConfig.bg, color: signalConfig.color, border: `1px solid ${signalConfig.border}` }}>
             Copier le signal
+          </button>
+          {/* Save to journal button — disabled for NEUTRE signals */}
+          <button
+            onClick={saveToJournal}
+            disabled={saving || saved || result.signal === 'NEUTRE'}
+            className="flex-1 py-3 rounded-2xl text-sm font-bold font-headline transition-all"
+            style={{
+              background: saved ? "rgba(0,255,136,0.12)" : "rgba(0,255,136,0.08)",
+              color: "#00FF88",
+              border: "1px solid rgba(0,255,136,0.3)",
+              opacity: result.signal === 'NEUTRE' ? 0.4 : 1,
+            }}
+          >
+            {saved ? "✓ Ajouté au journal" : saving ? "Ajout…" : "📌 Sauvegarder"}
           </button>
         </div>
       </div>
