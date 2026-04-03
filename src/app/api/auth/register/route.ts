@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
       message: "Vérifie ton email",
     });
   } catch (error) {
-    console.error('Register error full:', error);
+    console.error('Register error:', error instanceof Error ? error.stack : error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }
 }

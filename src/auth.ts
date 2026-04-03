@@ -31,7 +31,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           console.log("password match:", match);
           if (!match) return null;
 
-          // Block login if email has not been verified
           if (!user.emailVerified) {
             throw new Error('EMAIL_NOT_VERIFIED');
           }
@@ -44,6 +43,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             plan: user.plan,
           };
         } catch (error) {
+          if (error instanceof Error && error.message === 'EMAIL_NOT_VERIFIED') {
+            throw error; // re-propager sans avaler
+          }
           console.error("authorize error:", error);
           return null;
         }
