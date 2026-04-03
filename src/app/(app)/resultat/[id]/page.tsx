@@ -101,8 +101,10 @@ export default function ResultatPage() {
   const reasonDot = (type: AnalyseReason["type"]) =>
     type === "positive" ? "▲" : type === "warning" ? "◆" : "▼";
 
-  const fmt = (n: number) => n.toLocaleString("fr-FR");
-  const fmtPrice = (n: number) => {
+  const fmt = (n: number | null | undefined): string =>
+    n === null || n === undefined || isNaN(n) ? '—' : n.toLocaleString("fr-FR");
+  const fmtPrice = (n: number | null | undefined): string => {
+    if (n === null || n === undefined || isNaN(n)) return '—';
     if (n >= 1000) return n.toLocaleString("fr-FR", { maximumFractionDigits: 2 });
     if (n >= 1) return n.toFixed(4);
     return n.toFixed(6);
@@ -155,7 +157,7 @@ export default function ResultatPage() {
         <div className="hidden sm:block w-px self-stretch" style={{ background: "var(--outline)" }} />
 
         <div className="flex flex-col items-center gap-1 text-center">
-          <ConfidenceRing confidence={result.confidence} size={96} />
+          <ConfidenceRing confidence={result.confidence ?? 0} size={96} />
         </div>
 
         <div className="hidden sm:block w-px self-stretch" style={{ background: "var(--outline)" }} />
@@ -232,7 +234,7 @@ export default function ResultatPage() {
               Ratio R/R
             </p>
             <p className="font-headline font-bold text-lg font-mono-data text-white">
-              1:{result.rrRatio}
+              {result.rrRatio != null ? `1:${result.rrRatio}` : '—'}
             </p>
           </div>
         )}
@@ -255,7 +257,8 @@ export default function ResultatPage() {
             Taille de position
           </p>
           <p className="font-headline font-bold text-xl font-mono-data text-white">
-            {result.positionSize} <span className="text-sm font-normal">{result.positionUnit}</span>
+            {result.positionSize != null ? result.positionSize : '—'}{' '}
+            <span className="text-sm font-normal">{result.positionUnit ?? ''}</span>
           </p>
         </div>
         <div className="hidden sm:block w-px self-stretch" style={{ background: "var(--outline)" }} />
