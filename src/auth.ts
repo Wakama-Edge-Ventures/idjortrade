@@ -32,7 +32,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           if (!match) return null;
 
           if (!user.emailVerified) {
-            throw new Error('EMAIL_NOT_VERIFIED');
+            // NextAuth v5 swallows thrown errors from authorize() —
+            // return a sentinel object instead so the jwt callback can detect it
+            return {
+              id: 'unverified',
+              email: user.email,
+              name: '',
+              prenom: '',
+              plan: 'FREE' as const,
+              emailNotVerified: true,
+            };
           }
 
           return {
@@ -43,9 +52,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             plan: user.plan,
           };
         } catch (error) {
-          if (error instanceof Error && error.message === 'EMAIL_NOT_VERIFIED') {
-            throw error; // re-propager sans avaler
-          }
           console.error("authorize error:", error);
           return null;
         }
@@ -72,9 +78,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async jwt({ token, user, trigger, session }) {
       if (user) {
-        token.id = user.id as string;
-        token.plan = user.plan;
-        token.prenom = user.prenom;
+        if (user.id === 'unverified') {
+          token.id = 'unverified';
+          token.emailNotVerified = true;
+          token.prenom = '';
+          token.plan = 'FREE';
+        } else {
+          token.id = user.id as string;
+          token.plan = user.plan;
+          token.prenom = user.prenom;
+          token.emailNotVerified = false;
+        }
       }
       // When update() is called from the client with new data
       if (trigger === "update" && session) {
@@ -84,6 +98,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
     async session({ session, token }) {
+      // Unverified sentinel — expose flag, skip Prisma lookup
+      if (token.id === 'unverified' || token.emailNotVerified) {
+        session.user.id = 'unverified';
+        session.user.emailNotVerified = true;
+        session.user.prenom = '';
+        session.user.plan = 'FREE';
+        return session;
+      }
       if (token.sub) {
         const user = await prisma.user.findUnique({
           where: { id: token.sub },
@@ -93,6 +115,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           session.user.id = token.sub;
           session.user.prenom = user.prenom;
           session.user.plan = user.plan;
+          session.user.emailNotVerified = false;
         }
       }
       return session;

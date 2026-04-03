@@ -42,16 +42,18 @@ function LoginForm() {
       });
 
       if (result?.error) {
-        // Redirect to verification page if email not yet verified
-        if (result.error === 'EMAIL_NOT_VERIFIED') {
-          router.push('/verify?email=' + encodeURIComponent(email));
-          return;
-        }
         setError("Email ou mot de passe incorrect");
         return;
       }
 
       if (result?.ok) {
+        // Check if the session carries the unverified flag
+        const sessionRes = await fetch('/api/auth/session');
+        const sessionData = await sessionRes.json() as { user?: { emailNotVerified?: boolean } };
+        if (sessionData?.user?.emailNotVerified) {
+          router.push('/verify?email=' + encodeURIComponent(email));
+          return;
+        }
         router.push("/dashboard");
         router.refresh();
       } else {
