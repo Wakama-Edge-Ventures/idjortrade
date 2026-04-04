@@ -48,7 +48,7 @@ function ErrorModal({ type, message, onClose }: { type: ErrorType; message: stri
 interface AnalyseButtonProps {
   getFormData: () => ReturnType<RiskFormRef["getFormData"]>;
   getImageData: () => ReturnType<ChartUploadRef["getImageData"]>;
-  mode: "swing" | "scalp";
+  mode: "swing" | "scalp" | "day";
 }
 
 export default function AnalyseButton({ getFormData, getImageData, mode }: AnalyseButtonProps) {
@@ -57,8 +57,8 @@ export default function AnalyseButton({ getFormData, getImageData, mode }: Analy
   const [error, setError] = useState<string | null>(null);
   const [errorType, setErrorType] = useState<ErrorType>(null);
 
-  const accentColor = mode === "scalp" ? "#F5A623" : "#00FF88";
-  const accentBg = mode === "scalp" ? "#F5A623" : "#00FF88";
+  const accentColor =
+    mode === "scalp" ? "#F5A623" : mode === "day" ? "#0EA5E9" : "#00FF88";
 
   async function handleAnalyse() {
     setError(null);
@@ -76,7 +76,6 @@ export default function AnalyseButton({ getFormData, getImageData, mode }: Analy
       return;
     }
 
-    // Get user profile from localStorage
     let userProfile: Record<string, string> | undefined;
     try {
       const stored = localStorage.getItem("idjor_profile");
@@ -109,6 +108,9 @@ export default function AnalyseButton({ getFormData, getImageData, mode }: Analy
           risquePct: formData.risquePct,
           ratioRR: formData.ratioRR,
           marche: formData.marche,
+          productType: formData.productType,
+          platform: formData.platform,
+          currentPrice: formData.currentPrice,
           userProfile,
         }),
       });
@@ -127,10 +129,7 @@ export default function AnalyseButton({ getFormData, getImageData, mode }: Analy
         return;
       }
 
-      // Store in sessionStorage
       sessionStorage.setItem(result.id, JSON.stringify(result));
-
-      // Navigate to result page
       router.push(`/resultat/${result.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur réseau. Vérifiez votre connexion.");
@@ -154,7 +153,7 @@ export default function AnalyseButton({ getFormData, getImageData, mode }: Analy
         disabled={loading}
         className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl font-headline font-bold text-base transition-all"
         style={{
-          background: loading ? "var(--surface-highest)" : accentBg,
+          background: loading ? "var(--surface-highest)" : accentColor,
           color: loading ? "var(--on-surface-dim)" : "#0A0E1A",
           opacity: loading ? 0.6 : 1,
           cursor: loading ? "not-allowed" : "pointer",
@@ -162,7 +161,6 @@ export default function AnalyseButton({ getFormData, getImageData, mode }: Analy
       >
         {loading ? (
           <>
-            {/* Spinner */}
             <svg className="animate-spin" width="20" height="20" viewBox="0 0 20 20" fill="none">
               <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="2" strokeOpacity="0.3" />
               <path d="M10 2a8 8 0 0 1 8 8" stroke={accentColor} strokeWidth="2" strokeLinecap="round" />

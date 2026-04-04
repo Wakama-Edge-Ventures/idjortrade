@@ -1,7 +1,7 @@
 interface AnalyseHeaderProps {
   title: string;
   subtitle: string;
-  mode: "swing" | "scalp";
+  mode: "swing" | "scalp" | "day";
   accentColor: string;
 }
 
@@ -21,6 +21,18 @@ export default function AnalyseHeader({
             <svg width="24" height="24" viewBox="0 0 22 22" fill="none">
               <path d="M2 14 C5 14 5 8 8 8 C11 8 11 14 14 14 C17 14 17 8 20 8"
                 stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          ) : mode === "day" ? (
+            <svg width="24" height="24" viewBox="0 0 22 22" fill="none">
+              <circle cx="11" cy="11" r="4" stroke="currentColor" strokeWidth="2"/>
+              <line x1="11" y1="2" x2="11" y2="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <line x1="11" y1="18" x2="11" y2="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <line x1="2" y1="11" x2="4" y2="11" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <line x1="18" y1="11" x2="20" y2="11" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <line x1="4.5" y1="4.5" x2="6" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <line x1="16" y1="16" x2="17.5" y2="17.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <line x1="17.5" y1="4.5" x2="16" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <line x1="6" y1="16" x2="4.5" y2="17.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
             </svg>
           ) : (
             <svg width="24" height="24" viewBox="0 0 22 22" fill="none">

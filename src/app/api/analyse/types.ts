@@ -3,11 +3,14 @@ export type AnalyseRequest = {
   imageMediaType: "image/jpeg" | "image/png" | "image/webp";
   asset: string;
   timeframe: string;
-  mode: "swing" | "scalp";
+  mode: "swing" | "scalp" | "day";
   capitalFCFA: number;
   risquePct: number;
   ratioRR: number;
   marche: string;
+  productType?: "spot" | "futures";
+  platform?: string;
+  currentPrice?: number;
   userProfile?: {
     prenom?: string;
     niveauTrading?: string;

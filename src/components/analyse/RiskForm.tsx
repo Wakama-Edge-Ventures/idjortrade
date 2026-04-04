@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useImperativeHandle, forwardRef } from "react";
+import { useState, useEffect, useRef, useImperativeHandle, forwardRef } from "react";
 import { TIMEFRAME_GROUPS, defaultTimeframeForMode } from "@/lib/timeframes";
 import type { TradingMode } from "@/lib/timeframes";
 
@@ -12,6 +12,9 @@ export type RiskFormData = {
   ratioRR: number;
   marche: string;
   tradingMode: TradingMode;
+  productType: "spot" | "futures";
+  platform: string;
+  currentPrice?: number;
 };
 
 export type RiskFormRef = {
@@ -19,15 +22,31 @@ export type RiskFormRef = {
 };
 
 interface RiskFormProps {
-  mode: "swing" | "scalp";
+  mode: "swing" | "scalp" | "day";
 }
+
 const marches = ["Crypto", "Forex", "Actions", "Indices"];
 const rrOptions = ["1:1", "1:2", "1:3", "Custom"];
 const modesAnalyse = ["⚡ Rapide", "🔬 Approfondi"];
 const FCFA_PER_USD = 655;
 
-const defaultTradingMode = (mode: "swing" | "scalp"): TradingMode =>
-  mode === "swing" ? "swing" : "scalp";
+const PLATFORMS = ["Binance", "Bybit", "OKX", "Kraken", "Coinbase", "MT4/MT5", "TradingView", "Autre"];
+
+const ASSET_SUGGESTIONS = [
+  "BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "XRP/USDT",
+  "ADA/USDT", "AVAX/USDT", "MATIC/USDT", "DOT/USDT", "LINK/USDT",
+  "DOGE/USDT", "TRX/USDT", "LTC/USDT", "BCH/USDT",
+  "EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", "EUR/GBP",
+  "XAU/USD", "XAG/USD", "USOIL",
+  "AAPL", "TSLA", "NVDA", "MSFT", "GOOGL", "AMZN",
+];
+
+function normalizeSymbol(s: string): string {
+  return s.replace("/USDT", "/USD").replace("/BUSD", "/USD").toUpperCase();
+}
+
+const defaultTradingMode = (mode: "swing" | "scalp" | "day"): TradingMode =>
+  mode === "swing" ? "swing" : mode === "day" ? "day" : "scalp";
 
 const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
   function RiskForm({ mode }, ref) {
@@ -39,6 +58,15 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
     const [tradingMode, setTradingMode] = useState<TradingMode>(defaultTradingMode(mode));
     const [timeframe, setTimeframe] = useState(defaultTimeframeForMode(defaultTradingMode(mode)));
     const [modeAnalyse, setModeAnalyse] = useState("⚡ Rapide");
+    const [productType, setProductType] = useState<"spot" | "futures">("spot");
+    const [platform, setPlatform] = useState("Binance");
+    const [currentPrice, setCurrentPrice] = useState<number | null>(null);
+    const [priceLoading, setPriceLoading] = useState(false);
+    const [priceFailed, setPriceFailed] = useState(false);
+    const [manualPrice, setManualPrice] = useState("");
+    const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const assetRef = useRef<HTMLDivElement>(null);
 
     const capitalNum = parseFloat(capital.replace(/\s/g, "")) || 250000;
     const riskFCFA = Math.round(capitalNum * risque / 100);
@@ -48,6 +76,68 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
 
     const currentGroup = TIMEFRAME_GROUPS.find(g => g.mode === tradingMode) ?? TIMEFRAME_GROUPS[0];
 
+    // Auto-fetch price when asset changes
+    useEffect(() => {
+      const trimmed = asset.trim();
+      if (!trimmed) {
+        setCurrentPrice(null);
+        setPriceFailed(false);
+        return;
+      }
+      const timer = setTimeout(async () => {
+        setPriceLoading(true);
+        try {
+          const sym = normalizeSymbol(trimmed);
+          const res = await fetch(`/api/market/quote?symbol=${encodeURIComponent(sym)}`);
+          if (!res.ok) throw new Error("not found");
+          const data = await res.json();
+          if (data?.price) {
+            setCurrentPrice(data.price);
+            setPriceFailed(false);
+          } else {
+            throw new Error("no price");
+          }
+        } catch {
+          setCurrentPrice(null);
+          setPriceFailed(true);
+        } finally {
+          setPriceLoading(false);
+        }
+      }, 800);
+      return () => clearTimeout(timer);
+    }, [asset]);
+
+    // Close suggestions on outside click
+    useEffect(() => {
+      function handleClick(e: MouseEvent) {
+        if (assetRef.current && !assetRef.current.contains(e.target as Node)) {
+          setShowSuggestions(false);
+        }
+      }
+      document.addEventListener("mousedown", handleClick);
+      return () => document.removeEventListener("mousedown", handleClick);
+    }, []);
+
+    function handleAssetChange(value: string) {
+      setAsset(value);
+      if (value.trim().length >= 1) {
+        const filtered = ASSET_SUGGESTIONS.filter(s =>
+          s.toLowerCase().includes(value.toLowerCase())
+        );
+        setSuggestions(filtered.slice(0, 6));
+        setShowSuggestions(filtered.length > 0);
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    }
+
+    function selectSuggestion(s: string) {
+      setAsset(s);
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+
     function handleTradingModeChange(newMode: TradingMode) {
       setTradingMode(newMode);
       setTimeframe(defaultTimeframeForMode(newMode));
@@ -56,6 +146,7 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
     useImperativeHandle(ref, () => ({
       getFormData: () => {
         if (!asset.trim()) return null;
+        const priceValue = currentPrice ?? (manualPrice ? parseFloat(manualPrice) : undefined);
         return {
           asset: asset.trim().toUpperCase(),
           timeframe,
@@ -64,6 +155,9 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
           ratioRR: rrNum,
           marche,
           tradingMode,
+          productType,
+          platform,
+          currentPrice: priceValue,
         };
       },
     }));
@@ -75,22 +169,138 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
     return (
       <div className="space-y-5">
 
-        {/* Actif */}
-        <div className="space-y-1.5">
+        {/* Actif avec suggestions */}
+        <div className="space-y-1.5" ref={assetRef}>
           <label className="text-xs font-semibold uppercase tracking-widest"
             style={{ color: "var(--on-surface-dim)" }}>
             Actif *
           </label>
-          <input
-            type="text"
-            value={asset}
-            onChange={e => setAsset(e.target.value)}
-            placeholder="Ex: SOL/USDT, BTC/USDT, EUR/USD"
-            className="w-full rounded-xl px-4 py-3 text-sm font-mono-data text-white outline-none transition-colors"
+          <div className="relative">
+            <input
+              type="text"
+              value={asset}
+              onChange={e => handleAssetChange(e.target.value)}
+              placeholder="Ex: SOL/USDT, BTC/USDT, EUR/USD"
+              className="w-full rounded-xl px-4 py-3 text-sm font-mono-data text-white outline-none transition-colors"
+              style={{ background: "var(--surface-highest)", border: "1px solid var(--outline)" }}
+              onFocus={e => { (e.target as HTMLElement).style.borderColor = "rgba(0,255,136,0.4)"; if (suggestions.length > 0) setShowSuggestions(true); }}
+              onBlur={e => { (e.target as HTMLElement).style.borderColor = "var(--outline)"; }}
+            />
+            {showSuggestions && suggestions.length > 0 && (
+              <div
+                className="absolute top-full left-0 right-0 mt-1 rounded-xl overflow-hidden z-30 shadow-2xl"
+                style={{ background: "var(--surface-high)", border: "1px solid rgba(255,255,255,0.08)" }}
+              >
+                {suggestions.map(s => (
+                  <button
+                    key={s}
+                    type="button"
+                    className="w-full text-left px-4 py-2.5 text-sm font-mono-data transition-colors"
+                    style={{ color: "var(--on-surface-dim)" }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; (e.currentTarget as HTMLElement).style.color = "white"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "var(--on-surface-dim)"; }}
+                    onMouseDown={() => selectSuggestion(s)}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Type de produit */}
+        <div className="space-y-2">
+          <label className="text-xs font-semibold uppercase tracking-widest"
+            style={{ color: "var(--on-surface-dim)" }}>
+            Type de produit
+          </label>
+          <div className="flex gap-2">
+            <button className={btnBase}
+              style={productType === "spot" ? btnActive : btnInactive}
+              onClick={() => setProductType("spot")}>
+              Spot
+            </button>
+            <button className={btnBase}
+              style={productType === "futures" ? btnActive : btnInactive}
+              onClick={() => setProductType("futures")}>
+              Futures / Perpétuel
+            </button>
+          </div>
+          {productType === "futures" && (
+            <p className="text-xs px-3 py-2 rounded-lg"
+              style={{ background: "rgba(245,166,35,0.06)", border: "1px solid rgba(245,166,35,0.2)", color: "#F5A623" }}>
+              ⚠️ Les prix Futures peuvent différer du Spot. Vérifiez le prix exact sur votre plateforme.
+            </p>
+          )}
+        </div>
+
+        {/* Plateforme */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold uppercase tracking-widest"
+            style={{ color: "var(--on-surface-dim)" }}>
+            Plateforme de trading
+          </label>
+          <select
+            value={platform}
+            onChange={e => setPlatform(e.target.value)}
+            className="w-full rounded-xl px-4 py-3 text-sm text-white outline-none transition-colors appearance-none cursor-pointer"
             style={{ background: "var(--surface-highest)", border: "1px solid var(--outline)" }}
-            onFocus={e => { (e.target as HTMLElement).style.borderColor = "rgba(0,255,136,0.4)"; }}
-            onBlur={e => { (e.target as HTMLElement).style.borderColor = "var(--outline)"; }}
-          />
+          >
+            {PLATFORMS.map(p => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Prix actuel (auto-fetch) */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold uppercase tracking-widest"
+            style={{ color: "var(--on-surface-dim)" }}>
+            Prix actuel de l&apos;asset
+          </label>
+          <div className="relative">
+            {priceLoading ? (
+              <div className="w-full rounded-xl px-4 py-3 text-sm font-mono-data flex items-center gap-2"
+                style={{ background: "var(--surface-highest)", border: "1px solid var(--outline)", color: "var(--on-surface-dim)" }}>
+                <svg className="animate-spin w-3 h-3" viewBox="0 0 12 12" fill="none">
+                  <circle cx="6" cy="6" r="4" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.3"/>
+                  <path d="M6 2a4 4 0 0 1 4 4" stroke="#00FF88" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+                Récupération du prix…
+              </div>
+            ) : currentPrice != null ? (
+              <>
+                <input
+                  type="number"
+                  value={currentPrice}
+                  readOnly
+                  className="w-full rounded-xl px-4 py-3 pr-16 text-sm font-mono-data text-white outline-none"
+                  style={{ background: "var(--surface-highest)", border: "1px solid rgba(0,255,136,0.3)" }}
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold px-2 py-0.5 rounded"
+                  style={{ background: "rgba(0,255,136,0.15)", color: "#00FF88" }}>
+                  LIVE
+                </span>
+              </>
+            ) : (
+              <input
+                type="number"
+                value={manualPrice}
+                onChange={e => setManualPrice(e.target.value)}
+                placeholder={priceFailed ? "Entrez le prix actuel manuellement" : "Renseignez l'actif pour auto-remplir"}
+                className="w-full rounded-xl px-4 py-3 text-sm font-mono-data text-white outline-none transition-colors"
+                style={{ background: "var(--surface-highest)", border: "1px solid var(--outline)" }}
+                onFocus={e => { (e.target as HTMLElement).style.borderColor = "rgba(0,255,136,0.4)"; }}
+                onBlur={e => { (e.target as HTMLElement).style.borderColor = "var(--outline)"; }}
+              />
+            )}
+          </div>
+          {currentPrice != null && (
+            <p className="text-[10px]" style={{ color: "var(--on-surface-dim)" }}>
+              Prix récupéré automatiquement — vérifiez sur votre plateforme avant d&apos;analyser
+            </p>
+          )}
         </div>
 
         {/* Capital */}
@@ -188,7 +398,6 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
             style={{ color: "var(--on-surface-dim)" }}>
             Style · Timeframe
           </label>
-          {/* Mode pills */}
           <div className="flex gap-1.5">
             {TIMEFRAME_GROUPS.map(g => (
               <button key={g.mode} className={btnBase}
@@ -198,7 +407,6 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
               </button>
             ))}
           </div>
-          {/* Timeframe pills — scrollable */}
           <div className="flex gap-1.5 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
             {currentGroup.frames.map((tf: string) => (
               <button key={tf}
@@ -249,8 +457,9 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
             style={{ border: "1px solid var(--outline)", color: "var(--on-surface-dim)" }}
             onClick={() => {
               setAsset(""); setCapital(""); setRisque(1); setRr("1:2");
-              setMarche("Crypto");
-              setTimeframe(mode === "swing" ? "D1" : "M5");
+              setMarche("Crypto"); setProductType("spot"); setPlatform("Binance");
+              setCurrentPrice(null); setPriceFailed(false); setManualPrice("");
+              setTimeframe(defaultTimeframeForMode(defaultTradingMode(mode)));
               setModeAnalyse("⚡ Rapide");
             }}
           >

@@ -17,15 +17,37 @@ Adapte le niveau de détail et les conseils à ce profil.
 `
     : "";
 
+  const modeLabel =
+    req.mode === "scalp"
+      ? "Scalp (niveaux serrés, précision intraday)"
+      : req.mode === "day"
+      ? "Day Trading (intraday 1H-4H, sessions journalières)"
+      : "Swing (niveaux larges, tendances multi-jours)";
+
+  const livePrice = req.currentPrice ?? currentPrice;
+
+  const criticalInfoSection =
+    req.productType || req.platform || livePrice != null
+      ? `
+INFORMATIONS CRITIQUES:
+- Type de produit: ${req.productType === "futures" ? "Futures/Perpétuel" : "Spot"}
+- Plateforme: ${req.platform || "Non renseignée"}
+- Prix actuel LIVE: ${livePrice != null ? `${livePrice} USD (récupéré automatiquement à l'instant de l'analyse)` : "Non disponible"}
+- Asset exact: ${req.asset}
+- Timeframe: ${req.timeframe}
+${req.productType === "futures" ? "⚠️ Les prix Futures peuvent différer du Spot — prends en compte l'écart dans les niveaux." : ""}
+`
+      : "";
+
   return `Tu es IdjorTrade, un expert en analyse technique des marchés financiers.
 Tu analyses des graphiques de trading pour des traders d'Afrique de l'Ouest.
 Toutes tes analyses sont en français, tous les montants en FCFA.
-${profileSection}
+${profileSection}${criticalInfoSection}
 PARAMÈTRES DU TRADE:
 - Actif: ${req.asset}
 - Timeframe exact: ${req.timeframe}
-- Style de trading: ${req.mode === "scalp" ? "Scalp (niveaux serrés, précision intraday)" : "Swing (niveaux larges, tendances multi-jours)"}
-- Marché: ${req.marche}${currentPrice != null ? `\n- PRIX ACTUEL EN TEMPS RÉEL: ${currentPrice} (utilise ce prix pour valider la cohérence des niveaux du chart)` : ""}
+- Style de trading: ${modeLabel}
+- Marché: ${req.marche}${livePrice != null ? `\n- PRIX ACTUEL EN TEMPS RÉEL: ${livePrice} USD — utilise ce prix comme référence absolue pour calibrer tes niveaux Entry, SL et TP` : ""}
 - Capital: ${req.capitalFCFA.toLocaleString("fr-FR")} FCFA
 - Risque par trade: ${req.risquePct}% = ${riskFCFA.toLocaleString("fr-FR")} FCFA
 - Ratio R/R cible: 1:${req.ratioRR}
@@ -75,6 +97,6 @@ RÈGLES:
 - 4 à 6 reasons, toujours au moins 1 "warning"
 - Si le signal n'est pas clair: signal "NEUTRE" confidence < 50
 - Ne jamais inventer des indicateurs non visibles — si RSI non visible, note "Non visible sur le chart"
-- Tous les prix doivent être cohérents avec le graphique visible${currentPrice != null ? `\n- Le prix actuel fourni est ${currentPrice}. Si les niveaux du chart sont incohérents avec ce prix (chart trop ancien), retourne signal "NEUTRE" avec explication dans les reasons` : ""}
+- Tous les prix doivent être cohérents avec le graphique visible${livePrice != null ? `\n- Le prix actuel fourni est ${livePrice} USD. Les niveaux Entry/SL/TP doivent être cohérents avec ce prix. Si le chart montre des prix très différents de ${livePrice} USD, c'est un chart ancien — retourne signal "NEUTRE" avec explication dans les reasons` : ""}
 - Si le signal est BUY mais que la tendance structurelle est baissière, indique dans le champ "tendance": "Rebond haussier contre-tendance" plutôt que "Baissière" seul — pour ne pas créer de confusion`;
 }
