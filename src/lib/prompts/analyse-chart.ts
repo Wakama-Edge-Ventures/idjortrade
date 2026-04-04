@@ -1,6 +1,10 @@
 import type { AnalyseRequest } from "@/app/api/analyse/types";
 
-export function buildAnalysePrompt(req: AnalyseRequest, currentPrice?: number | null): string {
+export function buildAnalysePrompt(
+  req: AnalyseRequest,
+  candlesContext: string = "",
+  realCurrentPrice: number | null = null
+): string {
   const riskFCFA = Math.round(req.capitalFCFA * req.risquePct / 100);
   const gainTP1FCFA = Math.round(riskFCFA * req.ratioRR);
 
@@ -24,7 +28,22 @@ Adapte le niveau de détail et les conseils à ce profil.
       ? "Day Trading (intraday 1H-4H, sessions journalières)"
       : "Swing (niveaux larges, tendances multi-jours)";
 
-  const livePrice = req.currentPrice ?? currentPrice;
+  const livePrice = req.currentPrice ?? realCurrentPrice;
+
+  const candlesSection = candlesContext
+    ? `
+${candlesContext}
+
+INSTRUCTIONS DE VALIDATION PAR LES DONNÉES BINANCE:
+- Compare le prix actuel Binance (ci-dessus) avec les niveaux visibles sur le graphique
+- Si l'écart entre le prix du chart et le prix Binance dépasse ±5%, mentionne-le dans les reasons (type "warning")
+- Utilise les niveaux OHLC des dernières bougies pour calibrer Entry, SL et TP avec précision
+- Le timeframe des données Binance correspond au timeframe sélectionné — vérifie la cohérence
+- Prix de référence absolu pour les niveaux: ${livePrice ?? "prix visible sur le chart"}
+`
+    : livePrice != null
+    ? `\nPrix de référence fourni par l'utilisateur: ${livePrice} USD\n`
+    : "";
 
   const criticalInfoSection =
     req.productType || req.platform || livePrice != null
@@ -42,7 +61,7 @@ ${req.productType === "futures" ? "⚠️ Les prix Futures peuvent différer du 
   return `Tu es IdjorTrade, un expert en analyse technique des marchés financiers.
 Tu analyses des graphiques de trading pour des traders d'Afrique de l'Ouest.
 Toutes tes analyses sont en français, tous les montants en FCFA.
-${profileSection}${criticalInfoSection}
+${profileSection}${candlesSection}${criticalInfoSection}
 PARAMÈTRES DU TRADE:
 - Actif: ${req.asset}
 - Timeframe exact: ${req.timeframe}

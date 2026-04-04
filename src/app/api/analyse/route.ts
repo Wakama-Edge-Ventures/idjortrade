@@ -5,8 +5,7 @@ import { buildAnalysePrompt } from "@/lib/prompts/analyse-chart";
 import type { AnalyseRequest, AnalyseResponse } from "./types";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { fetchQuote } from "@/lib/twelvedata";
-import { FRESHNESS_LIMITS } from "@/lib/timeframes";
+import { fetchRecentCandles, fetchCurrentPrice, formatCandlesForPrompt } from "@/lib/binance";
 
 export const maxDuration = 60;
 
@@ -94,75 +93,31 @@ export async function POST(req: NextRequest) {
     const ratioRR     = body.ratioRR     || 2;
     const riskFCFA    = Math.round(capitalFCFA * risquePct / 100);
 
-    // ── ÉTAPE A : vérifier que c'est bien un chart ───────────────────────────
-    const validationMsg = await anthropic.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 100,
-      messages: [{
-        role: "user",
-        content: [
-          { type: "image", source: { type: "base64", media_type: body.imageMediaType || "image/png", data: body.imageBase64 } },
-          { type: "text", text: 'Cette image est-elle un graphique de trading financier (candlesticks/bougies japonaises) avec des indicateurs techniques ? Réponds UNIQUEMENT par JSON: { "isChart": true/false, "reason": string }' },
-        ],
-      }],
-    });
+    // ── Données Binance (crypto uniquement) ──────────────────────────────────
+    let candlesContext = "";
+    let realCurrentPrice: number | null = body.currentPrice ?? null;
 
-    const validationText = validationMsg.content.filter(b => b.type === "text").map(b => (b as { type: "text"; text: string }).text).join("");
-    let isChart = true;
-    try {
-      const vMatch = validationText.match(/\{[\s\S]*\}/);
-      if (vMatch) { const vParsed = JSON.parse(vMatch[0]); isChart = vParsed.isChart !== false; }
-    } catch { /* keep isChart = true */ }
+    const assetUp = body.asset.toUpperCase();
+    const isCrypto =
+      assetUp.includes("USDT") ||
+      assetUp.includes("BTC") ||
+      assetUp.includes("ETH");
 
-    if (!isChart) {
-      return NextResponse.json(
-        { error: "NOT_A_CHART", message: "Veuillez uploader un graphique de trading avec des bougies japonaises et des indicateurs techniques (RSI, MACD, Bollinger)." },
-        { status: 400 }
-      );
-    }
-
-    // ── ÉTAPE B : fraîcheur du chart ─────────────────────────────────────────
-    const freshnessMsg = await anthropic.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 150,
-      messages: [{
-        role: "user",
-        content: [
-          { type: "image", source: { type: "base64", media_type: body.imageMediaType || "image/png", data: body.imageBase64 } },
-          { type: "text", text: 'Regarde la date/heure visible sur ce graphique. Quel est le timestamp de la dernière bougie ? Réponds UNIQUEMENT par JSON: { "lastCandleDate": string (format ISO ou "unknown"), "timeframeDetected": string, "isRecent": boolean }' },
-        ],
-      }],
-    });
-
-    const freshnessText = freshnessMsg.content.filter(b => b.type === "text").map(b => (b as { type: "text"; text: string }).text).join("");
-    try {
-      const fMatch = freshnessText.match(/\{[\s\S]*\}/);
-      if (fMatch) {
-        const fParsed = JSON.parse(fMatch[0]);
-        const lastCandleDate = fParsed.lastCandleDate as string;
-        if (lastCandleDate && lastCandleDate !== "unknown") {
-          const ageMin = (Date.now() - new Date(lastCandleDate).getTime()) / 60000;
-          const limit = FRESHNESS_LIMITS[body.timeframe] ?? Infinity;
-          if (ageMin > limit) {
-            return NextResponse.json(
-              { error: "CHART_TOO_OLD", message: `Ce graphique semble trop ancien pour un timeframe ${body.timeframe}. Veuillez capturer un graphique récent.` },
-              { status: 400 }
-            );
-          }
-        }
+    if (isCrypto) {
+      const [candles, livePrice] = await Promise.all([
+        fetchRecentCandles(body.asset, body.timeframe, 10),
+        fetchCurrentPrice(body.asset),
+      ]);
+      if (livePrice) realCurrentPrice = livePrice;
+      if (candles?.length) {
+        candlesContext = formatCandlesForPrompt(candles, body.asset, body.timeframe);
+        console.log("Binance candles fetched:", candles.length, "for", body.asset);
+      } else {
+        console.log("Binance candles unavailable for:", body.asset);
       }
-    } catch { /* skip */ }
-
-    // ── ÉTAPE C : prix actuel (body.currentPrice prioritaire) ───────────────
-    let currentPrice: number | null = body.currentPrice ?? null;
-    if (!currentPrice) {
-      try {
-        const quote = await fetchQuote(body.asset);
-        currentPrice = quote?.price ?? null;
-      } catch { /* skip */ }
     }
 
-    const prompt = buildAnalysePrompt({ ...body, capitalFCFA, risquePct, ratioRR }, currentPrice);
+    const prompt = buildAnalysePrompt({ ...body, capitalFCFA, risquePct, ratioRR }, candlesContext, realCurrentPrice);
 
     const message = await anthropic.messages.create({
       model: "claude-opus-4-5",
