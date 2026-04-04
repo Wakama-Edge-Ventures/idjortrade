@@ -11,15 +11,14 @@ type ErrorType = "NOT_A_CHART" | "CHART_TOO_OLD" | "GENERIC" | null;
 function ErrorModal({ type, message, onClose }: { type: ErrorType; message: string; onClose: () => void }) {
   if (!type) return null;
   const isNotChart = type === "NOT_A_CHART";
-  const accentColor = isNotChart ? "#F5A623" : "#FF3B5C";
-  const borderColor = isNotChart ? "rgba(245,166,35,0.25)" : "rgba(255,59,92,0.25)";
-  const bgColor = isNotChart ? "rgba(245,166,35,0.06)" : "rgba(255,59,92,0.06)";
-  const icon = isNotChart ? "⚠️" : "🕐";
+  const accentColor   = isNotChart ? "#F5A623" : "#FF3B5C";
+  const borderColor   = isNotChart ? "rgba(245,166,35,0.25)" : "rgba(255,59,92,0.25)";
+  const bgColor       = isNotChart ? "rgba(245,166,35,0.06)" : "rgba(255,59,92,0.06)";
+  const icon          = isNotChart ? "⚠️" : "🕐";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: "rgba(0,0,0,0.7)" }}
-      onClick={onClose}>
+      style={{ background: "rgba(0,0,0,0.7)" }} onClick={onClose}>
       <div className="max-w-sm w-full rounded-2xl p-6 space-y-4"
         style={{ background: "var(--surface-high)", border: `1px solid ${borderColor}`, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}
         onClick={e => e.stopPropagation()}>
@@ -29,17 +28,51 @@ function ErrorModal({ type, message, onClose }: { type: ErrorType; message: stri
             <p className="text-sm font-bold text-white">
               {isNotChart ? "Ce n'est pas un graphique de trading" : "Graphique trop ancien"}
             </p>
-            <p className="text-xs leading-relaxed" style={{ color: "var(--on-surface-dim)" }}>
-              {message}
-            </p>
+            <p className="text-xs leading-relaxed" style={{ color: "var(--on-surface-dim)" }}>{message}</p>
           </div>
         </div>
-        <button
-          onClick={onClose}
-          className="w-full py-2.5 rounded-xl text-sm font-bold transition-all"
+        <button onClick={onClose} className="w-full py-2.5 rounded-xl text-sm font-bold transition-all"
           style={{ background: bgColor, color: accentColor, border: `1px solid ${borderColor}` }}>
           Réessayer
         </button>
+      </div>
+    </div>
+  );
+}
+
+function WarningModal({
+  message,
+  onContinue,
+  onModify,
+}: {
+  message: string;
+  onContinue: () => void;
+  onModify: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.7)" }}>
+      <div className="max-w-sm w-full rounded-2xl p-6 space-y-4"
+        style={{ background: "var(--surface-high)", border: "1px solid rgba(245,166,35,0.25)", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
+        <div className="flex items-start gap-3">
+          <span className="text-2xl flex-shrink-0">⚠️</span>
+          <div className="space-y-1">
+            <p className="text-sm font-bold text-white">Attention</p>
+            <p className="text-xs leading-relaxed" style={{ color: "var(--on-surface-dim)" }}>{message}</p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={onModify}
+            className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
+            style={{ border: "1px solid rgba(255,255,255,0.1)", color: "var(--on-surface-dim)" }}>
+            Modifier mes paramètres
+          </button>
+          <button onClick={onContinue}
+            className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all"
+            style={{ background: "rgba(245,166,35,0.15)", color: "#F5A623", border: "1px solid rgba(245,166,35,0.3)" }}>
+            Continuer →
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -56,41 +89,32 @@ export default function AnalyseButton({ getFormData, getImageData, mode }: Analy
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errorType, setErrorType] = useState<ErrorType>(null);
+  const [warningResult, setWarningResult] = useState<AnalyseResponse | null>(null);
 
-  const accentColor =
-    mode === "scalp" ? "#F5A623" : mode === "day" ? "#0EA5E9" : "#00FF88";
+  const accentColor = mode === "scalp" ? "#F5A623" : mode === "day" ? "#0EA5E9" : "#00FF88";
+
+  function navigateToResult(result: AnalyseResponse) {
+    sessionStorage.setItem(result.id, JSON.stringify(result));
+    router.push(`/resultat/${result.id}`);
+  }
 
   async function handleAnalyse() {
-    setError(null);
-    setErrorType(null);
+    setError(null); setErrorType(null); setWarningResult(null);
 
     const imageData = getImageData();
-    if (!imageData) {
-      setError("Veuillez d'abord charger un graphique.");
-      return;
-    }
+    if (!imageData) { setError("Veuillez d'abord charger un graphique."); return; }
 
     const formData = getFormData();
-    if (!formData) {
-      setError("Veuillez renseigner l'actif (ex: SOL/USDT).");
-      return;
-    }
+    if (!formData) { setError("Veuillez renseigner l'actif (ex: SOL/USDT)."); return; }
 
     let userProfile: Record<string, string> | undefined;
     try {
       const stored = localStorage.getItem("idjor_profile");
       if (stored) {
         const parsed = JSON.parse(stored);
-        userProfile = {
-          prenom: parsed.prenom,
-          niveauTrading: parsed.niveauTrading,
-          styleTrading: parsed.styleTrading,
-          marchePrefere: parsed.marchePrefere,
-        };
+        userProfile = { prenom: parsed.prenom, niveauTrading: parsed.niveauTrading, styleTrading: parsed.styleTrading, marchePrefere: parsed.marchePrefere };
       }
-    } catch {
-      // ignore
-    }
+    } catch { /* ignore */ }
 
     setLoading(true);
 
@@ -111,6 +135,7 @@ export default function AnalyseButton({ getFormData, getImageData, mode }: Analy
           productType: formData.productType,
           platform: formData.platform,
           currentPrice: formData.currentPrice,
+          modeAnalyse: formData.modeAnalyse,
           userProfile,
         }),
       });
@@ -120,17 +145,20 @@ export default function AnalyseButton({ getFormData, getImageData, mode }: Analy
       if (!response.ok || result.error) {
         const errType = result.error as ErrorType;
         if (errType === "NOT_A_CHART" || errType === "CHART_TOO_OLD") {
-          setErrorType(errType);
-          setError(result.message ?? result.error ?? "Erreur.");
+          setErrorType(errType); setError(result.message ?? result.error ?? "Erreur.");
         } else {
-          setErrorType("GENERIC");
-          setError(result.error || "Erreur lors de l'analyse. Réessayez.");
+          setErrorType("GENERIC"); setError(result.error || "Erreur lors de l'analyse. Réessayez.");
         }
         return;
       }
 
-      sessionStorage.setItem(result.id, JSON.stringify(result));
-      router.push(`/resultat/${result.id}`);
+      // Si warning timeframe/style, montrer modal avant redirect
+      if (result.warning && result.warningMessage) {
+        setWarningResult(result);
+        return;
+      }
+
+      navigateToResult(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur réseau. Vérifiez votre connexion.");
     } finally {
@@ -140,57 +168,61 @@ export default function AnalyseButton({ getFormData, getImageData, mode }: Analy
 
   return (
     <>
-    {(errorType === "NOT_A_CHART" || errorType === "CHART_TOO_OLD") && error && (
-      <ErrorModal
-        type={errorType}
-        message={error}
-        onClose={() => { setError(null); setErrorType(null); }}
-      />
-    )}
-    <div className="space-y-3">
-      <button
-        onClick={handleAnalyse}
-        disabled={loading}
-        className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl font-headline font-bold text-base transition-all"
-        style={{
-          background: loading ? "var(--surface-highest)" : accentColor,
-          color: loading ? "var(--on-surface-dim)" : "#0A0E1A",
-          opacity: loading ? 0.6 : 1,
-          cursor: loading ? "not-allowed" : "pointer",
-        }}
-      >
-        {loading ? (
-          <>
-            <svg className="animate-spin" width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="2" strokeOpacity="0.3" />
-              <path d="M10 2a8 8 0 0 1 8 8" stroke={accentColor} strokeWidth="2" strokeLinecap="round" />
-            </svg>
-            <span style={{ color: accentColor }}>Claude analyse votre chart…</span>
-          </>
-        ) : (
-          <>
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <circle cx="8" cy="8" r="5" stroke="currentColor" strokeWidth="2"/>
-              <line x1="12" y1="12" x2="16" y2="16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-            Analyser ce chart
-          </>
+      {(errorType === "NOT_A_CHART" || errorType === "CHART_TOO_OLD") && error && (
+        <ErrorModal type={errorType} message={error} onClose={() => { setError(null); setErrorType(null); }} />
+      )}
+
+      {warningResult && (
+        <WarningModal
+          message={warningResult.warningMessage!}
+          onContinue={() => { navigateToResult(warningResult); setWarningResult(null); }}
+          onModify={() => setWarningResult(null)}
+        />
+      )}
+
+      <div className="space-y-3">
+        <button
+          onClick={handleAnalyse} disabled={loading}
+          className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl font-headline font-bold text-base transition-all"
+          style={{
+            background: loading ? "var(--surface-highest)" : accentColor,
+            color: loading ? "var(--on-surface-dim)" : "#0A0E1A",
+            opacity: loading ? 0.6 : 1,
+            cursor: loading ? "not-allowed" : "pointer",
+          }}
+        >
+          {loading ? (
+            <>
+              <svg className="animate-spin" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="2" strokeOpacity="0.3" />
+                <path d="M10 2a8 8 0 0 1 8 8" stroke={accentColor} strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              <span style={{ color: accentColor }}>Claude analyse votre chart…</span>
+            </>
+          ) : (
+            <>
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <circle cx="8" cy="8" r="5" stroke="currentColor" strokeWidth="2"/>
+                <line x1="12" y1="12" x2="16" y2="16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+              Analyser ce chart
+            </>
+          )}
+        </button>
+
+        {loading && (
+          <p className="text-center text-xs" style={{ color: "var(--on-surface-dim)" }}>
+            Cela prend 5 à 15 secondes — Claude analyse les indicateurs...
+          </p>
         )}
-      </button>
 
-      {loading && (
-        <p className="text-center text-xs" style={{ color: "var(--on-surface-dim)" }}>
-          Cela prend 5 à 15 secondes — Claude analyse les indicateurs...
-        </p>
-      )}
-
-      {error && errorType === "GENERIC" && (
-        <div className="px-4 py-3 rounded-xl text-xs font-medium"
-          style={{ background: "rgba(255,59,92,0.08)", border: "1px solid rgba(255,59,92,0.2)", color: "#FF3B5C" }}>
-          {error}
-        </div>
-      )}
-    </div>
+        {error && errorType === "GENERIC" && (
+          <div className="px-4 py-3 rounded-xl text-xs font-medium"
+            style={{ background: "rgba(255,59,92,0.08)", border: "1px solid rgba(255,59,92,0.2)", color: "#FF3B5C" }}>
+            {error}
+          </div>
+        )}
+      </div>
     </>
   );
 }

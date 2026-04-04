@@ -12,29 +12,35 @@ export default function PlanCard({ plan }: { plan: Plan }) {
   const { isAnnual } = usePricing();
   const [showModal, setShowModal] = useState(false);
   const price = isAnnual ? plan.priceAnnualFCFA : plan.priceFCFA;
-  const isFree = plan.id === "free";
-  const isPro = plan.id === "pro";
-  const isTrader = plan.id === "trader";
+  const isFree    = plan.id === "free";
+  const isStarter = plan.id === "starter";
+  const isPro     = plan.id === "pro";
+  const isTrader  = plan.id === "trader";
 
-  let cardBg = "var(--surface-low)";
+  let cardBg     = "var(--surface-low)";
   let cardBorder = "1px solid rgba(255,255,255,0.05)";
   let cardStyle: React.CSSProperties = {};
 
   if (isPro) {
-    cardBg = "linear-gradient(135deg, #0A1A0F 0%, #0E1320 100%)";
+    cardBg     = "linear-gradient(135deg, #0A1A0F 0%, #0E1320 100%)";
     cardBorder = "1px solid rgba(0,255,136,0.25)";
-    cardStyle = { boxShadow: "0 0 30px rgba(0,255,136,0.12)", transform: "scale(1.02)" };
+    cardStyle  = { boxShadow: "0 0 30px rgba(0,255,136,0.12)", transform: "scale(1.02)" };
   } else if (isTrader) {
-    cardBg = "linear-gradient(135deg, #1A1200 0%, #1A1208 100%)";
+    cardBg     = "linear-gradient(135deg, #1A1200 0%, #1A1208 100%)";
     cardBorder = "1px solid rgba(245,166,35,0.2)";
+  } else if (isStarter) {
+    cardBorder = "1px solid rgba(14,165,233,0.2)";
   }
 
   const ctaStyles: Record<string, React.CSSProperties> = {
     primary: { background: "#00FF88", color: "#0A0E1A" },
     outline: { border: "1px solid rgba(0,255,136,0.3)", color: "#00FF88" },
-    amber: { background: "#F5A623", color: "#0A0E1A" },
-    ghost: { border: "1px solid rgba(255,255,255,0.08)", color: "var(--on-surface-dim)" },
+    amber:   { background: "#F5A623", color: "#0A0E1A" },
+    ghost:   { border: "1px solid rgba(255,255,255,0.08)", color: "var(--on-surface-dim)" },
+    sky:     { border: "1px solid rgba(14,165,233,0.4)", color: "#0EA5E9" },
   };
+
+  const nameColor = isPro ? "#00FF88" : isTrader ? "#F5A623" : isStarter ? "#0EA5E9" : "var(--on-surface-dim)";
 
   return (
     <>
@@ -49,6 +55,8 @@ export default function PlanCard({ plan }: { plan: Plan }) {
             style={
               isPro
                 ? { background: "#F5A623", color: "#0A0E1A" }
+                : isStarter
+                ? { background: "rgba(14,165,233,0.15)", color: "#0EA5E9", border: "1px solid rgba(14,165,233,0.3)" }
                 : { background: "rgba(245,166,35,0.15)", color: "#F5A623", border: "1px solid rgba(245,166,35,0.3)" }
             }
           >
@@ -58,10 +66,7 @@ export default function PlanCard({ plan }: { plan: Plan }) {
 
         {/* Header */}
         <div>
-          <p
-            className="text-xs font-bold tracking-widest mb-2"
-            style={{ color: isPro ? "#00FF88" : isTrader ? "#F5A623" : "var(--on-surface-dim)" }}
-          >
+          <p className="text-xs font-bold tracking-widest mb-2" style={{ color: nameColor }}>
             {plan.name}
           </p>
           <div className="flex items-baseline gap-2 mb-1">

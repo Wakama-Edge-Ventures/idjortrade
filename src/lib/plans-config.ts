@@ -1,4 +1,4 @@
-export type PlanKey = "BASIC" | "PRO" | "TRADER";
+export type PlanKey = "STARTER" | "BASIC" | "PRO" | "TRADER";
 
 export type PlanConfig = {
   nameFr: string;
@@ -9,24 +9,31 @@ export type PlanConfig = {
 };
 
 export const PLANS_CONFIG: Record<PlanKey, PlanConfig> = {
+  STARTER: {
+    nameFr: "Starter",
+    monthlyFCFA: 2900,
+    annualFCFA: 2300,
+    quotaAnalyses: 3,
+    quotaIdjorMsg: 20,
+  },
   BASIC: {
     nameFr: "Basic",
-    monthlyFCFA: 4900,
-    annualFCFA: 3900,
-    quotaAnalyses: 20,
-    quotaIdjorMsg: 30,
+    monthlyFCFA: 7900,
+    annualFCFA: 6300,
+    quotaAnalyses: 10,
+    quotaIdjorMsg: 50,
   },
   PRO: {
     nameFr: "Pro",
-    monthlyFCFA: 14900,
-    annualFCFA: 11900,
-    quotaAnalyses: Infinity,
+    monthlyFCFA: 19900,
+    annualFCFA: 15900,
+    quotaAnalyses: 30,
     quotaIdjorMsg: Infinity,
   },
   TRADER: {
     nameFr: "Trader",
-    monthlyFCFA: 29900,
-    annualFCFA: 23900,
+    monthlyFCFA: 39900,
+    annualFCFA: 31900,
     quotaAnalyses: Infinity,
     quotaIdjorMsg: Infinity,
   },

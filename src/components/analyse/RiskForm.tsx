@@ -15,6 +15,7 @@ export type RiskFormData = {
   productType: "spot" | "futures";
   platform: string;
   currentPrice?: number;
+  modeAnalyse: "rapide" | "approfondi";
 };
 
 export type RiskFormRef = {
@@ -23,11 +24,12 @@ export type RiskFormRef = {
 
 interface RiskFormProps {
   mode: "swing" | "scalp" | "day";
+  onAssetChange?: (asset: string) => void;
+  onProductTypeChange?: (productType: "spot" | "futures") => void;
 }
 
 const marches = ["Crypto", "Forex", "Actions", "Indices"];
 const rrOptions = ["1:1", "1:2", "1:3", "Custom"];
-const modesAnalyse = ["⚡ Rapide", "🔬 Approfondi"];
 const FCFA_PER_USD = 655;
 
 const PLATFORMS = ["Binance", "Bybit", "OKX", "Kraken", "Coinbase", "MT4/MT5", "TradingView", "Autre"];
@@ -41,15 +43,44 @@ const ASSET_SUGGESTIONS = [
   "AAPL", "TSLA", "NVDA", "MSFT", "GOOGL", "AMZN",
 ];
 
-function normalizeSymbol(s: string): string {
-  return s.replace("/USDT", "/USD").replace("/BUSD", "/USD").toUpperCase();
+const FOREX_PAIRS = new Set(["EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", "EUR/GBP", "USD/CHF", "NZD/USD"]);
+
+function detectAssetType(asset: string): "crypto" | "forex" | "other" {
+  const upper = asset.toUpperCase();
+  if (upper.includes("/USDT") || upper.includes("/BUSD")) return "crypto";
+  if (FOREX_PAIRS.has(upper) || (upper.includes("/") && upper.split("/")[1] === "USD" && upper.split("/")[0].length === 3)) return "forex";
+  return "other";
+}
+
+async function fetchBinancePrice(asset: string): Promise<number | null> {
+  const symbol = asset.replace("/", "").toUpperCase();
+  try {
+    const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const price = parseFloat(data.price);
+    return isNaN(price) ? null : price;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchServerPrice(asset: string): Promise<number | null> {
+  try {
+    const res = await fetch(`/api/market/quote?symbol=${encodeURIComponent(asset.toUpperCase())}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data?.price ?? null;
+  } catch {
+    return null;
+  }
 }
 
 const defaultTradingMode = (mode: "swing" | "scalp" | "day"): TradingMode =>
   mode === "swing" ? "swing" : mode === "day" ? "day" : "scalp";
 
 const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
-  function RiskForm({ mode }, ref) {
+  function RiskForm({ mode, onAssetChange, onProductTypeChange }, ref) {
     const [asset, setAsset] = useState("");
     const [capital, setCapital] = useState("");
     const [risque, setRisque] = useState(1);
@@ -57,21 +88,22 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
     const [marche, setMarche] = useState("Crypto");
     const [tradingMode, setTradingMode] = useState<TradingMode>(defaultTradingMode(mode));
     const [timeframe, setTimeframe] = useState(defaultTimeframeForMode(defaultTradingMode(mode)));
-    const [modeAnalyse, setModeAnalyse] = useState("⚡ Rapide");
+    const [modeAnalyse, setModeAnalyse] = useState<"rapide" | "approfondi">("rapide");
     const [productType, setProductType] = useState<"spot" | "futures">("spot");
     const [platform, setPlatform] = useState("Binance");
     const [currentPrice, setCurrentPrice] = useState<number | null>(null);
     const [priceLoading, setPriceLoading] = useState(false);
     const [priceFailed, setPriceFailed] = useState(false);
+    const [priceBadge, setPriceBadge] = useState<string>("");
     const [manualPrice, setManualPrice] = useState("");
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const assetRef = useRef<HTMLDivElement>(null);
 
     const capitalNum = parseFloat(capital.replace(/\s/g, "")) || 250000;
-    const riskFCFA = Math.round(capitalNum * risque / 100);
-    const rrNum = rr === "Custom" ? 2 : parseInt(rr.split(":")[1]);
-    const gainFCFA = riskFCFA * rrNum;
+    const riskFCFA   = Math.round(capitalNum * risque / 100);
+    const rrNum      = rr === "Custom" ? 2 : parseInt(rr.split(":")[1]);
+    const gainFCFA   = riskFCFA * rrNum;
     const capitalUSD = Math.round(capitalNum / FCFA_PER_USD);
 
     const currentGroup = TIMEFRAME_GROUPS.find(g => g.mode === tradingMode) ?? TIMEFRAME_GROUPS[0];
@@ -80,26 +112,29 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
     useEffect(() => {
       const trimmed = asset.trim();
       if (!trimmed) {
-        setCurrentPrice(null);
-        setPriceFailed(false);
+        setCurrentPrice(null); setPriceFailed(false); setPriceBadge("");
         return;
       }
       const timer = setTimeout(async () => {
         setPriceLoading(true);
+        const assetType = detectAssetType(trimmed);
         try {
-          const sym = normalizeSymbol(trimmed);
-          const res = await fetch(`/api/market/quote?symbol=${encodeURIComponent(sym)}`);
-          if (!res.ok) throw new Error("not found");
-          const data = await res.json();
-          if (data?.price) {
-            setCurrentPrice(data.price);
-            setPriceFailed(false);
+          let price: number | null = null;
+          if (assetType === "crypto") {
+            price = await fetchBinancePrice(trimmed);
+            if (price) setPriceBadge("LIVE · Binance");
+          }
+          if (!price) {
+            price = await fetchServerPrice(trimmed);
+            if (price) setPriceBadge(assetType === "forex" ? "LIVE · Forex" : "LIVE");
+          }
+          if (price) {
+            setCurrentPrice(price); setPriceFailed(false);
           } else {
-            throw new Error("no price");
+            setCurrentPrice(null); setPriceFailed(true); setPriceBadge("");
           }
         } catch {
-          setCurrentPrice(null);
-          setPriceFailed(true);
+          setCurrentPrice(null); setPriceFailed(true); setPriceBadge("");
         } finally {
           setPriceLoading(false);
         }
@@ -120,27 +155,30 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
 
     function handleAssetChange(value: string) {
       setAsset(value);
+      onAssetChange?.(value);
       if (value.trim().length >= 1) {
-        const filtered = ASSET_SUGGESTIONS.filter(s =>
-          s.toLowerCase().includes(value.toLowerCase())
-        );
+        const filtered = ASSET_SUGGESTIONS.filter(s => s.toLowerCase().includes(value.toLowerCase()));
         setSuggestions(filtered.slice(0, 6));
         setShowSuggestions(filtered.length > 0);
       } else {
-        setSuggestions([]);
-        setShowSuggestions(false);
+        setSuggestions([]); setShowSuggestions(false);
       }
     }
 
     function selectSuggestion(s: string) {
       setAsset(s);
-      setSuggestions([]);
-      setShowSuggestions(false);
+      onAssetChange?.(s);
+      setSuggestions([]); setShowSuggestions(false);
     }
 
     function handleTradingModeChange(newMode: TradingMode) {
       setTradingMode(newMode);
       setTimeframe(defaultTimeframeForMode(newMode));
+    }
+
+    function handleProductTypeChange(v: "spot" | "futures") {
+      setProductType(v);
+      onProductTypeChange?.(v);
     }
 
     useImperativeHandle(ref, () => ({
@@ -149,21 +187,17 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
         const priceValue = currentPrice ?? (manualPrice ? parseFloat(manualPrice) : undefined);
         return {
           asset: asset.trim().toUpperCase(),
-          timeframe,
-          capitalFCFA: capitalNum || 100000,
-          risquePct: risque,
-          ratioRR: rrNum,
-          marche,
-          tradingMode,
-          productType,
-          platform,
+          timeframe, capitalFCFA: capitalNum || 100000,
+          risquePct: risque, ratioRR: rrNum, marche, tradingMode,
+          productType, platform,
           currentPrice: priceValue,
+          modeAnalyse,
         };
       },
     }));
 
-    const btnBase = "px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer";
-    const btnActive = { background: "rgba(0,255,136,0.15)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.3)" };
+    const btnBase    = "px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer";
+    const btnActive  = { background: "rgba(0,255,136,0.15)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.3)" };
     const btnInactive = { background: "var(--surface-highest)", color: "var(--on-surface-dim)", border: "1px solid transparent" };
 
     return (
@@ -171,14 +205,12 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
 
         {/* Actif avec suggestions */}
         <div className="space-y-1.5" ref={assetRef}>
-          <label className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: "var(--on-surface-dim)" }}>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>
             Actif *
           </label>
           <div className="relative">
             <input
-              type="text"
-              value={asset}
+              type="text" value={asset}
               onChange={e => handleAssetChange(e.target.value)}
               placeholder="Ex: SOL/USDT, BTC/USDT, EUR/USD"
               className="w-full rounded-xl px-4 py-3 text-sm font-mono-data text-white outline-none transition-colors"
@@ -187,20 +219,15 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
               onBlur={e => { (e.target as HTMLElement).style.borderColor = "var(--outline)"; }}
             />
             {showSuggestions && suggestions.length > 0 && (
-              <div
-                className="absolute top-full left-0 right-0 mt-1 rounded-xl overflow-hidden z-30 shadow-2xl"
-                style={{ background: "var(--surface-high)", border: "1px solid rgba(255,255,255,0.08)" }}
-              >
+              <div className="absolute top-full left-0 right-0 mt-1 rounded-xl overflow-hidden z-30 shadow-2xl"
+                style={{ background: "var(--surface-high)", border: "1px solid rgba(255,255,255,0.08)" }}>
                 {suggestions.map(s => (
-                  <button
-                    key={s}
-                    type="button"
+                  <button key={s} type="button"
                     className="w-full text-left px-4 py-2.5 text-sm font-mono-data transition-colors"
                     style={{ color: "var(--on-surface-dim)" }}
                     onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; (e.currentTarget as HTMLElement).style.color = "white"; }}
                     onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "var(--on-surface-dim)"; }}
-                    onMouseDown={() => selectSuggestion(s)}
-                  >
+                    onMouseDown={() => selectSuggestion(s)}>
                     {s}
                   </button>
                 ))}
@@ -211,21 +238,12 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
 
         {/* Type de produit */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: "var(--on-surface-dim)" }}>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>
             Type de produit
           </label>
           <div className="flex gap-2">
-            <button className={btnBase}
-              style={productType === "spot" ? btnActive : btnInactive}
-              onClick={() => setProductType("spot")}>
-              Spot
-            </button>
-            <button className={btnBase}
-              style={productType === "futures" ? btnActive : btnInactive}
-              onClick={() => setProductType("futures")}>
-              Futures / Perpétuel
-            </button>
+            <button className={btnBase} style={productType === "spot" ? btnActive : btnInactive} onClick={() => handleProductTypeChange("spot")}>Spot</button>
+            <button className={btnBase} style={productType === "futures" ? btnActive : btnInactive} onClick={() => handleProductTypeChange("futures")}>Futures / Perpétuel</button>
           </div>
           {productType === "futures" && (
             <p className="text-xs px-3 py-2 rounded-lg"
@@ -237,26 +255,19 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
 
         {/* Plateforme */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: "var(--on-surface-dim)" }}>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>
             Plateforme de trading
           </label>
-          <select
-            value={platform}
-            onChange={e => setPlatform(e.target.value)}
-            className="w-full rounded-xl px-4 py-3 text-sm text-white outline-none transition-colors appearance-none cursor-pointer"
-            style={{ background: "var(--surface-highest)", border: "1px solid var(--outline)" }}
-          >
-            {PLATFORMS.map(p => (
-              <option key={p} value={p}>{p}</option>
-            ))}
+          <select value={platform} onChange={e => setPlatform(e.target.value)}
+            className="w-full rounded-xl px-4 py-3 text-sm text-white outline-none appearance-none cursor-pointer"
+            style={{ background: "var(--surface-highest)", border: "1px solid var(--outline)" }}>
+            {PLATFORMS.map(p => <option key={p} value={p}>{p}</option>)}
           </select>
         </div>
 
-        {/* Prix actuel (auto-fetch) */}
+        {/* Prix actuel */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: "var(--on-surface-dim)" }}>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>
             Prix actuel de l&apos;asset
           </label>
           <div className="relative">
@@ -271,24 +282,17 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
               </div>
             ) : currentPrice != null ? (
               <>
-                <input
-                  type="number"
-                  value={currentPrice}
-                  readOnly
-                  className="w-full rounded-xl px-4 py-3 pr-16 text-sm font-mono-data text-white outline-none"
-                  style={{ background: "var(--surface-highest)", border: "1px solid rgba(0,255,136,0.3)" }}
-                />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold px-2 py-0.5 rounded"
+                <input type="number" value={currentPrice} readOnly
+                  className="w-full rounded-xl px-4 py-3 pr-28 text-sm font-mono-data text-white outline-none"
+                  style={{ background: "var(--surface-highest)", border: "1px solid rgba(0,255,136,0.3)" }} />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap"
                   style={{ background: "rgba(0,255,136,0.15)", color: "#00FF88" }}>
-                  LIVE
+                  {priceBadge}
                 </span>
               </>
             ) : (
-              <input
-                type="number"
-                value={manualPrice}
-                onChange={e => setManualPrice(e.target.value)}
-                placeholder={priceFailed ? "Entrez le prix actuel manuellement" : "Renseignez l'actif pour auto-remplir"}
+              <input type="number" value={manualPrice} onChange={e => setManualPrice(e.target.value)}
+                placeholder={priceFailed ? "Entrez le prix manuellement" : "Renseignez l'actif pour auto-remplir"}
                 className="w-full rounded-xl px-4 py-3 text-sm font-mono-data text-white outline-none transition-colors"
                 style={{ background: "var(--surface-highest)", border: "1px solid var(--outline)" }}
                 onFocus={e => { (e.target as HTMLElement).style.borderColor = "rgba(0,255,136,0.4)"; }}
@@ -305,54 +309,35 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
 
         {/* Capital */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: "var(--on-surface-dim)" }}>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>
             Capital disponible
           </label>
           <div className="relative">
-            <input
-              type="number"
-              value={capital}
-              onChange={e => setCapital(e.target.value)}
-              placeholder="250 000"
+            <input type="number" value={capital} onChange={e => setCapital(e.target.value)} placeholder="250 000"
               className="w-full rounded-xl px-4 py-3 text-sm font-mono-data text-white outline-none transition-colors"
               style={{ background: "var(--surface-highest)", border: "1px solid var(--outline)" }}
               onFocus={e => { (e.target as HTMLElement).style.borderColor = "rgba(0,255,136,0.4)"; }}
-              onBlur={e => { (e.target as HTMLElement).style.borderColor = "var(--outline)"; }}
-            />
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs"
-              style={{ color: "var(--on-surface-dim)" }}>
-              FCFA
-            </span>
+              onBlur={e => { (e.target as HTMLElement).style.borderColor = "var(--outline)"; }} />
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs" style={{ color: "var(--on-surface-dim)" }}>FCFA</span>
           </div>
           {capitalNum > 0 && (
-            <p className="text-xs" style={{ color: "var(--on-surface-dim)" }}>
-              ≈ ${capitalUSD.toLocaleString("fr-FR")} USD
-            </p>
+            <p className="text-xs" style={{ color: "var(--on-surface-dim)" }}>≈ ${capitalUSD.toLocaleString("fr-FR")} USD</p>
           )}
         </div>
 
         {/* Risque */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-semibold uppercase tracking-widest"
-              style={{ color: "var(--on-surface-dim)" }}>
+            <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>
               Risque par trade
             </label>
             <span className="text-sm font-bold font-mono-data" style={{ color: "#00FF88" }}>
               {risque}% {capitalNum > 0 && `= ${riskFCFA.toLocaleString("fr-FR")} FCFA`}
             </span>
           </div>
-          <input
-            type="range" min="0.25" max="5" step="0.25"
-            value={risque}
-            onChange={e => setRisque(parseFloat(e.target.value))}
+          <input type="range" min="0.25" max="5" step="0.25" value={risque} onChange={e => setRisque(parseFloat(e.target.value))}
             className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
-            style={{
-              accentColor: "var(--primary)",
-              background: `linear-gradient(to right, #00FF88 0%, #00FF88 ${(risque/5)*100}%, var(--surface-highest) ${(risque/5)*100}%, var(--surface-highest) 100%)`,
-            }}
-          />
+            style={{ accentColor: "var(--primary)", background: `linear-gradient(to right, #00FF88 0%, #00FF88 ${(risque/5)*100}%, var(--surface-highest) ${(risque/5)*100}%, var(--surface-highest) 100%)` }} />
           <div className="flex justify-between text-[10px]" style={{ color: "var(--on-surface-dim)" }}>
             <span>0.25%</span><span>5%</span>
           </div>
@@ -360,77 +345,50 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
 
         {/* R/R */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: "var(--on-surface-dim)" }}>
-            Ratio R/R
-          </label>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>Ratio R/R</label>
           <div className="flex gap-2 flex-wrap">
             {rrOptions.map(opt => (
-              <button key={opt} className={btnBase}
-                style={rr === opt ? btnActive : btnInactive}
-                onClick={() => setRr(opt)}>
-                {opt}
-              </button>
+              <button key={opt} className={btnBase} style={rr === opt ? btnActive : btnInactive} onClick={() => setRr(opt)}>{opt}</button>
             ))}
           </div>
         </div>
 
         {/* Marché */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: "var(--on-surface-dim)" }}>
-            Marché
-          </label>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>Marché</label>
           <div className="flex gap-2 flex-wrap">
             {marches.map(m => (
-              <button key={m} className={btnBase}
-                style={marche === m ? btnActive : btnInactive}
-                onClick={() => setMarche(m)}>
-                {m}
-              </button>
+              <button key={m} className={btnBase} style={marche === m ? btnActive : btnInactive} onClick={() => setMarche(m)}>{m}</button>
             ))}
           </div>
         </div>
 
         {/* Trading Mode + Timeframe */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: "var(--on-surface-dim)" }}>
-            Style · Timeframe
-          </label>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>Style · Timeframe</label>
           <div className="flex gap-1.5">
             {TIMEFRAME_GROUPS.map(g => (
-              <button key={g.mode} className={btnBase}
-                style={tradingMode === g.mode ? btnActive : btnInactive}
-                onClick={() => handleTradingModeChange(g.mode)}>
-                {g.label}
-              </button>
+              <button key={g.mode} className={btnBase} style={tradingMode === g.mode ? btnActive : btnInactive}
+                onClick={() => handleTradingModeChange(g.mode)}>{g.label}</button>
             ))}
           </div>
           <div className="flex gap-1.5 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
             {currentGroup.frames.map((tf: string) => (
-              <button key={tf}
-                className="flex-shrink-0 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
-                style={timeframe === tf ? btnActive : btnInactive}
-                onClick={() => setTimeframe(tf)}>
-                {tf}
-              </button>
+              <button key={tf} className="flex-shrink-0 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer"
+                style={timeframe === tf ? btnActive : btnInactive} onClick={() => setTimeframe(tf)}>{tf}</button>
             ))}
           </div>
         </div>
 
         {/* Mode analyse */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: "var(--on-surface-dim)" }}>
-            Mode analyse
-          </label>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>Mode analyse</label>
           <div className="flex gap-2">
-            {modesAnalyse.map(m => (
+            {(["rapide", "approfondi"] as const).map(m => (
               <button key={m} className={btnBase}
                 style={modeAnalyse === m ? btnActive : btnInactive}
                 onClick={() => setModeAnalyse(m)}>
-                {m}
+                {m === "rapide" ? "⚡ Rapide" : "🔬 Approfondi"}
               </button>
             ))}
           </div>
@@ -438,13 +396,10 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
 
         {/* Récap live */}
         {capitalNum > 0 && (
-          <div className="rounded-xl px-4 py-3"
-            style={{ background: "rgba(0,255,136,0.04)", border: "1px solid rgba(0,255,136,0.12)" }}>
+          <div className="rounded-xl px-4 py-3" style={{ background: "rgba(0,255,136,0.04)", border: "1px solid rgba(0,255,136,0.12)" }}>
             <p className="text-xs font-mono-data" style={{ color: "var(--on-surface-dim)" }}>
-              Risque:{" "}
-              <span style={{ color: "#FF3B5C" }}>{riskFCFA.toLocaleString("fr-FR")} FCFA</span>
-              {" → "}Gain cible:{" "}
-              <span style={{ color: "#00FF88" }}>{gainFCFA.toLocaleString("fr-FR")} FCFA</span>
+              Risque: <span style={{ color: "#FF3B5C" }}>{riskFCFA.toLocaleString("fr-FR")} FCFA</span>
+              {" → "}Gain cible: <span style={{ color: "#00FF88" }}>{gainFCFA.toLocaleString("fr-FR")} FCFA</span>
               {" "}({rr === "Custom" ? "Custom" : rr})
             </p>
           </div>
@@ -452,23 +407,19 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
 
         {/* Actions */}
         <div className="flex gap-2 pt-1">
-          <button
-            className="flex-1 py-2 rounded-xl text-sm font-semibold transition-colors"
+          <button className="flex-1 py-2 rounded-xl text-sm font-semibold transition-colors"
             style={{ border: "1px solid var(--outline)", color: "var(--on-surface-dim)" }}
             onClick={() => {
-              setAsset(""); setCapital(""); setRisque(1); setRr("1:2");
-              setMarche("Crypto"); setProductType("spot"); setPlatform("Binance");
-              setCurrentPrice(null); setPriceFailed(false); setManualPrice("");
+              setAsset(""); setCapital(""); setRisque(1); setRr("1:2"); setMarche("Crypto");
+              setProductType("spot"); setPlatform("Binance");
+              setCurrentPrice(null); setPriceFailed(false); setManualPrice(""); setPriceBadge("");
               setTimeframe(defaultTimeframeForMode(defaultTradingMode(mode)));
-              setModeAnalyse("⚡ Rapide");
-            }}
-          >
+              setModeAnalyse("rapide"); onAssetChange?.(""); onProductTypeChange?.("spot");
+            }}>
             Réinitialiser
           </button>
-          <button
-            className="flex-1 py-2 rounded-xl text-sm font-semibold transition-colors"
-            style={{ border: "1px solid rgba(0,255,136,0.3)", color: "#00FF88" }}
-          >
+          <button className="flex-1 py-2 rounded-xl text-sm font-semibold transition-colors"
+            style={{ border: "1px solid rgba(0,255,136,0.3)", color: "#00FF88" }}>
             Sauvegarder défaut
           </button>
         </div>

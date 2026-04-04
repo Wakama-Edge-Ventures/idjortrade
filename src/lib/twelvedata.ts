@@ -16,7 +16,33 @@ export type Quote = {
   is_market_open: boolean;
 };
 
-// ─── Mock data (fallback when API key is absent) ────────────────────────────
+// ─── CoinGecko IDs for crypto pairs ─────────────────────────────────────────
+const COINGECKO_IDS: Record<string, string> = {
+  "BTC/USD":   "bitcoin",    "BTC/USDT":  "bitcoin",
+  "ETH/USD":   "ethereum",   "ETH/USDT":  "ethereum",
+  "SOL/USD":   "solana",     "SOL/USDT":  "solana",
+  "BNB/USD":   "binancecoin","BNB/USDT":  "binancecoin",
+  "XRP/USD":   "ripple",     "XRP/USDT":  "ripple",
+  "ADA/USD":   "cardano",    "ADA/USDT":  "cardano",
+  "AVAX/USD":  "avalanche-2","AVAX/USDT": "avalanche-2",
+  "MATIC/USD": "matic-network","MATIC/USDT":"matic-network",
+  "DOGE/USD":  "dogecoin",   "DOGE/USDT": "dogecoin",
+  "DOT/USD":   "polkadot",   "DOT/USDT":  "polkadot",
+  "LINK/USD":  "chainlink",  "LINK/USDT": "chainlink",
+  "TRX/USD":   "tron",       "TRX/USDT":  "tron",
+  "LTC/USD":   "litecoin",   "LTC/USDT":  "litecoin",
+  "BCH/USD":   "bitcoin-cash","BCH/USDT": "bitcoin-cash",
+};
+
+const COINGECKO_NAMES: Record<string, string> = {
+  "bitcoin": "Bitcoin", "ethereum": "Ethereum", "solana": "Solana",
+  "binancecoin": "BNB", "ripple": "XRP", "cardano": "Cardano",
+  "avalanche-2": "Avalanche", "matic-network": "Polygon", "dogecoin": "Dogecoin",
+  "polkadot": "Polkadot", "chainlink": "Chainlink", "tron": "TRON",
+  "litecoin": "Litecoin", "bitcoin-cash": "Bitcoin Cash",
+};
+
+// ─── Mock data (fallback when APIs are unavailable) ──────────────────────────
 const MOCK_QUOTES: Record<string, Quote> = {
   "BTC/USD":   { symbol: "BTC/USD",   name: "Bitcoin",        price: 83250,    change: 1245.5,  percent_change: 1.52,  high: 84100,    low: 82000,    volume: 28_500_000_000, timestamp: Date.now(), is_market_open: true },
   "ETH/USD":   { symbol: "ETH/USD",   name: "Ethereum",       price: 3240,     change: 185.2,   percent_change: 6.06,  high: 3310,     low: 3150,     volume: 14_200_000_000, timestamp: Date.now(), is_market_open: true },
@@ -45,7 +71,36 @@ const MOCK_QUOTES: Record<string, Quote> = {
   "NATGAS":    { symbol: "NATGAS",    name: "Gaz Naturel",      price: 2.18,    change: -0.05,   percent_change: -2.24, high: 2.26,     low: 2.15,     volume: 0,              timestamp: Date.now(), is_market_open: false },
 };
 
-// ─── Parse raw API response into Quote ──────────────────────────────────────
+// ─── CoinGecko fetch for cryptos (no API key needed) ────────────────────────
+async function fetchFromCoingecko(geckoId: string, symbol: string): Promise<Quote | null> {
+  try {
+    const res = await fetch(
+      `https://api.coingecko.com/api/v3/simple/price` +
+      `?ids=${geckoId}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true`,
+      { next: { revalidate: 30 } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const d = data[geckoId];
+    if (!d?.usd) return null;
+    return {
+      symbol,
+      name: COINGECKO_NAMES[geckoId] ?? geckoId,
+      price: d.usd,
+      change: 0,
+      percent_change: d.usd_24h_change ?? 0,
+      high: d.usd,
+      low: d.usd,
+      volume: d.usd_24h_vol ?? 0,
+      timestamp: Date.now(),
+      is_market_open: true,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// ─── Parse raw Twelvedata response into Quote ────────────────────────────────
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseQuote(raw: any, symbol: string): Quote | null {
   if (!raw || raw.status === "error" || raw.code) return null;
@@ -65,21 +120,35 @@ function parseQuote(raw: any, symbol: string): Quote | null {
 
 // ─── fetchQuote ──────────────────────────────────────────────────────────────
 export async function fetchQuote(symbol: string): Promise<Quote | null> {
-  if (!API_KEY) return MOCK_QUOTES[symbol] ?? null;
-
-  const cacheKey = `quote:${symbol}`;
+  const upperSymbol = symbol.toUpperCase();
+  const cacheKey = `quote:${upperSymbol}`;
   const cached = getCached<Quote>(cacheKey);
   if (cached) return cached;
 
+  // Cryptos → CoinGecko (no API key needed, always fresh)
+  const geckoId = COINGECKO_IDS[upperSymbol];
+  if (geckoId) {
+    const quote = await fetchFromCoingecko(geckoId, upperSymbol);
+    if (quote) {
+      setCached(cacheKey, quote);
+      return quote;
+    }
+    // CoinGecko failed, return mock
+    return MOCK_QUOTES[upperSymbol] ?? MOCK_QUOTES[upperSymbol.replace("/USDT", "/USD")] ?? null;
+  }
+
+  // Forex / stocks → Twelvedata
+  if (!API_KEY) return MOCK_QUOTES[upperSymbol] ?? null;
+
   try {
-    const url = `${BASE_URL}/quote?symbol=${encodeURIComponent(symbol)}&apikey=${API_KEY}`;
+    const url = `${BASE_URL}/quote?symbol=${encodeURIComponent(upperSymbol)}&apikey=${API_KEY}`;
     const res = await fetch(url, { next: { revalidate: 15 } });
     const raw = await res.json();
-    const quote = parseQuote(raw, symbol);
+    const quote = parseQuote(raw, upperSymbol);
     if (quote) setCached(cacheKey, quote);
-    return quote ?? MOCK_QUOTES[symbol] ?? null;
+    return quote ?? MOCK_QUOTES[upperSymbol] ?? null;
   } catch {
-    return MOCK_QUOTES[symbol] ?? null;
+    return MOCK_QUOTES[upperSymbol] ?? null;
   }
 }
 
@@ -87,44 +156,91 @@ export async function fetchQuote(symbol: string): Promise<Quote | null> {
 export async function fetchMultipleQuotes(
   symbols: string[]
 ): Promise<Record<string, Quote>> {
-  if (!API_KEY) {
-    return Object.fromEntries(
-      symbols.flatMap((s) => (MOCK_QUOTES[s] ? [[s, MOCK_QUOTES[s]]] : []))
-    );
-  }
+  const result: Record<string, Quote> = {};
 
-  const cacheKey = `quotes:${symbols.sort().join(",")}`;
-  const cached = getCached<Record<string, Quote>>(cacheKey);
-  if (cached) return cached;
+  // Split into crypto vs non-crypto
+  const cryptoSymbols = symbols.filter(s => COINGECKO_IDS[s.toUpperCase()]);
+  const otherSymbols = symbols.filter(s => !COINGECKO_IDS[s.toUpperCase()]);
 
-  try {
-    const symbolList = symbols.join(",");
-    const url = `${BASE_URL}/quote?symbol=${encodeURIComponent(symbolList)}&apikey=${API_KEY}`;
-    const res = await fetch(url, { next: { revalidate: 30 } });
-    const raw = await res.json();
-
-    const result: Record<string, Quote> = {};
-
-    if (symbols.length === 1) {
-      // Single symbol returns object directly
-      const q = parseQuote(raw, symbols[0]);
-      if (q) result[symbols[0]] = q;
-    } else {
-      // Multiple symbols returns keyed object
-      for (const symbol of symbols) {
-        const q = parseQuote(raw[symbol], symbol);
-        if (q) result[symbol] = q;
-        else if (MOCK_QUOTES[symbol]) result[symbol] = MOCK_QUOTES[symbol];
+  // Batch fetch cryptos from CoinGecko
+  if (cryptoSymbols.length > 0) {
+    const geckoIds = [...new Set(cryptoSymbols.map(s => COINGECKO_IDS[s.toUpperCase()]))];
+    try {
+      const res = await fetch(
+        `https://api.coingecko.com/api/v3/simple/price` +
+        `?ids=${geckoIds.join(",")}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true`,
+        { next: { revalidate: 30 } }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        for (const sym of cryptoSymbols) {
+          const geckoId = COINGECKO_IDS[sym.toUpperCase()];
+          const d = data[geckoId];
+          if (d?.usd) {
+            result[sym] = {
+              symbol: sym,
+              name: COINGECKO_NAMES[geckoId] ?? geckoId,
+              price: d.usd,
+              change: 0,
+              percent_change: d.usd_24h_change ?? 0,
+              high: d.usd,
+              low: d.usd,
+              volume: d.usd_24h_vol ?? 0,
+              timestamp: Date.now(),
+              is_market_open: true,
+            };
+          } else if (MOCK_QUOTES[sym]) {
+            result[sym] = MOCK_QUOTES[sym];
+          }
+        }
+      }
+    } catch {
+      for (const sym of cryptoSymbols) {
+        if (MOCK_QUOTES[sym]) result[sym] = MOCK_QUOTES[sym];
       }
     }
-
-    setCached(cacheKey, result);
-    return result;
-  } catch {
-    return Object.fromEntries(
-      symbols.flatMap((s) => (MOCK_QUOTES[s] ? [[s, MOCK_QUOTES[s]]] : []))
-    );
   }
+
+  // Fetch non-cryptos from Twelvedata
+  if (otherSymbols.length > 0) {
+    if (!API_KEY) {
+      for (const s of otherSymbols) {
+        if (MOCK_QUOTES[s]) result[s] = MOCK_QUOTES[s];
+      }
+    } else {
+      const cacheKey = `quotes:${otherSymbols.sort().join(",")}`;
+      const cached = getCached<Record<string, Quote>>(cacheKey);
+      if (cached) {
+        Object.assign(result, cached);
+      } else {
+        try {
+          const symbolList = otherSymbols.join(",");
+          const url = `${BASE_URL}/quote?symbol=${encodeURIComponent(symbolList)}&apikey=${API_KEY}`;
+          const res = await fetch(url, { next: { revalidate: 30 } });
+          const raw = await res.json();
+          const partial: Record<string, Quote> = {};
+          if (otherSymbols.length === 1) {
+            const q = parseQuote(raw, otherSymbols[0]);
+            if (q) partial[otherSymbols[0]] = q;
+          } else {
+            for (const symbol of otherSymbols) {
+              const q = parseQuote(raw[symbol], symbol);
+              if (q) partial[symbol] = q;
+              else if (MOCK_QUOTES[symbol]) partial[symbol] = MOCK_QUOTES[symbol];
+            }
+          }
+          setCached(cacheKey, partial);
+          Object.assign(result, partial);
+        } catch {
+          for (const s of otherSymbols) {
+            if (MOCK_QUOTES[s]) result[s] = MOCK_QUOTES[s];
+          }
+        }
+      }
+    }
+  }
+
+  return result;
 }
 
 // ─── fetchForexRate ──────────────────────────────────────────────────────────

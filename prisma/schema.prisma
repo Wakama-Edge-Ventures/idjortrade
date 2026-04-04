@@ -38,6 +38,7 @@ model User {
 
 enum Plan {
   FREE
+  STARTER
   BASIC
   PRO
   TRADER

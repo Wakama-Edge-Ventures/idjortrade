@@ -11,6 +11,7 @@ export type AnalyseRequest = {
   productType?: "spot" | "futures";
   platform?: string;
   currentPrice?: number;
+  modeAnalyse?: "rapide" | "approfondi";
   userProfile?: {
     prenom?: string;
     niveauTrading?: string;
@@ -50,4 +51,7 @@ export type AnalyseResponse = {
   asset: string;
   timeframe: string;
   mode: string;
+  signalOnly?: boolean;
+  warning?: string;
+  warningMessage?: string;
 };
