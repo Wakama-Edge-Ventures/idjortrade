@@ -1,55 +1,32 @@
 import CalendarFilter from "@/components/calendrier/CalendarFilter";
 import EventRow from "@/components/calendrier/EventRow";
 import ImpactBadge from "@/components/calendrier/ImpactBadge";
-import { mockEvents, type EconomicEvent } from "@/lib/economic-calendar";
+import { getMockEvents, parseFcsEvent, type EconomicEvent, type FCSRawEvent } from "@/lib/economic-calendar";
 
-const countryFlags: Record<string, string> = {
-  USD: "🇺🇸",
-  EUR: "🇪🇺",
-  GBP: "🇬🇧",
-  JPY: "🇯🇵",
-  CAD: "🇨🇦",
-  AUD: "🇦🇺",
-  CHF: "🇨🇭",
-  NZD: "🇳🇿",
-};
-
-async function getCalendarEvents(): Promise<EconomicEvent[]> {
+async function getCalendarEvents(): Promise<{ events: EconomicEvent[]; isOffline: boolean }> {
   try {
     const res = await fetch(
-      "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
+      `https://fcsapi.com/api-v3/forex/economy_cal` +
+        `?access_key=${process.env.FCSAPI_KEY}` +
+        `&category=all`,
       { next: { revalidate: 3600 } }
     );
-    if (!res.ok) throw new Error("Failed");
-    const raw = await res.json() as Array<{
-      date: string;
-      time: string;
-      country: string;
-      title: string;
-      impact: string;
-      forecast: string;
-      previous: string;
-    }>;
-    return raw.map((e, i) => ({
-      id: String(i),
-      date: e.date?.slice(0, 10) ?? "",
-      time: e.time ?? "00:00",
-      country: e.country ?? "",
-      flag: countryFlags[e.country] ?? "🌐",
-      event: e.title ?? "",
-      impact: (
-        e.impact?.toLowerCase() === "high"
-          ? "high"
-          : e.impact?.toLowerCase() === "medium"
-          ? "medium"
-          : "low"
-      ) as "low" | "medium" | "high",
-      forecast: e.forecast || null,
-      previous: e.previous || null,
-      actual: null,
-    }));
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const json = await res.json();
+    const raw: FCSRawEvent[] = Array.isArray(json)
+      ? json
+      : Array.isArray(json?.response)
+      ? json.response
+      : null;
+
+    if (!raw) throw new Error("Unexpected FCS API shape");
+
+    const events = raw.map(parseFcsEvent);
+    return { events, isOffline: false };
   } catch {
-    return mockEvents;
+    return { events: getMockEvents(), isOffline: true };
   }
 }
 
@@ -66,7 +43,7 @@ function formatDateLabel(date: string, today: string, tomorrow: string): string 
 }
 
 export default async function CalendrierPage() {
-  const events = await getCalendarEvents();
+  const { events, isOffline } = await getCalendarEvents();
 
   // Dynamic today/tomorrow
   const today = new Date().toISOString().slice(0, 10);
@@ -97,9 +74,13 @@ export default async function CalendrierPage() {
         </div>
         <span
           className="text-xs font-semibold px-3 py-1.5 rounded-lg"
-          style={{ background: "var(--surface-highest)", color: "var(--on-surface-dim)" }}
+          style={{
+            background: !isOffline ? "rgba(0,255,136,0.08)" : "var(--surface-highest)",
+            color: !isOffline ? "#00FF88" : "var(--on-surface-dim)",
+            border: !isOffline ? "1px solid rgba(0,255,136,0.2)" : "none",
+          }}
         >
-          Via Forex Factory
+          {!isOffline ? "● LIVE · FCS API" : "⚠ Données hors-ligne"}
         </span>
       </div>
 

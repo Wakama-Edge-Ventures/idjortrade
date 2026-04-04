@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wsl -d UbuntuWakama -- bash -c \"curl -s --max-time 10 'https://nfs.faireconomy.media/ff_calendar_thisweek.json' | python3 -c \\\\\"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d[0], indent=2\\)\\)\\\\\" 2>&1\")",
+      "Bash(wsl -d UbuntuWakama -- bash -c \"curl -s --max-time 10 -H 'User-Agent: Mozilla/5.0' 'https://nfs.faireconomy.media/ff_calendar_thisweek.json' | head -c 600 2>&1\")"
+    ]
+  }
+}
