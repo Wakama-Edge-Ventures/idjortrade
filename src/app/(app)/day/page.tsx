@@ -22,34 +22,36 @@ export default function DayPage() {
         accentColor="#0EA5E9"
       />
 
-      {/* Mobile: MarketContext en premier */}
-      <div className="md:hidden">
-        <MarketContext asset={asset} productType={productType} />
-      </div>
+      <div className="card p-6">
+        <div className="flex flex-col lg:flex-row gap-0 divide-y lg:divide-y-0 lg:divide-x divide-white/10">
 
-      <div className="grid grid-cols-1 lg:grid-cols-[5fr_4fr_3fr] gap-6">
-        <div className="card p-6">
-          <h2 className="font-headline font-bold text-base text-white mb-5">Configuration du trade</h2>
-          <RiskForm ref={formRef} mode="day"
-            onAssetChange={setAsset}
-            onProductTypeChange={setProductType} />
-        </div>
+          {/* Section 1 — Configuration */}
+          <div className="pb-6 lg:pb-0 lg:pr-6 lg:w-[38%]">
+            <h2 className="font-headline font-bold text-base text-white mb-5">Configuration du trade</h2>
+            <RiskForm ref={formRef} mode="day"
+              onAssetChange={setAsset}
+              onProductTypeChange={setProductType} />
+          </div>
 
-        <div className="card p-6 flex flex-col gap-5">
-          <h2 className="font-headline font-bold text-base text-white">Charger votre graphique</h2>
-          <ChartUploadZone ref={uploadRef} accentColor="#0EA5E9" />
-          <AnalyseButton
-            mode="day"
-            getFormData={() => formRef.current?.getFormData() ?? null}
-            getImageData={() => uploadRef.current?.getImageData() ?? null}
-          />
-          <p className="text-center text-xs" style={{ color: "var(--on-surface-dim)" }}>
-            ⚠ L'IA analyse l'image — résultats indicatifs uniquement
-          </p>
-        </div>
+          {/* Section 2 — Upload + Analyse */}
+          <div className="py-6 lg:py-0 lg:px-6 lg:w-[35%] flex flex-col gap-5">
+            <h2 className="font-headline font-bold text-base text-white">Charger votre graphique</h2>
+            <ChartUploadZone ref={uploadRef} accentColor="#0EA5E9" />
+            <AnalyseButton
+              mode="day"
+              getFormData={() => formRef.current?.getFormData() ?? null}
+              getImageData={() => uploadRef.current?.getImageData() ?? null}
+            />
+            <p className="text-center text-xs" style={{ color: "var(--on-surface-dim)" }}>
+              ⚠ L&apos;IA analyse l&apos;image — résultats indicatifs uniquement
+            </p>
+          </div>
 
-        <div className="hidden lg:block">
-          <MarketContext asset={asset} productType={productType} />
+          {/* Section 3 — Contexte marché */}
+          <div className="pt-6 lg:pt-0 lg:pl-6 lg:w-[27%]">
+            <MarketContext asset={asset} productType={productType} />
+          </div>
+
         </div>
       </div>
     </div>
