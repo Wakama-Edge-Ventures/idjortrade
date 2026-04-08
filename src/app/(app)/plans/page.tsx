@@ -17,17 +17,17 @@ export default function PlansPage() {
           <span
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold"
             style={{
-              background: "rgba(0,255,136,0.08)",
-              color: "#00FF88",
-              border: "1px solid rgba(0,255,136,0.15)",
+              background: "var(--bullish-muted)",
+              color: "var(--bullish)",
+              border: "1px solid rgba(20,241,149,0.15)",
             }}
           >
             💳 Paiement local
           </span>
-          <h1 className="font-headline font-black text-3xl md:text-4xl text-white">
+          <h1 className="font-display font-semibold text-3xl md:text-4xl text-white">
             Choisissez votre Terminal
           </h1>
-          <p className="text-sm md:text-base max-w-xl mx-auto" style={{ color: "var(--on-surface-dim)" }}>
+          <p className="text-sm md:text-base max-w-xl mx-auto" style={{ color: "var(--text-secondary)" }}>
             Wave · Orange Money · Visa · Mastercard · Crypto — 100% en FCFA
           </p>
           <div className="flex justify-center">
@@ -36,7 +36,7 @@ export default function PlansPage() {
         </div>
 
         {/* Plans grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-stretch">
           {plans.map((plan) => (
             <PlanCard key={plan.id} plan={plan} />
           ))}
@@ -47,7 +47,7 @@ export default function PlansPage() {
 
         {/* Comparison table */}
         <section className="space-y-5">
-          <h2 className="font-headline font-bold text-2xl text-white text-center">
+          <h2 className="font-display font-semibold text-2xl text-white text-center">
             Comparaison détaillée
           </h2>
           <ComparisonTable />
@@ -55,7 +55,7 @@ export default function PlansPage() {
 
         {/* FAQ */}
         <section className="max-w-2xl mx-auto space-y-5">
-          <h2 className="font-headline font-bold text-2xl text-white text-center">
+          <h2 className="font-display font-semibold text-2xl text-white text-center">
             Questions fréquentes
           </h2>
           <FaqAccordion items={faqItems} />
@@ -66,28 +66,28 @@ export default function PlansPage() {
           className="rounded-2xl p-8 text-center space-y-4"
           style={{
             background: "linear-gradient(135deg, #0A1A0F 0%, #0E1320 100%)",
-            border: "1px solid rgba(0,255,136,0.15)",
+            border: "1px solid rgba(20,241,149,0.15)",
           }}
         >
-          <h3 className="font-headline font-bold text-xl text-white">
+          <h3 className="font-display font-semibold text-xl text-white">
             Pas encore prêt à passer Pro ?
           </h3>
-          <p className="text-sm" style={{ color: "var(--on-surface-dim)" }}>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
             Le plan Gratuit est disponible sans limite de temps.
           </p>
           <Link
             href="/dashboard"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold"
-            style={{ background: "#00FF88", color: "#0A0E1A" }}
+            style={{ background: "var(--sol-gradient)", color: "white" }}
           >
             Démarrer avec le plan Gratuit
           </Link>
         </div>
 
         {/* Disclaimer */}
-        <p className="text-center text-xs pb-4" style={{ color: "var(--on-surface-dim)" }}>
+        <p className="text-center text-xs pb-4" style={{ color: "var(--text-secondary)" }}>
           ⚠️ Le trading de crypto-monnaies et de Forex comporte des risques de perte en capital.
-          IdjorTrade est un outil d&apos;aide à la décision et ne constitue pas un conseil financier.
+          Wickox est un outil d&apos;aide à la décision et ne constitue pas un conseil financier.
         </p>
 
       </div>

@@ -27,7 +27,7 @@ export default function FaqAccordion({ items }: { items: FaqItem[] }) {
             }}
           >
             <span className="text-sm font-semibold text-white pr-4">{item.q}</span>
-            <div className="flex-shrink-0" style={{ color: open === i ? "#00FF88" : "var(--on-surface-dim)" }}>
+            <div className="flex-shrink-0" style={{ color: open === i ? "var(--bullish)" : "var(--text-secondary)" }}>
               {open === i ? <X size={16} /> : <Plus size={16} />}
             </div>
           </button>
@@ -42,7 +42,7 @@ export default function FaqAccordion({ items }: { items: FaqItem[] }) {
             <p
               className="px-5 py-4 text-sm leading-relaxed"
               style={{
-                color: "var(--on-surface-dim)",
+                color: "var(--text-secondary)",
                 background: "var(--surface-mid)",
                 borderTop: "1px solid rgba(255,255,255,0.04)",
               }}

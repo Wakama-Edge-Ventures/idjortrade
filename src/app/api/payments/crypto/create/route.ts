@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     price_currency: "USD",
     pay_currency: currency,
     order_id: `NP-${session.user.id.slice(0, 8)}-${Date.now()}`,
-    order_description: `IdjorTrade ${planConfig.nameFr} - ${annual ? "12 mois" : "1 mois"}`,
+    order_description: `Wickox ${planConfig.nameFr} - ${annual ? "12 mois" : "1 mois"}`,
     ipn_callback_url: `${baseUrl}/api/payments/crypto/notify`,
     success_url: `${baseUrl}/plans/success?provider=crypto`,
     cancel_url: `${baseUrl}/plans`,

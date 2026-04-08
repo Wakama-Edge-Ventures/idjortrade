@@ -17,7 +17,7 @@ const MAX_MB = 10;
 const GUIDE_KEY = "chart_guide_seen";
 
 const ChartUploadZone = forwardRef<ChartUploadRef, ChartUploadZoneProps>(
-  function ChartUploadZone({ onFileSelect, accentColor = "#00FF88" }, ref) {
+  function ChartUploadZone({ onFileSelect, accentColor = "var(--bullish)" }, ref) {
     const inputRef = useRef<HTMLInputElement>(null);
     const [preview, setPreview] = useState<string | null>(null);
     const [fileName, setFileName] = useState<string | null>(null);
@@ -114,7 +114,7 @@ const ChartUploadZone = forwardRef<ChartUploadRef, ChartUploadZoneProps>(
             </span>
             <button
               className="text-[10px] font-semibold flex items-center gap-1 transition-colors"
-              style={{ color: "var(--on-surface-dim)" }}
+              style={{ color: "var(--text-secondary)" }}
               type="button"
             >
               {guideCollapsed ? (
@@ -130,7 +130,7 @@ const ChartUploadZone = forwardRef<ChartUploadRef, ChartUploadZoneProps>(
               {checkItems.map((item) => (
                 <div key={item} className="flex items-start gap-2">
                   <span className="text-sm flex-shrink-0 mt-0.5">✅</span>
-                  <span className="text-xs leading-snug" style={{ color: "var(--on-surface-dim)" }}>
+                  <span className="text-xs leading-snug" style={{ color: "var(--text-secondary)" }}>
                     {item}
                   </span>
                 </div>
@@ -151,20 +151,20 @@ const ChartUploadZone = forwardRef<ChartUploadRef, ChartUploadZoneProps>(
                 <div className="flex items-center gap-2">
                   <ImageIcon size={14} style={{ color: accentColor }} />
                   <span className="text-xs font-medium text-white truncate max-w-[180px]">{fileName}</span>
-                  {fileSize && <span className="text-[10px]" style={{ color: "var(--on-surface-dim)" }}>{fileSize}</span>}
+                  {fileSize && <span className="text-[10px]" style={{ color: "var(--text-secondary)" }}>{fileSize}</span>}
                 </div>
                 <button onClick={clear}
                   className="flex items-center gap-1 text-xs px-3 py-1 rounded-lg"
-                  style={{ background: "rgba(255,59,92,0.15)", color: "#FF3B5C" }}>
+                  style={{ background: "rgba(244,63,94,0.15)", color: "var(--bearish)" }}>
                   <X size={12} />
                   Supprimer
                 </button>
               </div>
             </div>
             <div className="flex items-center gap-2 px-3 py-2 rounded-lg"
-              style={{ background: "rgba(0,255,136,0.06)", border: "1px solid rgba(0,255,136,0.15)" }}>
-              <CheckCircle2 size={14} style={{ color: "#00FF88" }} />
-              <span className="text-xs font-semibold" style={{ color: "#00FF88" }}>
+              style={{ background: "rgba(20,241,149,0.06)", border: "1px solid rgba(20,241,149,0.15)" }}>
+              <CheckCircle2 size={14} style={{ color: "var(--bullish)" }} />
+              <span className="text-xs font-semibold" style={{ color: "var(--bullish)" }}>
                 ✓ Chart prêt pour l&apos;analyse
               </span>
             </div>
@@ -192,14 +192,14 @@ const ChartUploadZone = forwardRef<ChartUploadRef, ChartUploadZoneProps>(
                   <span className="md:hidden">📷 Prendre une photo ou </span>
                   <span style={{ color: accentColor }}>choisir un fichier</span>
                 </p>
-                <p className="text-xs" style={{ color: "var(--on-surface-dim)" }}>
+                <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
                   PNG, JPG, WEBP — max {MAX_MB} Mo
                 </p>
               </div>
             </div>
 
             {error && (
-              <p className="mt-2 text-xs font-medium" style={{ color: "#FF3B5C" }}>{error}</p>
+              <p className="mt-2 text-xs font-medium" style={{ color: "var(--bearish)" }}>{error}</p>
             )}
           </div>
         )}

@@ -4,7 +4,7 @@ interface StatCardProps {
   unit?: string;
   trend?: string;
   trendUp?: boolean;
-  borderColor?: string;
+  accentColor?: string;
 }
 
 export default function StatCard({
@@ -13,44 +13,36 @@ export default function StatCard({
   unit,
   trend,
   trendUp,
-  borderColor = "rgba(255,255,255,0.1)",
+  accentColor = "var(--sol-purple)",
 }: StatCardProps) {
+  const trendColor =
+    trendUp === undefined
+      ? "var(--text-tertiary)"
+      : trendUp
+      ? "var(--bullish)"
+      : "var(--bearish)";
+
   return (
     <div
-      className="card min-w-[160px] flex-shrink-0 p-4 flex flex-col gap-2"
-      style={{ borderLeft: `2px solid ${borderColor}` }}
+      className="card card-interactive min-w-[160px] flex-shrink-0 p-4 flex flex-col gap-2"
+      style={{ borderLeft: `2px solid ${accentColor}` }}
     >
-      <p
-        className="text-xs font-semibold uppercase tracking-wide"
-        style={{ color: "var(--on-surface-dim)" }}
-      >
-        {label}
-      </p>
+      <p className="section-label">{label}</p>
       <div className="flex items-baseline gap-1.5">
-        <span className="font-mono-data text-2xl font-bold text-white">
+        <span
+          className="font-data font-bold text-2xl"
+          style={{ color: "var(--text-primary)", letterSpacing: "-0.03em" }}
+        >
           {value}
         </span>
         {unit && (
-          <span
-            className="text-xs font-medium"
-            style={{ color: "var(--on-surface-dim)" }}
-          >
+          <span className="text-xs font-medium" style={{ color: "var(--text-tertiary)" }}>
             {unit}
           </span>
         )}
       </div>
       {trend && (
-        <p
-          className="text-xs font-medium"
-          style={{
-            color:
-              trendUp === undefined
-                ? "var(--on-surface-dim)"
-                : trendUp
-                ? "#00FF88"
-                : "#FF3B5C",
-          }}
-        >
+        <p className="text-xs font-medium" style={{ color: trendColor }}>
           {trend}
         </p>
       )}

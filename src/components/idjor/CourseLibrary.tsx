@@ -22,7 +22,7 @@ export default function CourseLibrary({ courses }: { courses: Course[] }) {
           type="text"
           placeholder="Rechercher un concept..."
           className="flex-1 bg-transparent text-sm outline-none"
-          style={{ color: 'var(--on-surface)' }}
+          style={{ color: 'var(--text-primary)' }}
         />
       </div>
 
@@ -35,13 +35,13 @@ export default function CourseLibrary({ courses }: { courses: Course[] }) {
             style={
               i === 0
                 ? {
-                    background: 'rgba(0,255,136,0.15)',
-                    color: '#00FF88',
-                    border: '1px solid rgba(0,255,136,0.2)',
+                    background: 'rgba(20,241,149,0.15)',
+                    color: 'var(--bullish)',
+                    border: '1px solid rgba(20,241,149,0.2)',
                   }
                 : {
                     background: 'var(--surface-high)',
-                    color: 'var(--on-surface-dim)',
+                    color: 'var(--text-secondary)',
                     border: '1px solid transparent',
                   }
             }

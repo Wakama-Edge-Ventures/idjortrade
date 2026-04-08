@@ -19,21 +19,21 @@ export default function FormationPage() {
 
       {/* Header */}
       <div className="text-center space-y-3">
-        <h1 className="font-headline font-bold text-3xl text-white">
+        <h1 className="font-display font-semibold text-3xl text-white">
           Formation Trading
         </h1>
-        <p className="text-base" style={{ color: "var(--on-surface-dim)" }}>
+        <p className="text-base" style={{ color: "var(--text-secondary)" }}>
           Apprends à trader pas à pas, en français
         </p>
-        <div className="flex items-center justify-center gap-4 flex-wrap text-xs" style={{ color: "var(--on-surface-dim)" }}>
+        <div className="flex items-center justify-center gap-4 flex-wrap text-xs" style={{ color: "var(--text-secondary)" }}>
           <span>
             <span className="font-bold text-white">8</span> cours disponibles
           </span>
-          <span style={{ color: "var(--outline)" }}>·</span>
+          <span style={{ color: "var(--border)" }}>·</span>
           <span>
-            <span className="font-bold" style={{ color: "#00FF88" }}>Gratuit</span> pour 3 cours
+            <span className="font-bold" style={{ color: "var(--bullish)" }}>Gratuit</span> pour 3 cours
           </span>
-          <span style={{ color: "var(--outline)" }}>·</span>
+          <span style={{ color: "var(--border)" }}>·</span>
           <span>⭐ 4.9/5</span>
         </div>
       </div>
@@ -52,7 +52,7 @@ export default function FormationPage() {
           type="text"
           placeholder="Rechercher: RSI, MACD, scalping..."
           className="flex-1 bg-transparent text-sm outline-none"
-          style={{ color: "var(--on-surface)" }}
+          style={{ color: "var(--text-primary)" }}
         />
       </div>
 
@@ -65,13 +65,13 @@ export default function FormationPage() {
             style={
               i === 0
                 ? {
-                    background: "rgba(0,255,136,0.15)",
-                    color: "#00FF88",
-                    border: "1px solid rgba(0,255,136,0.2)",
+                    background: "rgba(20,241,149,0.15)",
+                    color: "var(--bullish)",
+                    border: "1px solid rgba(20,241,149,0.2)",
                   }
                 : {
                     background: "var(--surface-high)",
-                    color: "var(--on-surface-dim)",
+                    color: "var(--text-secondary)",
                     border: "1px solid transparent",
                   }
             }
@@ -106,14 +106,14 @@ export default function FormationPage() {
           <p className="text-sm font-semibold text-white">
             Tu as des questions sur ces cours ?
           </p>
-          <p className="text-xs mt-0.5" style={{ color: "var(--on-surface-dim)" }}>
+          <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
             Idjor IA peut t&apos;expliquer n&apos;importe quel concept en détail.
           </p>
         </div>
         <Link
           href="/idjor"
           className="flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold"
-          style={{ background: "#F5A623", color: "#0A0E1A" }}
+          style={{ background: "#F5A623", color: "white" }}
         >
           <Sparkles size={14} />
           Demander à Idjor →

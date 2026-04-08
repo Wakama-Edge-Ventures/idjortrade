@@ -23,6 +23,8 @@ model User {
   analyses      Analyse[]
   trades        Trade[]
   subscription  Subscription?
+  referrals     Referral[]
+  referredBy    String?
 
   analysesToday   Int      @default(0)
   analysesResetAt DateTime @default(now())
@@ -165,6 +167,16 @@ model Subscription {
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+}
+
+model Referral {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  signups   Int      @default(0)
+  earnings  Float    @default(0)
+  createdAt DateTime @default(now())
 }
 
 model IdjorMessage {

@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import AnalysisHistoryCard from "@/components/historique/AnalysisHistoryCard";
-import type { AnalysisEntry } from "@/lib/mock-historique";
+import type { AnalysisEntry } from "@/types/analyse";
 
 export default async function HistoriquePage() {
   const session = await auth();
@@ -70,19 +70,19 @@ export default async function HistoriquePage() {
     return (
       <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-6">
         <div>
-          <h1 className="font-headline font-bold text-2xl text-white">Historique</h1>
-          <p className="text-xs mt-1" style={{ color: "var(--on-surface-dim)" }}>
+          <h1 className="font-display font-semibold text-2xl text-white">Historique</h1>
+          <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
             Toutes vos analyses précédentes
           </p>
         </div>
         <div className="flex flex-col items-center gap-4 py-16 text-center">
-          <p className="text-sm" style={{ color: "var(--on-surface-dim)" }}>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
             Aucune analyse pour l'instant.
           </p>
           <Link
             href="/swing"
             className="px-5 py-2.5 rounded-xl text-sm font-bold"
-            style={{ background: "#00FF88", color: "#0A0E1A" }}
+            style={{ background: "var(--sol-gradient)", color: "white" }}
           >
             Faire ma première analyse →
           </Link>
@@ -97,8 +97,8 @@ export default async function HistoriquePage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h1 className="font-headline font-bold text-2xl text-white">Historique</h1>
-          <p className="text-xs mt-1" style={{ color: "var(--on-surface-dim)" }}>
+          <h1 className="font-display font-semibold text-2xl text-white">Historique</h1>
+          <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
             Toutes vos analyses précédentes
           </p>
         </div>
@@ -108,8 +108,8 @@ export default async function HistoriquePage() {
       <div className="grid grid-cols-3 gap-3">
         {stats.map((s) => (
           <div key={s.label} className="card p-4 text-center">
-            <p className="font-mono-data text-2xl font-bold text-white">{s.value}</p>
-            <p className="text-xs mt-1" style={{ color: "var(--on-surface-dim)" }}>{s.label}</p>
+            <p className="font-data text-2xl font-bold text-white">{s.value}</p>
+            <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>{s.label}</p>
           </div>
         ))}
       </div>
@@ -123,7 +123,7 @@ export default async function HistoriquePage() {
             border: "1px solid rgba(245,166,35,0.15)",
           }}
         >
-          <p className="text-xs" style={{ color: "var(--on-surface-dim)" }}>
+          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
             Plan Gratuit · 7 jours d&apos;historique seulement
           </p>
           <Link href="/plans" className="text-xs font-bold" style={{ color: "#F5A623" }}>
@@ -134,7 +134,7 @@ export default async function HistoriquePage() {
 
       {/* Analyses visibles */}
       <section className="space-y-3">
-        <h2 className="font-headline font-bold text-lg text-white">Analyses récentes</h2>
+        <h2 className="font-display font-semibold text-lg text-white">Analyses récentes</h2>
         {visibleRaw.map((a) => (
           <AnalysisHistoryCard key={a.id} analysis={toEntry(a, false)} />
         ))}
@@ -143,7 +143,7 @@ export default async function HistoriquePage() {
       {/* Analyses locked */}
       {lockedRaw.length > 0 && (
         <section className="space-y-3">
-          <h2 className="font-headline font-bold text-lg" style={{ color: "var(--on-surface-dim)" }}>
+          <h2 className="font-display font-semibold text-lg" style={{ color: "var(--text-secondary)" }}>
             Analyses précédentes (verrouillées)
           </h2>
           {lockedRaw.map((a) => (
@@ -172,14 +172,14 @@ export default async function HistoriquePage() {
           <p className="text-sm font-semibold text-white">
             Accédez à tout votre historique
           </p>
-          <p className="text-xs mt-0.5" style={{ color: "var(--on-surface-dim)" }}>
+          <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
             Passez au plan Basic ou Pro pour débloquer 90 jours à l&apos;illimité d&apos;historique.
           </p>
         </div>
         <Link
           href="/plans"
           className="flex-shrink-0 px-5 py-2.5 rounded-xl text-sm font-bold"
-          style={{ background: "#F5A623", color: "#0A0E1A" }}
+          style={{ background: "#F5A623", color: "white" }}
         >
           Voir les plans
         </Link>

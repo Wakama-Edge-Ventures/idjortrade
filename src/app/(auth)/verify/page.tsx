@@ -112,7 +112,7 @@ function VerifyForm() {
     fontSize: "24px",
     fontWeight: "bold",
     background: "var(--surface-highest)",
-    border: "1px solid var(--outline)",
+    border: "1px solid var(--border)",
     borderRadius: "12px",
     color: "white",
     outline: "none",
@@ -121,11 +121,11 @@ function VerifyForm() {
   return (
     <>
       <div className="space-y-1 text-center">
-        <h1 className="font-headline font-bold text-2xl text-white">Vérifie ton email</h1>
-        <p className="text-sm" style={{ color: "var(--on-surface-dim)" }}>
+        <h1 className="font-display font-semibold text-2xl text-white">Vérifie ton email</h1>
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
           Entre le code à 6 chiffres envoyé à
         </p>
-        <p className="text-sm font-semibold" style={{ color: "#00FF88" }}>{email}</p>
+        <p className="text-sm font-semibold" style={{ color: "var(--bullish)" }}>{email}</p>
       </div>
 
       {/* 6-digit code inputs */}
@@ -143,7 +143,7 @@ function VerifyForm() {
             disabled={loading}
             style={{
               ...inputStyle,
-              borderColor: d ? "rgba(0,255,136,0.4)" : "var(--outline)",
+              borderColor: d ? "rgba(153,69,255,0.5)" : "var(--border)",
             }}
           />
         ))}
@@ -153,9 +153,9 @@ function VerifyForm() {
         <div
           className="px-4 py-3 rounded-xl text-xs font-medium text-center"
           style={{
-            background: "rgba(255,59,92,0.08)",
-            border: "1px solid rgba(255,59,92,0.2)",
-            color: "#FF3B5C",
+            background: "var(--bearish-muted)",
+            border: "1px solid rgba(244,63,94,0.2)",
+            color: "var(--bearish)",
           }}
         >
           {error}
@@ -163,13 +163,13 @@ function VerifyForm() {
       )}
 
       {loading && (
-        <p className="text-center text-sm" style={{ color: "var(--on-surface-dim)" }}>
+        <p className="text-center text-sm" style={{ color: "var(--text-secondary)" }}>
           Vérification…
         </p>
       )}
 
       <div className="text-center space-y-2">
-        <p className="text-sm" style={{ color: "var(--on-surface-dim)" }}>
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
           Tu n'as pas reçu le code ?
         </p>
         <button
@@ -177,7 +177,7 @@ function VerifyForm() {
           disabled={resendCooldown > 0}
           className="text-sm font-semibold"
           style={{
-            color: resendCooldown > 0 ? "var(--on-surface-dim)" : "#00FF88",
+            color: resendCooldown > 0 ? "var(--text-secondary)" : "var(--bullish)",
             cursor: resendCooldown > 0 ? "not-allowed" : "pointer",
             background: "none",
             border: "none",

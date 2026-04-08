@@ -30,7 +30,7 @@ export default function TradeTable({ trades }: { trades: TradeEntry[] }) {
               <th
                 key={h}
                 className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-widest"
-                style={{ color: 'var(--on-surface-dim)' }}
+                style={{ color: 'var(--text-secondary)' }}
               >
                 {h}
               </th>
@@ -40,9 +40,9 @@ export default function TradeTable({ trades }: { trades: TradeEntry[] }) {
         <tbody>
           {trades.length === 0 && (
             <tr>
-              <td colSpan={8} className="px-4 py-12 text-center text-sm" style={{ color: 'var(--on-surface-dim)' }}>
+              <td colSpan={8} className="px-4 py-12 text-center text-sm" style={{ color: 'var(--text-secondary)' }}>
                 Aucun trade pour l'instant. Fais ta première analyse sur{" "}
-                <a href="/swing" style={{ color: '#00FF88' }}>Swing Trading</a>
+                <a href="/swing" style={{ color: 'var(--bullish)' }}>Swing Trading</a>
               </td>
             </tr>
           )}
@@ -58,10 +58,10 @@ export default function TradeTable({ trades }: { trades: TradeEntry[] }) {
                 (e.currentTarget as HTMLElement).style.background = 'transparent';
               }}
             >
-              <td className="px-4 py-3 text-xs" style={{ color: 'var(--on-surface-dim)' }}>
+              <td className="px-4 py-3 text-xs" style={{ color: 'var(--text-secondary)' }}>
                 {trade.date}
               </td>
-              <td className="px-4 py-3 font-mono-data text-xs font-semibold text-white">
+              <td className="px-4 py-3 font-data text-xs font-semibold text-white">
                 {trade.asset}
               </td>
               <td className="px-4 py-3">
@@ -69,37 +69,37 @@ export default function TradeTable({ trades }: { trades: TradeEntry[] }) {
                   className="text-[10px] font-bold px-2 py-0.5 rounded-md"
                   style={
                     trade.direction === 'BUY'
-                      ? { background: 'rgba(0,255,136,0.12)', color: '#00FF88' }
-                      : { background: 'rgba(255,59,92,0.12)', color: '#FF3B5C' }
+                      ? { background: 'rgba(20,241,149,0.12)', color: 'var(--bullish)' }
+                      : { background: 'rgba(244,63,94,0.12)', color: 'var(--bearish)' }
                   }
                 >
                   {trade.direction === 'BUY' ? 'ACHAT' : 'VENTE'}
                 </span>
               </td>
-              <td className="px-4 py-3 font-mono-data text-xs text-white">
+              <td className="px-4 py-3 font-data text-xs text-white">
                 {formatPrice(trade.entry)}
               </td>
-              <td className="px-4 py-3 font-mono-data text-xs" style={{ color: 'var(--on-surface-dim)' }}>
+              <td className="px-4 py-3 font-data text-xs" style={{ color: 'var(--text-secondary)' }}>
                 {trade.exit !== null ? formatPrice(trade.exit) : (
                   <span style={{ color: '#F5A623' }}>En cours</span>
                 )}
               </td>
-              <td className="px-4 py-3 font-mono-data text-xs font-bold">
+              <td className="px-4 py-3 font-data text-xs font-bold">
                 {trade.pnlFCFA !== null ? (
-                  <span style={{ color: trade.pnlFCFA >= 0 ? '#00FF88' : '#FF3B5C' }}>
+                  <span style={{ color: trade.pnlFCFA >= 0 ? 'var(--bullish)' : 'var(--bearish)' }}>
                     {trade.pnlFCFA >= 0 ? '+' : ''}{trade.pnlFCFA.toLocaleString('fr-FR')} F
                   </span>
                 ) : (
-                  <span style={{ color: 'var(--on-surface-dim)' }}>—</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>—</span>
                 )}
               </td>
-              <td className="px-4 py-3 font-mono-data text-xs font-bold">
+              <td className="px-4 py-3 font-data text-xs font-bold">
                 {trade.rRealized !== null ? (
-                  <span style={{ color: trade.rRealized >= 0 ? '#00CC6A' : '#FF3B5C' }}>
+                  <span style={{ color: trade.rRealized >= 0 ? '#00CC6A' : 'var(--bearish)' }}>
                     {trade.rRealized >= 0 ? '+' : ''}{trade.rRealized}R
                   </span>
                 ) : (
-                  <span style={{ color: 'var(--on-surface-dim)' }}>—</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>—</span>
                 )}
               </td>
               <td className="px-4 py-3">
@@ -107,8 +107,8 @@ export default function TradeTable({ trades }: { trades: TradeEntry[] }) {
                   className="text-[10px] font-semibold px-2 py-0.5 rounded-md"
                   style={
                     trade.source === 'IA'
-                      ? { background: 'rgba(0,255,136,0.1)', color: '#00CC6A' }
-                      : { background: 'var(--surface-highest)', color: 'var(--on-surface-dim)' }
+                      ? { background: 'rgba(20,241,149,0.1)', color: '#00CC6A' }
+                      : { background: 'var(--surface-highest)', color: 'var(--text-secondary)' }
                   }
                 >
                   {trade.source}

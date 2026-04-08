@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     transaction_id: transactionId,
     amount: amountFCFA,
     currency: "XOF",
-    description: `IdjorTrade ${planConfig.nameFr} - ${annual ? "12 mois" : "1 mois"}`,
+    description: `Wickox ${planConfig.nameFr} - ${annual ? "12 mois" : "1 mois"}`,
     notify_url: `${baseUrl}/api/payments/cinetpay/notify`,
     return_url: `${baseUrl}/plans/success?provider=cinetpay`,
     channels: "ALL",

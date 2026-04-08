@@ -12,11 +12,11 @@ const anneesOptions = [{ id: '0', label: 'Jamais' }, { id: '1-2', label: '1-2 an
 const sourceOptions = ['YouTube', 'Formation payante', 'Livre', 'Ami/communauté', 'Autodidacte', "Pas encore appris"];
 
 const pillBase: React.CSSProperties = { padding: "8px 16px", borderRadius: "999px", fontSize: "13px", fontWeight: 600, cursor: "pointer", transition: "all 0.15s", border: "1px solid transparent" };
-const pillActive: React.CSSProperties = { ...pillBase, background: "#00FF88", color: "#0A0E1A", border: "1px solid #00FF88" };
-const pillInactive: React.CSSProperties = { ...pillBase, background: "var(--surface-high)", color: "var(--on-surface-dim)" };
+const pillActive: React.CSSProperties = { ...pillBase, background: "var(--sol-gradient)", color: "white", border: "1px solid var(--bullish)" };
+const pillInactive: React.CSSProperties = { ...pillBase, background: "var(--surface-high)", color: "var(--text-secondary)" };
 const chipBase: React.CSSProperties = { padding: "6px 14px", borderRadius: "999px", fontSize: "12px", fontWeight: 600, cursor: "pointer", transition: "all 0.15s", border: "1px solid transparent" };
-const chipActive: React.CSSProperties = { ...chipBase, background: "rgba(0,255,136,0.15)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.3)" };
-const chipInactive: React.CSSProperties = { ...chipBase, background: "var(--surface-high)", color: "var(--on-surface-dim)" };
+const chipActive: React.CSSProperties = { ...chipBase, background: "rgba(20,241,149,0.15)", color: "var(--bullish)", border: "1px solid rgba(20,241,149,0.3)" };
+const chipInactive: React.CSSProperties = { ...chipBase, background: "var(--surface-high)", color: "var(--text-secondary)" };
 
 export default function Step2Experience({ data, onChange }: Props) {
   const toggleSource = (id: string) => {
@@ -27,7 +27,7 @@ export default function Step2Experience({ data, onChange }: Props) {
   return (
     <div className="space-y-7">
       <div className="text-center space-y-2">
-        <h2 className="font-headline font-bold text-2xl text-white">📊 Ton niveau de trading</h2>
+        <h2 className="font-display font-semibold text-2xl text-white">📊 Ton niveau de trading</h2>
       </div>
 
       {/* Niveau */}
@@ -40,14 +40,14 @@ export default function Step2Experience({ data, onChange }: Props) {
               onClick={() => onChange({ niveauTrading: n.id as OnboardingData['niveauTrading'] })}
               className="text-left p-4 rounded-2xl transition-all"
               style={{
-                background: active ? "rgba(0,255,136,0.08)" : "var(--surface-high)",
-                border: active ? "1px solid rgba(0,255,136,0.4)" : "1px solid rgba(255,255,255,0.06)",
-                boxShadow: active ? "0 0 10px rgba(0,255,136,0.2)" : "none",
+                background: active ? "var(--bullish-muted)" : "var(--surface-high)",
+                border: active ? "1px solid rgba(153,69,255,0.5)" : "1px solid rgba(255,255,255,0.06)",
+                boxShadow: active ? "0 0 10px rgba(20,241,149,0.2)" : "none",
               }}
             >
               <div className="text-2xl mb-2">{n.emoji}</div>
               <p className="font-bold text-sm text-white">{n.label}</p>
-              <p className="text-xs mt-0.5" style={{ color: "var(--on-surface-dim)" }}>{n.description}</p>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>{n.description}</p>
             </button>
           );
         })}
@@ -55,7 +55,7 @@ export default function Step2Experience({ data, onChange }: Props) {
 
       {/* Ancienneté */}
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--on-surface-dim)" }}>
+        <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--text-secondary)" }}>
           Depuis combien de temps tu trades ?
         </p>
         <div className="flex flex-wrap gap-2">
@@ -70,7 +70,7 @@ export default function Step2Experience({ data, onChange }: Props) {
 
       {/* A déjà perdu */}
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--on-surface-dim)" }}>
+        <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--text-secondary)" }}>
           As-tu déjà perdu une somme importante en tradant ?
         </p>
         <div className="flex gap-2">
@@ -81,7 +81,7 @@ export default function Step2Experience({ data, onChange }: Props) {
 
       {/* Sources */}
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--on-surface-dim)" }}>
+        <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--text-secondary)" }}>
           Comment as-tu appris le trading ? (plusieurs choix)
         </p>
         <div className="flex flex-wrap gap-2">

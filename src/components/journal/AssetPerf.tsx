@@ -18,7 +18,7 @@ export default function AssetPerf({ trades }: { trades: TradePoint[] }) {
   if (assetData.length === 0) {
     return (
       <div className="card p-5 flex items-center justify-center">
-        <p className="text-xs text-center" style={{ color: 'var(--on-surface-dim)' }}>Aucune donnée</p>
+        <p className="text-xs text-center" style={{ color: 'var(--text-secondary)' }}>Aucune donnée</p>
       </div>
     );
   }
@@ -27,20 +27,20 @@ export default function AssetPerf({ trades }: { trades: TradePoint[] }) {
 
   return (
     <div className="card p-5 space-y-4">
-      <h3 className="font-headline font-bold text-base text-white">
+      <h3 className="font-display font-semibold text-base text-white">
         Performance par actif
       </h3>
       <div className="space-y-3">
         {assetData.map((item) => {
           const pct = maxAbs > 0 ? (Math.abs(item.pnl) / maxAbs) * 100 : 0;
-          const color = item.pnl > 0 ? '#00FF88' : item.pnl < 0 ? '#FF3B5C' : 'var(--surface-highest)';
+          const color = item.pnl > 0 ? 'var(--bullish)' : item.pnl < 0 ? 'var(--bearish)' : 'var(--surface-highest)';
           return (
             <div key={item.symbol} className="space-y-1">
               <div className="flex justify-between text-xs">
-                <span className="font-mono-data font-semibold" style={{ color: 'var(--on-surface)' }}>
+                <span className="font-data font-semibold" style={{ color: 'var(--text-primary)' }}>
                   {item.symbol}
                 </span>
-                <span className="font-mono-data font-bold" style={{ color }}>
+                <span className="font-data font-bold" style={{ color }}>
                   {item.pnl === 0 ? '—' : `${item.pnl > 0 ? '+' : ''}${item.pnl.toLocaleString('fr-FR')} F`}
                 </span>
               </div>

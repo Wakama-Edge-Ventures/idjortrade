@@ -46,7 +46,7 @@ function MiniCandles({ candles }: { candles: Candle[] }) {
       {last8.map((c, i) => {
         const x = i * (candleW + gap);
         const isBull = c.close >= c.open;
-        const color = isBull ? "#00FF88" : "#FF3B5C";
+        const color = isBull ? "var(--bullish)" : "var(--bearish)";
         const bodyTop = yOf(Math.max(c.open, c.close));
         const bodyBottom = yOf(Math.min(c.open, c.close));
         const bodyH = Math.max(1, bodyBottom - bodyTop);
@@ -113,8 +113,8 @@ export default function MarketContext({ asset, productType }: MarketContextProps
   }, [asset]);
 
   const sentimentColors = {
-    bullish: "#00FF88",
-    bearish: "#FF3B5C",
+    bullish: "var(--bullish)",
+    bearish: "var(--bearish)",
     neutral: "#F5A623",
   };
   const sentimentLabels = {
@@ -126,7 +126,7 @@ export default function MarketContext({ asset, productType }: MarketContextProps
   if (!asset.trim() || asset.trim().length < 3) {
     return (
       <div className="card p-5 flex items-center justify-center" style={{ minHeight: 160 }}>
-        <p className="text-xs text-center" style={{ color: "var(--on-surface-dim)" }}>
+        <p className="text-xs text-center" style={{ color: "var(--text-secondary)" }}>
           Renseignez l&apos;actif pour voir le contexte marché
         </p>
       </div>
@@ -136,8 +136,8 @@ export default function MarketContext({ asset, productType }: MarketContextProps
   if (notSupported) {
     return (
       <div className="card p-5 flex items-center justify-center" style={{ minHeight: 160 }}>
-        <p className="text-xs text-center" style={{ color: "var(--on-surface-dim)" }}>
-          Données non disponibles pour cet asset — vérifiez le symbole ou utilisez le format <span className="font-mono-data text-white">SOL/USDT</span>
+        <p className="text-xs text-center" style={{ color: "var(--text-secondary)" }}>
+          Données non disponibles pour cet asset — vérifiez le symbole ou utilisez le format <span className="font-data text-white">SOL/USDT</span>
         </p>
       </div>
     );
@@ -154,14 +154,14 @@ export default function MarketContext({ asset, productType }: MarketContextProps
   if (!data) return null;
 
   const changePositive = data.change24h >= 0;
-  const priceColor = changePositive ? "#00FF88" : "#FF3B5C";
+  const priceColor = changePositive ? "var(--bullish)" : "var(--bearish)";
   const sentimentColor = sentimentColors[data.marketSentiment];
 
   return (
     <div className="card p-5 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <p className="text-[10px] font-bold tracking-widest" style={{ color: "var(--on-surface-dim)" }}>
+        <p className="text-[10px] font-bold tracking-widest" style={{ color: "var(--text-secondary)" }}>
           CONTEXTE MARCHÉ
         </p>
         {productType === "futures" && (
@@ -174,14 +174,14 @@ export default function MarketContext({ asset, productType }: MarketContextProps
 
       {/* Prix actuel */}
       <div>
-        <p className="font-mono-data font-bold text-2xl leading-tight" style={{ color: priceColor }}>
+        <p className="font-data font-bold text-2xl leading-tight" style={{ color: priceColor }}>
           ${formatPrice(data.currentPrice)}
         </p>
         <div className="flex items-center gap-2 mt-0.5">
           <span className="text-sm font-semibold" style={{ color: priceColor }}>
             {changePositive ? "▲" : "▼"} {Math.abs(data.change24h).toFixed(2)}%
           </span>
-          <span className="text-xs" style={{ color: "var(--on-surface-dim)" }}>24h</span>
+          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>24h</span>
         </div>
       </div>
 
@@ -191,20 +191,20 @@ export default function MarketContext({ asset, productType }: MarketContextProps
           style={{ background: `${sentimentColor}15`, color: sentimentColor, border: `1px solid ${sentimentColor}30` }}>
           {sentimentLabels[data.marketSentiment]}
         </span>
-        <span className="text-xs" style={{ color: "var(--on-surface-dim)" }}>
+        <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
           Vol: {formatVolume(data.volume24h)}
         </span>
       </div>
 
       {/* High / Low */}
       <div className="grid grid-cols-2 gap-2 text-xs">
-        <div className="rounded-lg px-3 py-2" style={{ background: "rgba(0,255,136,0.04)", border: "1px solid rgba(0,255,136,0.1)" }}>
-          <p style={{ color: "var(--on-surface-dim)" }}>Haut 24h</p>
-          <p className="font-mono-data font-semibold text-white">${formatPrice(data.high24h)}</p>
+        <div className="rounded-lg px-3 py-2" style={{ background: "rgba(20,241,149,0.04)", border: "1px solid rgba(20,241,149,0.1)" }}>
+          <p style={{ color: "var(--text-secondary)" }}>Haut 24h</p>
+          <p className="font-data font-semibold text-white">${formatPrice(data.high24h)}</p>
         </div>
-        <div className="rounded-lg px-3 py-2" style={{ background: "rgba(255,59,92,0.04)", border: "1px solid rgba(255,59,92,0.1)" }}>
-          <p style={{ color: "var(--on-surface-dim)" }}>Bas 24h</p>
-          <p className="font-mono-data font-semibold text-white">${formatPrice(data.low24h)}</p>
+        <div className="rounded-lg px-3 py-2" style={{ background: "rgba(244,63,94,0.04)", border: "1px solid rgba(244,63,94,0.1)" }}>
+          <p style={{ color: "var(--text-secondary)" }}>Bas 24h</p>
+          <p className="font-data font-semibold text-white">${formatPrice(data.low24h)}</p>
         </div>
       </div>
 
@@ -213,13 +213,13 @@ export default function MarketContext({ asset, productType }: MarketContextProps
         <div className="space-y-1.5">
           {data.resistanceLevels.length > 0 && (
             <div>
-              <p className="text-[9px] font-bold tracking-widest mb-1" style={{ color: "#FF3B5C" }}>
+              <p className="text-[9px] font-bold tracking-widest mb-1" style={{ color: "var(--bearish)" }}>
                 RÉSISTANCES
               </p>
               <div className="flex gap-1 flex-wrap">
                 {data.resistanceLevels.map((r, i) => (
-                  <span key={i} className="text-[10px] font-mono-data px-1.5 py-0.5 rounded"
-                    style={{ background: "rgba(255,59,92,0.1)", color: "#FF3B5C" }}>
+                  <span key={i} className="text-[10px] font-data px-1.5 py-0.5 rounded"
+                    style={{ background: "rgba(244,63,94,0.1)", color: "var(--bearish)" }}>
                     ${formatPrice(r)}
                   </span>
                 ))}
@@ -228,13 +228,13 @@ export default function MarketContext({ asset, productType }: MarketContextProps
           )}
           {data.supportLevels.length > 0 && (
             <div>
-              <p className="text-[9px] font-bold tracking-widest mb-1" style={{ color: "#00FF88" }}>
+              <p className="text-[9px] font-bold tracking-widest mb-1" style={{ color: "var(--bullish)" }}>
                 SUPPORTS
               </p>
               <div className="flex gap-1 flex-wrap">
                 {data.supportLevels.map((s, i) => (
-                  <span key={i} className="text-[10px] font-mono-data px-1.5 py-0.5 rounded"
-                    style={{ background: "rgba(0,255,136,0.1)", color: "#00FF88" }}>
+                  <span key={i} className="text-[10px] font-data px-1.5 py-0.5 rounded"
+                    style={{ background: "rgba(20,241,149,0.1)", color: "var(--bullish)" }}>
                     ${formatPrice(s)}
                   </span>
                 ))}
@@ -247,7 +247,7 @@ export default function MarketContext({ asset, productType }: MarketContextProps
       {/* Mini candles */}
       {data.recentCandles.length >= 2 && (
         <div>
-          <p className="text-[9px] font-bold tracking-widest mb-2" style={{ color: "var(--on-surface-dim)" }}>
+          <p className="text-[9px] font-bold tracking-widest mb-2" style={{ color: "var(--text-secondary)" }}>
             BOUGIES 1H (8 dernières)
           </p>
           <MiniCandles candles={data.recentCandles} />

@@ -197,15 +197,15 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
     }));
 
     const btnBase    = "px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer";
-    const btnActive  = { background: "rgba(0,255,136,0.15)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.3)" };
-    const btnInactive = { background: "var(--surface-highest)", color: "var(--on-surface-dim)", border: "1px solid transparent" };
+    const btnActive  = { background: "rgba(20,241,149,0.15)", color: "var(--bullish)", border: "1px solid rgba(20,241,149,0.3)" };
+    const btnInactive = { background: "var(--surface-highest)", color: "var(--text-secondary)", border: "1px solid transparent" };
 
     return (
       <div className="space-y-5">
 
         {/* Actif avec suggestions */}
         <div className="space-y-1.5" ref={assetRef}>
-          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
             Actif *
           </label>
           <div className="relative">
@@ -213,20 +213,20 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
               type="text" value={asset}
               onChange={e => handleAssetChange(e.target.value)}
               placeholder="Ex: SOL/USDT, BTC/USDT, EUR/USD"
-              className="w-full rounded-xl px-4 py-3 text-sm font-mono-data text-white outline-none transition-colors"
-              style={{ background: "var(--surface-highest)", border: "1px solid var(--outline)" }}
-              onFocus={e => { (e.target as HTMLElement).style.borderColor = "rgba(0,255,136,0.4)"; if (suggestions.length > 0) setShowSuggestions(true); }}
-              onBlur={e => { (e.target as HTMLElement).style.borderColor = "var(--outline)"; }}
+              className="w-full rounded-xl px-4 py-3 text-sm font-data text-white outline-none transition-colors"
+              style={{ background: "var(--surface-highest)", border: "1px solid var(--border)" }}
+              onFocus={e => { (e.target as HTMLElement).style.borderColor = "rgba(153,69,255,0.5)"; if (suggestions.length > 0) setShowSuggestions(true); }}
+              onBlur={e => { (e.target as HTMLElement).style.borderColor = "var(--border)"; }}
             />
             {showSuggestions && suggestions.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-1 rounded-xl overflow-hidden z-30 shadow-2xl"
                 style={{ background: "var(--surface-high)", border: "1px solid rgba(255,255,255,0.08)" }}>
                 {suggestions.map(s => (
                   <button key={s} type="button"
-                    className="w-full text-left px-4 py-2.5 text-sm font-mono-data transition-colors"
-                    style={{ color: "var(--on-surface-dim)" }}
+                    className="w-full text-left px-4 py-2.5 text-sm font-data transition-colors"
+                    style={{ color: "var(--text-secondary)" }}
                     onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; (e.currentTarget as HTMLElement).style.color = "white"; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "var(--on-surface-dim)"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)"; }}
                     onMouseDown={() => selectSuggestion(s)}>
                     {s}
                   </button>
@@ -238,7 +238,7 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
 
         {/* Type de produit */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
             Type de produit
           </label>
           <div className="flex gap-2">
@@ -255,53 +255,53 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
 
         {/* Plateforme */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
             Plateforme de trading
           </label>
           <select value={platform} onChange={e => setPlatform(e.target.value)}
             className="w-full rounded-xl px-4 py-3 text-sm text-white outline-none appearance-none cursor-pointer"
-            style={{ background: "var(--surface-highest)", border: "1px solid var(--outline)" }}>
+            style={{ background: "var(--surface-highest)", border: "1px solid var(--border)" }}>
             {PLATFORMS.map(p => <option key={p} value={p}>{p}</option>)}
           </select>
         </div>
 
         {/* Prix actuel */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
             Prix actuel de l&apos;asset
           </label>
           <div className="relative">
             {priceLoading ? (
-              <div className="w-full rounded-xl px-4 py-3 text-sm font-mono-data flex items-center gap-2"
-                style={{ background: "var(--surface-highest)", border: "1px solid var(--outline)", color: "var(--on-surface-dim)" }}>
+              <div className="w-full rounded-xl px-4 py-3 text-sm font-data flex items-center gap-2"
+                style={{ background: "var(--surface-highest)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
                 <svg className="animate-spin w-3 h-3" viewBox="0 0 12 12" fill="none">
                   <circle cx="6" cy="6" r="4" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.3"/>
-                  <path d="M6 2a4 4 0 0 1 4 4" stroke="#00FF88" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M6 2a4 4 0 0 1 4 4" stroke="var(--bullish)" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
                 Récupération du prix…
               </div>
             ) : currentPrice != null ? (
               <>
                 <input type="number" value={currentPrice} readOnly
-                  className="w-full rounded-xl px-4 py-3 pr-28 text-sm font-mono-data text-white outline-none"
-                  style={{ background: "var(--surface-highest)", border: "1px solid rgba(0,255,136,0.3)" }} />
+                  className="w-full rounded-xl px-4 py-3 pr-28 text-sm font-data text-white outline-none"
+                  style={{ background: "var(--surface-highest)", border: "1px solid rgba(20,241,149,0.3)" }} />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap"
-                  style={{ background: "rgba(0,255,136,0.15)", color: "#00FF88" }}>
+                  style={{ background: "rgba(20,241,149,0.15)", color: "var(--bullish)" }}>
                   {priceBadge}
                 </span>
               </>
             ) : (
               <input type="number" value={manualPrice} onChange={e => setManualPrice(e.target.value)}
                 placeholder={priceFailed ? "Entrez le prix manuellement" : "Renseignez l'actif pour auto-remplir"}
-                className="w-full rounded-xl px-4 py-3 text-sm font-mono-data text-white outline-none transition-colors"
-                style={{ background: "var(--surface-highest)", border: "1px solid var(--outline)" }}
-                onFocus={e => { (e.target as HTMLElement).style.borderColor = "rgba(0,255,136,0.4)"; }}
-                onBlur={e => { (e.target as HTMLElement).style.borderColor = "var(--outline)"; }}
+                className="w-full rounded-xl px-4 py-3 text-sm font-data text-white outline-none transition-colors"
+                style={{ background: "var(--surface-highest)", border: "1px solid var(--border)" }}
+                onFocus={e => { (e.target as HTMLElement).style.borderColor = "rgba(153,69,255,0.5)"; }}
+                onBlur={e => { (e.target as HTMLElement).style.borderColor = "var(--border)"; }}
               />
             )}
           </div>
           {currentPrice != null && (
-            <p className="text-[10px]" style={{ color: "var(--on-surface-dim)" }}>
+            <p className="text-[10px]" style={{ color: "var(--text-secondary)" }}>
               Prix récupéré automatiquement — vérifiez sur votre plateforme avant d&apos;analyser
             </p>
           )}
@@ -309,43 +309,43 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
 
         {/* Capital */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
             Capital disponible
           </label>
           <div className="relative">
             <input type="number" value={capital} onChange={e => setCapital(e.target.value)} placeholder="250 000"
-              className="w-full rounded-xl px-4 py-3 text-sm font-mono-data text-white outline-none transition-colors"
-              style={{ background: "var(--surface-highest)", border: "1px solid var(--outline)" }}
-              onFocus={e => { (e.target as HTMLElement).style.borderColor = "rgba(0,255,136,0.4)"; }}
-              onBlur={e => { (e.target as HTMLElement).style.borderColor = "var(--outline)"; }} />
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs" style={{ color: "var(--on-surface-dim)" }}>FCFA</span>
+              className="w-full rounded-xl px-4 py-3 text-sm font-data text-white outline-none transition-colors"
+              style={{ background: "var(--surface-highest)", border: "1px solid var(--border)" }}
+              onFocus={e => { (e.target as HTMLElement).style.borderColor = "rgba(153,69,255,0.5)"; }}
+              onBlur={e => { (e.target as HTMLElement).style.borderColor = "var(--border)"; }} />
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs" style={{ color: "var(--text-secondary)" }}>FCFA</span>
           </div>
           {capitalNum > 0 && (
-            <p className="text-xs" style={{ color: "var(--on-surface-dim)" }}>≈ ${capitalUSD.toLocaleString("fr-FR")} USD</p>
+            <p className="text-xs" style={{ color: "var(--text-secondary)" }}>≈ ${capitalUSD.toLocaleString("fr-FR")} USD</p>
           )}
         </div>
 
         {/* Risque */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>
+            <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
               Risque par trade
             </label>
-            <span className="text-sm font-bold font-mono-data" style={{ color: "#00FF88" }}>
+            <span className="text-sm font-bold font-data" style={{ color: "var(--bullish)" }}>
               {risque}% {capitalNum > 0 && `= ${riskFCFA.toLocaleString("fr-FR")} FCFA`}
             </span>
           </div>
           <input type="range" min="0.25" max="5" step="0.25" value={risque} onChange={e => setRisque(parseFloat(e.target.value))}
             className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
-            style={{ accentColor: "var(--primary)", background: `linear-gradient(to right, #00FF88 0%, #00FF88 ${(risque/5)*100}%, var(--surface-highest) ${(risque/5)*100}%, var(--surface-highest) 100%)` }} />
-          <div className="flex justify-between text-[10px]" style={{ color: "var(--on-surface-dim)" }}>
+            style={{ accentColor: "var(--sol-purple)", background: `linear-gradient(to right, #14F195 0%, #14F195 ${(risque/5)*100}%, var(--surface-highest) ${(risque/5)*100}%, var(--surface-highest) 100%)` }} />
+          <div className="flex justify-between text-[10px]" style={{ color: "var(--text-secondary)" }}>
             <span>0.25%</span><span>5%</span>
           </div>
         </div>
 
         {/* R/R */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>Ratio R/R</label>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>Ratio R/R</label>
           <div className="flex gap-2 flex-wrap">
             {rrOptions.map(opt => (
               <button key={opt} className={btnBase} style={rr === opt ? btnActive : btnInactive} onClick={() => setRr(opt)}>{opt}</button>
@@ -355,7 +355,7 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
 
         {/* Marché */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>Marché</label>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>Marché</label>
           <div className="flex gap-2 flex-wrap">
             {marches.map(m => (
               <button key={m} className={btnBase} style={marche === m ? btnActive : btnInactive} onClick={() => setMarche(m)}>{m}</button>
@@ -365,7 +365,7 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
 
         {/* Trading Mode + Timeframe */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>Style · Timeframe</label>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>Style · Timeframe</label>
           <div className="flex gap-1.5">
             {TIMEFRAME_GROUPS.map(g => (
               <button key={g.mode} className={btnBase} style={tradingMode === g.mode ? btnActive : btnInactive}
@@ -382,7 +382,7 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
 
         {/* Mode analyse */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>Mode analyse</label>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>Mode analyse</label>
           <div className="flex gap-2">
             {(["rapide", "approfondi"] as const).map(m => (
               <button key={m} className={btnBase}
@@ -396,10 +396,10 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
 
         {/* Récap live */}
         {capitalNum > 0 && (
-          <div className="rounded-xl px-4 py-3" style={{ background: "rgba(0,255,136,0.04)", border: "1px solid rgba(0,255,136,0.12)" }}>
-            <p className="text-xs font-mono-data" style={{ color: "var(--on-surface-dim)" }}>
-              Risque: <span style={{ color: "#FF3B5C" }}>{riskFCFA.toLocaleString("fr-FR")} FCFA</span>
-              {" → "}Gain cible: <span style={{ color: "#00FF88" }}>{gainFCFA.toLocaleString("fr-FR")} FCFA</span>
+          <div className="rounded-xl px-4 py-3" style={{ background: "rgba(20,241,149,0.04)", border: "1px solid rgba(20,241,149,0.12)" }}>
+            <p className="text-xs font-data" style={{ color: "var(--text-secondary)" }}>
+              Risque: <span style={{ color: "var(--bearish)" }}>{riskFCFA.toLocaleString("fr-FR")} FCFA</span>
+              {" → "}Gain cible: <span style={{ color: "var(--bullish)" }}>{gainFCFA.toLocaleString("fr-FR")} FCFA</span>
               {" "}({rr === "Custom" ? "Custom" : rr})
             </p>
           </div>
@@ -408,7 +408,7 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
         {/* Actions */}
         <div className="flex gap-2 pt-1">
           <button className="flex-1 py-2 rounded-xl text-sm font-semibold transition-colors"
-            style={{ border: "1px solid var(--outline)", color: "var(--on-surface-dim)" }}
+            style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}
             onClick={() => {
               setAsset(""); setCapital(""); setRisque(1); setRr("1:2"); setMarche("Crypto");
               setProductType("spot"); setPlatform("Binance");
@@ -419,7 +419,7 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
             Réinitialiser
           </button>
           <button className="flex-1 py-2 rounded-xl text-sm font-semibold transition-colors"
-            style={{ border: "1px solid rgba(0,255,136,0.3)", color: "#00FF88" }}>
+            style={{ border: "1px solid rgba(20,241,149,0.3)", color: "var(--bullish)" }}>
             Sauvegarder défaut
           </button>
         </div>

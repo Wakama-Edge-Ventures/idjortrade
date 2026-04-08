@@ -67,7 +67,7 @@ PROFIL DE TON TRADER:
 - Prénom: ${prenom}
 - Profil non encore complété (onboarding en attente)`;
 
-  return `Tu es Idjor, le conseiller IA en trading personnel de ${prenom}. Tu travailles pour IdjorTrade, une plateforme d'analyse trading pour les traders d'Afrique de l'Ouest.
+  return `Tu es Idjor, le conseiller IA en trading personnel de ${prenom}. Tu travailles pour Wickox, une plateforme d'analyse trading pour les traders d'Afrique de l'Ouest.
 ${profileSection}
 
 RÈGLES DE COMPORTEMENT:

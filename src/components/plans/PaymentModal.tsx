@@ -130,9 +130,9 @@ export default function PaymentModal({ plan, annual, onClose }: PaymentModalProp
     cursor: "pointer",
     border: "none",
     transition: "all 0.15s",
-    background: active ? "rgba(0,255,136,0.12)" : "transparent",
-    color: active ? "#00FF88" : "var(--on-surface-dim)",
-    outline: active ? "1px solid rgba(0,255,136,0.25)" : "none",
+    background: active ? "rgba(20,241,149,0.12)" : "transparent",
+    color: active ? "var(--bullish)" : "var(--text-secondary)",
+    outline: active ? "1px solid rgba(20,241,149,0.25)" : "none",
   });
 
   const primaryBtn: React.CSSProperties = {
@@ -143,8 +143,8 @@ export default function PaymentModal({ plan, annual, onClose }: PaymentModalProp
     fontWeight: 700,
     cursor: loading ? "not-allowed" : "pointer",
     border: "none",
-    background: loading ? "var(--surface-highest)" : "#00FF88",
-    color: loading ? "var(--on-surface-dim)" : "#0A0E1A",
+    background: loading ? "var(--surface-highest)" : "var(--bullish)",
+    color: loading ? "var(--text-secondary)" : "white",
     opacity: loading ? 0.7 : 1,
     transition: "all 0.15s",
   };
@@ -166,16 +166,16 @@ export default function PaymentModal({ plan, annual, onClose }: PaymentModalProp
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="font-headline font-bold text-lg text-white">
+            <h2 className="font-display font-semibold text-lg text-white">
               Passer au plan {config.nameFr}
             </h2>
-            <p className="text-xs mt-0.5" style={{ color: "var(--on-surface-dim)" }}>
+            <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
               {amountFCFA.toLocaleString("fr-FR")} FCFA / {annual ? "mois (annuel)" : "mois"}
             </p>
           </div>
           <button
             onClick={onClose}
-            style={{ color: "var(--on-surface-dim)", background: "transparent", border: "none", cursor: "pointer", borderRadius: "8px", padding: "6px" }}
+            style={{ color: "var(--text-secondary)", background: "transparent", border: "none", cursor: "pointer", borderRadius: "8px", padding: "6px" }}
           >
             <X size={18} />
           </button>
@@ -203,7 +203,7 @@ export default function PaymentModal({ plan, annual, onClose }: PaymentModalProp
               </div>
             )}
 
-            <p className="text-sm" style={{ color: "var(--on-surface-dim)" }}>
+            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
               Payez avec votre mobile ou votre carte bancaire. KkiaPay gère tout en toute sécurité.
             </p>
 
@@ -213,7 +213,7 @@ export default function PaymentModal({ plan, annual, onClose }: PaymentModalProp
                 <span
                   key={m}
                   className="px-2.5 py-1 rounded-lg text-xs font-semibold"
-                  style={{ background: "rgba(0,255,136,0.07)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.15)" }}
+                  style={{ background: "rgba(20,241,149,0.07)", color: "var(--bullish)", border: "1px solid rgba(20,241,149,0.15)" }}
                 >
                   {m}
                 </span>
@@ -223,12 +223,12 @@ export default function PaymentModal({ plan, annual, onClose }: PaymentModalProp
             {/* Amount highlight */}
             <div
               className="rounded-xl p-4 text-center"
-              style={{ background: "rgba(0,255,136,0.05)", border: "1px solid rgba(0,255,136,0.12)" }}
+              style={{ background: "rgba(20,241,149,0.05)", border: "1px solid rgba(20,241,149,0.12)" }}
             >
-              <p className="text-2xl font-bold text-white font-mono-data">
+              <p className="text-2xl font-bold text-white font-data">
                 {amountFCFA.toLocaleString("fr-FR")} FCFA
               </p>
-              <p className="text-xs mt-1" style={{ color: "var(--on-surface-dim)" }}>
+              <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
                 {annual ? "Facturation annuelle" : "Facturation mensuelle"}
               </p>
             </div>
@@ -237,7 +237,7 @@ export default function PaymentModal({ plan, annual, onClose }: PaymentModalProp
               {loading ? "Vérification en cours…" : "Payer avec KkiaPay"}
             </button>
 
-            <p className="text-xs text-center" style={{ color: "var(--on-surface-dim)" }}>
+            <p className="text-xs text-center" style={{ color: "var(--text-secondary)" }}>
               🔒 Paiement sécurisé par KkiaPay
             </p>
           </div>
@@ -246,7 +246,7 @@ export default function PaymentModal({ plan, annual, onClose }: PaymentModalProp
         {/* Crypto tab */}
         {tab === "crypto" && (
           <div className="space-y-4">
-            <p className="text-sm" style={{ color: "var(--on-surface-dim)" }}>
+            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
               Payez en crypto. Le montant est converti automatiquement au taux du marché.
             </p>
             <div className="flex gap-2">
@@ -256,9 +256,9 @@ export default function PaymentModal({ plan, annual, onClose }: PaymentModalProp
                   onClick={() => setCryptoCurrency(c)}
                   className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all"
                   style={{
-                    border: cryptoCurrency === c ? "1px solid rgba(0,255,136,0.4)" : "1px solid rgba(255,255,255,0.08)",
-                    background: cryptoCurrency === c ? "rgba(0,255,136,0.08)" : "transparent",
-                    color: cryptoCurrency === c ? "#00FF88" : "var(--on-surface-dim)",
+                    border: cryptoCurrency === c ? "1px solid rgba(153,69,255,0.5)" : "1px solid rgba(255,255,255,0.08)",
+                    background: cryptoCurrency === c ? "var(--bullish-muted)" : "transparent",
+                    color: cryptoCurrency === c ? "var(--bullish)" : "var(--text-secondary)",
                     cursor: "pointer",
                   }}
                 >
@@ -270,12 +270,12 @@ export default function PaymentModal({ plan, annual, onClose }: PaymentModalProp
             {/* Amount highlight */}
             <div
               className="rounded-xl p-4 text-center"
-              style={{ background: "rgba(0,255,136,0.05)", border: "1px solid rgba(0,255,136,0.12)" }}
+              style={{ background: "rgba(20,241,149,0.05)", border: "1px solid rgba(20,241,149,0.12)" }}
             >
-              <p className="text-2xl font-bold text-white font-mono-data">
+              <p className="text-2xl font-bold text-white font-data">
                 {amountFCFA.toLocaleString("fr-FR")} FCFA
               </p>
-              <p className="text-xs mt-1" style={{ color: "var(--on-surface-dim)" }}>
+              <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
                 ≈ {(amountFCFA / 655.96).toFixed(2)} USD en {cryptoCurrency}
               </p>
             </div>
@@ -283,7 +283,7 @@ export default function PaymentModal({ plan, annual, onClose }: PaymentModalProp
             <button style={primaryBtn} disabled={loading} onClick={handleCrypto}>
               {loading ? "Création de la facture…" : `Payer en ${cryptoCurrency}`}
             </button>
-            <p className="text-xs text-center" style={{ color: "var(--on-surface-dim)" }}>
+            <p className="text-xs text-center" style={{ color: "var(--text-secondary)" }}>
               Powered by NOWPayments · Confirmation en quelques minutes
             </p>
           </div>
@@ -292,7 +292,7 @@ export default function PaymentModal({ plan, annual, onClose }: PaymentModalProp
         {error && (
           <p
             className="text-xs font-semibold px-4 py-3 rounded-xl"
-            style={{ background: "rgba(255,59,92,0.08)", color: "#FF3B5C", border: "1px solid rgba(255,59,92,0.2)" }}
+            style={{ background: "var(--bearish-muted)", color: "var(--bearish)", border: "1px solid rgba(244,63,94,0.2)" }}
           >
             {error}
           </p>

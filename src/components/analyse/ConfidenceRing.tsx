@@ -9,7 +9,7 @@ export default function ConfidenceRing({ confidence, size = 100 }: ConfidenceRin
   const circumference = 2 * Math.PI * r;
   const offset = circumference * (1 - confidence / 100);
   const color =
-    confidence >= 75 ? "#00FF88" : confidence >= 50 ? "#F5A623" : "#FF3B5C";
+    confidence >= 75 ? "var(--bullish)" : confidence >= 50 ? "#F5A623" : "var(--bearish)";
 
   return (
     <div className="flex flex-col items-center gap-1">
@@ -20,7 +20,7 @@ export default function ConfidenceRing({ confidence, size = 100 }: ConfidenceRin
           cy={cx}
           r={r}
           fill="none"
-          stroke="rgba(0,255,136,0.08)"
+          stroke="var(--bullish-muted)"
           strokeWidth={size * 0.08}
         />
         {/* Progress */}
@@ -51,7 +51,7 @@ export default function ConfidenceRing({ confidence, size = 100 }: ConfidenceRin
           {confidence}%
         </text>
       </svg>
-      <p className="text-xs" style={{ color: "var(--on-surface-dim)" }}>
+      <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
         Confiance IA
       </p>
     </div>

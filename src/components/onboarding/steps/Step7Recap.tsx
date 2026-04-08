@@ -30,13 +30,13 @@ const profileData = {
     label: 'Trader Impulsif 🔥',
     forces: 'Réactivité rapide, pas peur de trader',
     risques: 'Revenge trading, FOMO, non-respect des SL',
-    color: '#FF3B5C',
+    color: 'var(--bearish)',
   },
   discipline: {
     label: 'Trader Discipliné 🎯',
     forces: 'Respect des règles, patience',
     risques: "Parfois trop prudent, peut rater des opportunités",
-    color: '#00FF88',
+    color: 'var(--bullish)',
   },
   equilibre: {
     label: 'Trader Équilibré ⚖️',
@@ -54,10 +54,10 @@ const cardStyle: React.CSSProperties = {
 };
 
 const niveauColors: Record<string, string> = {
-  debutant: '#00FF88',
+  debutant: 'var(--bullish)',
   intermediaire: '#F5A623',
   avance: '#0EA5E9',
-  expert: '#FF3B5C',
+  expert: 'var(--bearish)',
 };
 
 export default function Step7Recap({ data }: Props) {
@@ -71,14 +71,14 @@ export default function Step7Recap({ data }: Props) {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="font-headline font-bold text-2xl text-white">✅ Ton profil est prêt !</h2>
-        <p className="text-sm" style={{ color: "var(--on-surface-dim)" }}>{"Voici ce qu'Idjor a retenu de toi"}</p>
+        <h2 className="font-display font-semibold text-2xl text-white">✅ Ton profil est prêt !</h2>
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{"Voici ce qu'Idjor a retenu de toi"}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Profil trader */}
         <div style={cardStyle} className="space-y-3">
-          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>Profil trader</p>
+          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>Profil trader</p>
           <div className="flex items-center gap-2">
             <span className="text-lg font-bold text-white">{data.prenom || 'Trader'}</span>
             {niveau && (
@@ -89,12 +89,12 @@ export default function Step7Recap({ data }: Props) {
             )}
           </div>
           {data.anneesExperience && (
-            <p className="text-xs" style={{ color: "var(--on-surface-dim)" }}>
+            <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
               Expérience: <span className="text-white">{data.anneesExperience === '0' ? 'Débutant' : `${data.anneesExperience} ans`}</span>
             </p>
           )}
           {style && (
-            <p className="text-xs" style={{ color: "var(--on-surface-dim)" }}>
+            <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
               Style: <span className="text-white">{style.emoji} {style.label}</span>
             </p>
           )}
@@ -102,7 +102,7 @@ export default function Step7Recap({ data }: Props) {
             <div className="flex flex-wrap gap-1">
               {marches.map((m) => m && (
                 <span key={m.id} className="text-[10px] px-2 py-0.5 rounded"
-                  style={{ background: "var(--surface-highest)", color: "var(--on-surface-dim)" }}>
+                  style={{ background: "var(--surface-highest)", color: "var(--text-secondary)" }}>
                   {m.emoji} {m.label}
                 </span>
               ))}
@@ -112,23 +112,23 @@ export default function Step7Recap({ data }: Props) {
 
         {/* Capital */}
         <div style={cardStyle} className="space-y-3">
-          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>Capital & objectifs</p>
+          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>Capital & objectifs</p>
           {data.capitalDisponibleFCFA && (
-            <p className="text-xs" style={{ color: "var(--on-surface-dim)" }}>
+            <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
               Capital: <span className="text-white text-sm font-semibold">{data.capitalDisponibleFCFA.replace('k', ' 000').replace('m', ' 000 000')} FCFA</span>
             </p>
           )}
           {data.pourcentageCapitalRisque && (
-            <p className="text-xs" style={{ color: "var(--on-surface-dim)" }}>
-              Risque: <span className="font-bold" style={{ color: "#00FF88" }}>{data.pourcentageCapitalRisque}%</span> par trade
+            <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+              Risque: <span className="font-bold" style={{ color: "var(--bullish)" }}>{data.pourcentageCapitalRisque}%</span> par trade
             </p>
           )}
           {data.objectifMensuelFCFA && (
-            <p className="text-xs" style={{ color: "var(--on-surface-dim)" }}>
+            <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
               Objectif: <span className="text-white">{data.objectifMensuelFCFA}</span> mensuel
             </p>
           )}
-          <p className="text-xs" style={{ color: "var(--on-surface-dim)" }}>
+          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
             {data.tradingEstRevenuPrincipal ? "🎯 Objectif: revenu principal" : "💼 Revenu complémentaire"}
           </p>
         </div>
@@ -136,18 +136,18 @@ export default function Step7Recap({ data }: Props) {
 
       {/* Profil psychologique */}
       <div style={{ ...cardStyle, borderColor: `${profile.color}22` }} className="space-y-3">
-        <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>Profil psychologique</p>
-        <p className="font-headline font-bold text-lg" style={{ color: profile.color }}>
+        <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>Profil psychologique</p>
+        <p className="font-display font-semibold text-lg" style={{ color: profile.color }}>
           Profil: {profile.label}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-          <div className="px-3 py-2 rounded-lg" style={{ background: "rgba(0,255,136,0.05)", border: "1px solid rgba(0,255,136,0.1)" }}>
-            <p className="font-semibold mb-1" style={{ color: "#00FF88" }}>Tes forces</p>
-            <p style={{ color: "var(--on-surface-dim)" }}>{profile.forces}</p>
+          <div className="px-3 py-2 rounded-lg" style={{ background: "rgba(20,241,149,0.05)", border: "1px solid rgba(20,241,149,0.1)" }}>
+            <p className="font-semibold mb-1" style={{ color: "var(--bullish)" }}>Tes forces</p>
+            <p style={{ color: "var(--text-secondary)" }}>{profile.forces}</p>
           </div>
-          <div className="px-3 py-2 rounded-lg" style={{ background: "rgba(255,59,92,0.05)", border: "1px solid rgba(255,59,92,0.1)" }}>
-            <p className="font-semibold mb-1" style={{ color: "#FF3B5C" }}>Tes risques</p>
-            <p style={{ color: "var(--on-surface-dim)" }}>{profile.risques}</p>
+          <div className="px-3 py-2 rounded-lg" style={{ background: "rgba(244,63,94,0.05)", border: "1px solid rgba(244,63,94,0.1)" }}>
+            <p className="font-semibold mb-1" style={{ color: "var(--bearish)" }}>Tes risques</p>
+            <p style={{ color: "var(--text-secondary)" }}>{profile.risques}</p>
           </div>
         </div>
       </div>
@@ -155,14 +155,14 @@ export default function Step7Recap({ data }: Props) {
       {/* Sessions & disponibilité */}
       {sessions.length > 0 && (
         <div style={cardStyle} className="space-y-2">
-          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>Sessions & disponibilité</p>
-          <p className="text-xs" style={{ color: "var(--on-surface-dim)" }}>
+          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>Sessions & disponibilité</p>
+          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
             Heures/jour: <span className="text-white">{data.heuresParJour || "—"}</span>
           </p>
           <div className="flex flex-wrap gap-1">
             {sessions.map((s) => s && (
               <span key={s.id} className="text-[10px] px-2 py-0.5 rounded"
-                style={{ background: "var(--surface-highest)", color: "var(--on-surface-dim)" }}>
+                style={{ background: "var(--surface-highest)", color: "var(--text-secondary)" }}>
                 {s.emoji} {s.label}
               </span>
             ))}
@@ -181,7 +181,7 @@ export default function Step7Recap({ data }: Props) {
           <p className="text-sm font-semibold text-white mb-1">
             Parfait {data.prenom || 'trader'} !
           </p>
-          <p className="text-xs leading-relaxed" style={{ color: "var(--on-surface-dim)" }}>
+          <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
             {"J'ai créé ton profil personnalisé. Je vais adapter tous mes conseils à ton niveau"}{' '}
             <span style={{ color: "#F5A623" }}>{niveau?.label || ''}</span>{", ton style"}{' '}
             <span style={{ color: "#F5A623" }}>{style?.label || ''}</span>{" et ta psychologie de trader. On commence ?"}

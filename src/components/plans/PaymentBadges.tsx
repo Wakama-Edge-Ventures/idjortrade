@@ -52,7 +52,7 @@ export default function PaymentBadges() {
         </div>
       </div>
 
-      <p className="text-xs text-center" style={{ color: "var(--on-surface-dim)" }}>
+      <p className="text-xs text-center" style={{ color: "var(--text-secondary)" }}>
         Paiement 100% sécurisé · Sans carte pour Mobile Money
       </p>
     </div>

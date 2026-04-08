@@ -11,9 +11,9 @@ type ErrorType = "NOT_A_CHART" | "CHART_TOO_OLD" | "GENERIC" | null;
 function ErrorModal({ type, message, onClose }: { type: ErrorType; message: string; onClose: () => void }) {
   if (!type) return null;
   const isNotChart = type === "NOT_A_CHART";
-  const accentColor   = isNotChart ? "#F5A623" : "#FF3B5C";
-  const borderColor   = isNotChart ? "rgba(245,166,35,0.25)" : "rgba(255,59,92,0.25)";
-  const bgColor       = isNotChart ? "rgba(245,166,35,0.06)" : "rgba(255,59,92,0.06)";
+  const accentColor   = isNotChart ? "#F5A623" : "var(--bearish)";
+  const borderColor   = isNotChart ? "rgba(245,166,35,0.25)" : "rgba(244,63,94,0.25)";
+  const bgColor       = isNotChart ? "rgba(245,166,35,0.06)" : "rgba(244,63,94,0.06)";
   const icon          = isNotChart ? "⚠️" : "🕐";
 
   return (
@@ -28,7 +28,7 @@ function ErrorModal({ type, message, onClose }: { type: ErrorType; message: stri
             <p className="text-sm font-bold text-white">
               {isNotChart ? "Ce n'est pas un graphique de trading" : "Graphique trop ancien"}
             </p>
-            <p className="text-xs leading-relaxed" style={{ color: "var(--on-surface-dim)" }}>{message}</p>
+            <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>{message}</p>
           </div>
         </div>
         <button onClick={onClose} className="w-full py-2.5 rounded-xl text-sm font-bold transition-all"
@@ -58,13 +58,13 @@ function WarningModal({
           <span className="text-2xl flex-shrink-0">⚠️</span>
           <div className="space-y-1">
             <p className="text-sm font-bold text-white">Attention</p>
-            <p className="text-xs leading-relaxed" style={{ color: "var(--on-surface-dim)" }}>{message}</p>
+            <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>{message}</p>
           </div>
         </div>
         <div className="flex gap-2">
           <button onClick={onModify}
             className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
-            style={{ border: "1px solid rgba(255,255,255,0.1)", color: "var(--on-surface-dim)" }}>
+            style={{ border: "1px solid rgba(255,255,255,0.1)", color: "var(--text-secondary)" }}>
             Modifier mes paramètres
           </button>
           <button onClick={onContinue}
@@ -91,7 +91,7 @@ export default function AnalyseButton({ getFormData, getImageData, mode }: Analy
   const [errorType, setErrorType] = useState<ErrorType>(null);
   const [warningResult, setWarningResult] = useState<AnalyseResponse | null>(null);
 
-  const accentColor = mode === "scalp" ? "#F5A623" : mode === "day" ? "#0EA5E9" : "#00FF88";
+  const accentColor = mode === "scalp" ? "#F5A623" : mode === "day" ? "#0EA5E9" : "var(--bullish)";
 
   function navigateToResult(result: AnalyseResponse) {
     sessionStorage.setItem(result.id, JSON.stringify(result));
@@ -183,10 +183,10 @@ export default function AnalyseButton({ getFormData, getImageData, mode }: Analy
       <div className="space-y-3">
         <button
           onClick={handleAnalyse} disabled={loading}
-          className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl font-headline font-bold text-base transition-all"
+          className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl font-display font-semibold text-base transition-all"
           style={{
             background: loading ? "var(--surface-highest)" : accentColor,
-            color: loading ? "var(--on-surface-dim)" : "#0A0E1A",
+            color: loading ? "var(--text-secondary)" : "white",
             opacity: loading ? 0.6 : 1,
             cursor: loading ? "not-allowed" : "pointer",
           }}
@@ -211,14 +211,14 @@ export default function AnalyseButton({ getFormData, getImageData, mode }: Analy
         </button>
 
         {loading && (
-          <p className="text-center text-xs" style={{ color: "var(--on-surface-dim)" }}>
+          <p className="text-center text-xs" style={{ color: "var(--text-secondary)" }}>
             Cela prend 5 à 15 secondes — Claude analyse les indicateurs...
           </p>
         )}
 
         {error && errorType === "GENERIC" && (
           <div className="px-4 py-3 rounded-xl text-xs font-medium"
-            style={{ background: "rgba(255,59,92,0.08)", border: "1px solid rgba(255,59,92,0.2)", color: "#FF3B5C" }}>
+            style={{ background: "var(--bearish-muted)", border: "1px solid rgba(244,63,94,0.2)", color: "var(--bearish)" }}>
             {error}
           </div>
         )}

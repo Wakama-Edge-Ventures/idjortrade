@@ -11,8 +11,8 @@ interface Props {
 
 const objectifsMensuels = ['5%', '10%', '20%', '30%', '50%+', 'Pas encore défini'];
 
-const pillActive: React.CSSProperties = { padding: "8px 14px", borderRadius: "999px", fontSize: "12px", fontWeight: 600, cursor: "pointer", background: "#00FF88", color: "#0A0E1A", border: "none" };
-const pillInactive: React.CSSProperties = { ...pillActive, background: "var(--surface-high)", color: "var(--on-surface-dim)" };
+const pillActive: React.CSSProperties = { padding: "8px 14px", borderRadius: "999px", fontSize: "12px", fontWeight: 600, cursor: "pointer", background: "var(--sol-gradient)", color: "white", border: "none" };
+const pillInactive: React.CSSProperties = { ...pillActive, background: "var(--surface-high)", color: "var(--text-secondary)" };
 
 // Mediane estimates for each capital range — used for risk FCFA display
 const capitalMedianes: Record<string, number> = {
@@ -29,18 +29,18 @@ export default function Step4Capital({ data, onChange }: Props) {
   return (
     <div className="space-y-7">
       <div className="text-center">
-        <h2 className="font-headline font-bold text-2xl text-white">💰 Ton capital et tes objectifs</h2>
+        <h2 className="font-display font-semibold text-2xl text-white">💰 Ton capital et tes objectifs</h2>
       </div>
 
       {/* Note confidentielle */}
       <div className="px-4 py-3 rounded-xl text-xs leading-relaxed"
-        style={{ background: "rgba(245,166,35,0.05)", border: "1px solid rgba(245,166,35,0.15)", color: "var(--on-surface-dim)" }}>
+        style={{ background: "rgba(245,166,35,0.05)", border: "1px solid rgba(245,166,35,0.15)", color: "var(--text-secondary)" }}>
         🔒 Ces informations sont strictement confidentielles. Elles permettent uniquement à Idjor de calibrer ses conseils de risk management.
       </div>
 
       {/* Capital */}
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--on-surface-dim)" }}>
+        <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--text-secondary)" }}>
           Capital disponible pour le trading
         </p>
         <div className="flex flex-col gap-2">
@@ -48,9 +48,9 @@ export default function Step4Capital({ data, onChange }: Props) {
             <button key={r.id} onClick={() => onChange({ capitalDisponibleFCFA: r.id })}
               className="text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all"
               style={{
-                background: data.capitalDisponibleFCFA === r.id ? "rgba(0,255,136,0.08)" : "var(--surface-high)",
-                border: data.capitalDisponibleFCFA === r.id ? "1px solid rgba(0,255,136,0.4)" : "1px solid rgba(255,255,255,0.06)",
-                color: data.capitalDisponibleFCFA === r.id ? "#00FF88" : "var(--on-surface)",
+                background: data.capitalDisponibleFCFA === r.id ? "var(--bullish-muted)" : "var(--surface-high)",
+                border: data.capitalDisponibleFCFA === r.id ? "1px solid rgba(153,69,255,0.5)" : "1px solid rgba(255,255,255,0.06)",
+                color: data.capitalDisponibleFCFA === r.id ? "var(--bullish)" : "var(--text-primary)",
               }}>
               {r.label}
             </button>
@@ -60,7 +60,7 @@ export default function Step4Capital({ data, onChange }: Props) {
 
       {/* Revenus */}
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--on-surface-dim)" }}>
+        <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--text-secondary)" }}>
           Revenu mensuel approximatif
         </p>
         <div className="flex flex-col gap-2">
@@ -68,9 +68,9 @@ export default function Step4Capital({ data, onChange }: Props) {
             <button key={r.id} onClick={() => onChange({ revenuMensuelFCFA: r.id })}
               className="text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all"
               style={{
-                background: data.revenuMensuelFCFA === r.id ? "rgba(0,255,136,0.08)" : "var(--surface-high)",
-                border: data.revenuMensuelFCFA === r.id ? "1px solid rgba(0,255,136,0.4)" : "1px solid rgba(255,255,255,0.06)",
-                color: data.revenuMensuelFCFA === r.id ? "#00FF88" : "var(--on-surface)",
+                background: data.revenuMensuelFCFA === r.id ? "var(--bullish-muted)" : "var(--surface-high)",
+                border: data.revenuMensuelFCFA === r.id ? "1px solid rgba(153,69,255,0.5)" : "1px solid rgba(255,255,255,0.06)",
+                color: data.revenuMensuelFCFA === r.id ? "var(--bullish)" : "var(--text-primary)",
               }}>
               {r.label}
             </button>
@@ -81,26 +81,26 @@ export default function Step4Capital({ data, onChange }: Props) {
       {/* Slider risque par trade */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>
+          <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
             Risque par trade
           </p>
-          <span className="font-mono-data text-sm font-bold" style={{ color: "#00FF88" }}>
+          <span className="font-data text-sm font-bold" style={{ color: "var(--bullish)" }}>
             {risque}% {capitalBase > 0 && `= ${riskFCFA.toLocaleString("fr-FR")} FCFA`}
           </span>
         </div>
         <input type="range" min="0.5" max="5" step="0.5" value={risque}
           onChange={(e) => { const v = parseFloat(e.target.value); setRisque(v); onChange({ pourcentageCapitalRisque: String(v) }); }}
           className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
-          style={{ accentColor: "var(--primary)", background: `linear-gradient(to right, #00FF88 0%, #00FF88 ${(risque / 5) * 100}%, var(--surface-highest) ${(risque / 5) * 100}%, var(--surface-highest) 100%)` }}
+          style={{ accentColor: "var(--sol-purple)", background: `linear-gradient(to right, #14F195 0%, #14F195 ${(risque / 5) * 100}%, var(--surface-highest) ${(risque / 5) * 100}%, var(--surface-highest) 100%)` }}
         />
-        <div className="flex justify-between text-[10px]" style={{ color: "var(--on-surface-dim)" }}>
+        <div className="flex justify-between text-[10px]" style={{ color: "var(--text-secondary)" }}>
           <span>0.5%</span><span>5%</span>
         </div>
       </div>
 
       {/* Objectif mensuel */}
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--on-surface-dim)" }}>
+        <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--text-secondary)" }}>
           Rendement mensuel visé
         </p>
         <div className="flex flex-wrap gap-2">
@@ -113,22 +113,22 @@ export default function Step4Capital({ data, onChange }: Props) {
 
       {/* Trading principal ou complémentaire */}
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--on-surface-dim)" }}>
+        <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--text-secondary)" }}>
           Le trading est-il ton revenu principal ?
         </p>
         <div className="flex flex-col sm:flex-row gap-2">
           <button onClick={() => onChange({ tradingEstRevenuPrincipal: true })}
             className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all"
             style={data.tradingEstRevenuPrincipal === true
-              ? { background: "rgba(0,255,136,0.08)", border: "1px solid rgba(0,255,136,0.4)", color: "#00FF88" }
-              : { background: "var(--surface-high)", border: "1px solid rgba(255,255,255,0.06)", color: "var(--on-surface-dim)" }}>
+              ? { background: "var(--bullish-muted)", border: "1px solid rgba(153,69,255,0.5)", color: "var(--bullish)" }
+              : { background: "var(--surface-high)", border: "1px solid rgba(255,255,255,0.06)", color: "var(--text-secondary)" }}>
             {"Oui, c'est mon objectif"}
           </button>
           <button onClick={() => onChange({ tradingEstRevenuPrincipal: false })}
             className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all"
             style={data.tradingEstRevenuPrincipal === false
-              ? { background: "rgba(0,255,136,0.08)", border: "1px solid rgba(0,255,136,0.4)", color: "#00FF88" }
-              : { background: "var(--surface-high)", border: "1px solid rgba(255,255,255,0.06)", color: "var(--on-surface-dim)" }}>
+              ? { background: "var(--bullish-muted)", border: "1px solid rgba(153,69,255,0.5)", color: "var(--bullish)" }
+              : { background: "var(--surface-high)", border: "1px solid rgba(255,255,255,0.06)", color: "var(--text-secondary)" }}>
             {"Non, c'est complémentaire"}
           </button>
         </div>

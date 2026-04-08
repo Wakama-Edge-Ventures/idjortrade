@@ -8,8 +8,8 @@ export default function ParametresPage() {
 
       {/* Header */}
       <div>
-        <h1 className="font-headline font-bold text-2xl text-white">Paramètres</h1>
-        <p className="text-xs mt-1" style={{ color: "var(--on-surface-dim)" }}>
+        <h1 className="font-display font-semibold text-2xl text-white">Paramètres</h1>
+        <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
           Gérez votre profil, préférences et abonnement
         </p>
       </div>
@@ -23,11 +23,11 @@ export default function ParametresPage() {
         }}
       >
         <div className="flex items-center gap-3">
-          <CreditCard size={16} style={{ color: "var(--on-surface-dim)" }} />
+          <CreditCard size={16} style={{ color: "var(--text-secondary)" }} />
           <span className="text-sm text-white font-semibold">Plan Gratuit</span>
           <span
             className="text-[10px] font-bold px-2 py-0.5 rounded"
-            style={{ background: "var(--surface-highest)", color: "var(--on-surface-dim)" }}
+            style={{ background: "var(--surface-highest)", color: "var(--text-secondary)" }}
           >
             3 analyses restantes
           </span>
@@ -35,7 +35,7 @@ export default function ParametresPage() {
         <Link
           href="/plans"
           className="text-xs font-bold px-3 py-1.5 rounded-lg"
-          style={{ background: "rgba(0,255,136,0.12)", color: "#00FF88" }}
+          style={{ background: "rgba(20,241,149,0.12)", color: "var(--bullish)" }}
         >
           Upgrader
         </Link>

@@ -19,7 +19,7 @@ export default function PlanSuccessPage() {
         <div className="relative flex justify-center">
           <div
             className="w-24 h-24 rounded-full flex items-center justify-center text-5xl"
-            style={{ background: "rgba(0,255,136,0.1)", border: "2px solid rgba(0,255,136,0.3)" }}
+            style={{ background: "rgba(20,241,149,0.1)", border: "2px solid rgba(20,241,149,0.3)" }}
           >
             🎉
           </div>
@@ -30,7 +30,7 @@ export default function PlanSuccessPage() {
               style={{
                 width: 8,
                 height: 8,
-                background: i % 2 === 0 ? "#00FF88" : "#F5A623",
+                background: i % 2 === 0 ? "var(--bullish)" : "#F5A623",
                 top: `${50 + 48 * Math.sin((i * Math.PI * 2) / 8)}%`,
                 left: `${50 + 48 * Math.cos((i * Math.PI * 2) / 8)}%`,
                 transform: "translate(-50%, -50%)",
@@ -41,28 +41,28 @@ export default function PlanSuccessPage() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="font-headline font-black text-3xl text-white">
+          <h1 className="font-display font-semibold text-3xl text-white">
             Paiement confirmé !
           </h1>
-          <p className="text-sm" style={{ color: "var(--on-surface-dim)" }}>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
             Votre plan est maintenant actif. Redirection dans 3 secondes…
           </p>
         </div>
 
         <div
           className="rounded-2xl p-5 space-y-3 text-left"
-          style={{ background: "rgba(0,255,136,0.05)", border: "1px solid rgba(0,255,136,0.15)" }}
+          style={{ background: "rgba(20,241,149,0.05)", border: "1px solid rgba(20,241,149,0.15)" }}
         >
           <p className="text-sm font-semibold text-white">Ce qui s&apos;active maintenant :</p>
-          <ul className="space-y-2 text-sm" style={{ color: "var(--on-surface-dim)" }}>
+          <ul className="space-y-2 text-sm" style={{ color: "var(--text-secondary)" }}>
             <li className="flex items-center gap-2">
-              <span style={{ color: "#00FF88" }}>✓</span> Analyses débloquées selon votre plan
+              <span style={{ color: "var(--bullish)" }}>✓</span> Analyses débloquées selon votre plan
             </li>
             <li className="flex items-center gap-2">
-              <span style={{ color: "#00FF88" }}>✓</span> Accès à tous les marchés inclus
+              <span style={{ color: "var(--bullish)" }}>✓</span> Accès à tous les marchés inclus
             </li>
             <li className="flex items-center gap-2">
-              <span style={{ color: "#00FF88" }}>✓</span> Idjor IA avec quotas étendus
+              <span style={{ color: "var(--bullish)" }}>✓</span> Idjor IA avec quotas étendus
             </li>
           </ul>
         </div>
@@ -71,14 +71,14 @@ export default function PlanSuccessPage() {
           <Link
             href="/scalp"
             className="w-full py-3.5 rounded-2xl text-sm font-bold text-center block"
-            style={{ background: "#00FF88", color: "#0A0E1A" }}
+            style={{ background: "var(--sol-gradient)", color: "white" }}
           >
             Faire ma première analyse
           </Link>
           <Link
             href="/dashboard"
             className="w-full py-3 rounded-2xl text-sm font-semibold text-center block"
-            style={{ border: "1px solid rgba(255,255,255,0.1)", color: "var(--on-surface-dim)" }}
+            style={{ border: "1px solid rgba(255,255,255,0.1)", color: "var(--text-secondary)" }}
           >
             Aller au Dashboard
           </Link>

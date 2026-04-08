@@ -1,18 +1,18 @@
 import Link from "next/link";
 import { Lock } from "lucide-react";
-import type { AnalysisEntry } from "@/lib/mock-historique";
+import type { AnalysisEntry } from "@/types/analyse";
 
 type Signal = "BUY" | "SELL" | "NEUTRE";
 const signalLabel: Record<Signal, string> = { BUY: "ACHAT", SELL: "VENTE", NEUTRE: "NEUTRE" };
 const signalColor: Record<Signal, { bg: string; color: string }> = {
-  BUY: { bg: "rgba(0,255,136,0.12)", color: "#00FF88" },
-  SELL: { bg: "rgba(255,59,92,0.12)", color: "#FF3B5C" },
+  BUY: { bg: "rgba(20,241,149,0.12)", color: "var(--bullish)" },
+  SELL: { bg: "rgba(244,63,94,0.12)", color: "var(--bearish)" },
   NEUTRE: { bg: "rgba(167,170,187,0.1)", color: "#A7AABB" },
 };
 function confidenceColor(v: number) {
-  if (v >= 75) return "#00FF88";
+  if (v >= 75) return "var(--bullish)";
   if (v >= 50) return "#F5A623";
-  return "#FF3B5C";
+  return "var(--bearish)";
 }
 
 export default function AnalysisHistoryCard({ analysis }: { analysis: AnalysisEntry }) {
@@ -40,8 +40,8 @@ export default function AnalysisHistoryCard({ analysis }: { analysis: AnalysisEn
 
       {/* Asset logo */}
       <div
-        className="w-12 h-12 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0 font-mono-data"
-        style={{ background: "var(--surface-highest)", color: "var(--on-surface)" }}
+        className="w-12 h-12 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0 font-data"
+        style={{ background: "var(--surface-highest)", color: "var(--text-primary)" }}
       >
         {base.slice(0, 3)}
       </div>
@@ -52,18 +52,18 @@ export default function AnalysisHistoryCard({ analysis }: { analysis: AnalysisEn
           <span className="text-sm font-semibold text-white">{analysis.asset}</span>
           <span
             className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
-            style={{ background: "var(--surface-highest)", color: "var(--on-surface-dim)" }}
+            style={{ background: "var(--surface-highest)", color: "var(--text-secondary)" }}
           >
             {analysis.timeframe.toUpperCase()}
           </span>
           <span
             className="text-[10px] font-semibold px-1.5 py-0.5 rounded capitalize"
-            style={{ background: "var(--surface-highest)", color: "var(--on-surface-dim)" }}
+            style={{ background: "var(--surface-highest)", color: "var(--text-secondary)" }}
           >
             {analysis.mode}
           </span>
         </div>
-        <p className="text-xs font-mono-data" style={{ color: "var(--on-surface-dim)" }}>
+        <p className="text-xs font-data" style={{ color: "var(--text-secondary)" }}>
           {analysis.date}
         </p>
       </div>
@@ -78,19 +78,19 @@ export default function AnalysisHistoryCard({ analysis }: { analysis: AnalysisEn
 
       {/* Confidence */}
       <div className="text-right flex-shrink-0 w-12">
-        <p className="font-mono-data text-sm font-bold" style={{ color: confidenceColor(analysis.confidence) }}>
+        <p className="font-data text-sm font-bold" style={{ color: confidenceColor(analysis.confidence) }}>
           {analysis.confidence}%
         </p>
-        <p className="text-[9px]" style={{ color: "var(--on-surface-dim)" }}>confiance</p>
+        <p className="text-[9px]" style={{ color: "var(--text-secondary)" }}>confiance</p>
       </div>
 
       {/* R réalisé */}
       {analysis.tracked && analysis.rRealized !== null && (
         <span
-          className="text-xs font-mono-data font-bold flex-shrink-0 px-2 py-0.5 rounded"
+          className="text-xs font-data font-bold flex-shrink-0 px-2 py-0.5 rounded"
           style={{
-            background: analysis.rRealized >= 0 ? "rgba(0,255,136,0.1)" : "rgba(255,59,92,0.1)",
-            color: analysis.rRealized >= 0 ? "#00FF88" : "#FF3B5C",
+            background: analysis.rRealized >= 0 ? "rgba(20,241,149,0.1)" : "rgba(244,63,94,0.1)",
+            color: analysis.rRealized >= 0 ? "var(--bullish)" : "var(--bearish)",
           }}
         >
           {analysis.rRealized >= 0 ? "+" : ""}{analysis.rRealized}R
@@ -99,7 +99,7 @@ export default function AnalysisHistoryCard({ analysis }: { analysis: AnalysisEn
 
       {/* CTA */}
       {!analysis.locked && (
-        <span className="text-xs font-semibold flex-shrink-0" style={{ color: "#00FF88" }}>
+        <span className="text-xs font-semibold flex-shrink-0" style={{ color: "var(--bullish)" }}>
           Voir →
         </span>
       )}

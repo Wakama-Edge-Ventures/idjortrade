@@ -67,10 +67,10 @@ export default async function JournalPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h1 className="font-headline font-bold text-2xl text-white">
+          <h1 className="font-display font-semibold text-2xl text-white">
             Mon Journal de Trading
           </h1>
-          <p className="text-xs mt-1" style={{ color: 'var(--on-surface-dim)' }}>
+          <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
             Suivez vos performances et apprenez de chaque trade
           </p>
         </div>
@@ -78,15 +78,15 @@ export default async function JournalPage() {
           <button
             className="px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors"
             style={{
-              border: '1px solid rgba(0,255,136,0.3)',
-              color: '#00FF88',
+              border: '1px solid rgba(20,241,149,0.3)',
+              color: 'var(--bullish)',
             }}
           >
             📥 Exporter CSV
           </button>
           <button
             className="px-4 py-2.5 rounded-xl text-sm font-bold"
-            style={{ background: '#00FF88', color: 'var(--surface)' }}
+            style={{ background: 'var(--sol-gradient)', color: 'var(--surface)' }}
           >
             ➕ Ajouter un trade
           </button>
@@ -119,8 +119,8 @@ export default async function JournalPage() {
               className="px-3 py-1.5 rounded-md text-xs font-semibold"
               style={
                 i === 0
-                  ? { background: 'var(--surface-highest)', color: 'var(--on-surface)' }
-                  : { color: 'var(--on-surface-dim)' }
+                  ? { background: 'var(--surface-highest)', color: 'var(--text-primary)' }
+                  : { color: 'var(--text-secondary)' }
               }
             >
               {f}
@@ -132,7 +132,7 @@ export default async function JournalPage() {
           style={{
             background: 'var(--surface-high)',
             border: 'none',
-            color: 'var(--on-surface-dim)',
+            color: 'var(--text-secondary)',
           }}
         >
           <option>Tous les actifs</option>
@@ -146,7 +146,7 @@ export default async function JournalPage() {
           style={{
             background: 'var(--surface-high)',
             border: 'none',
-            color: 'var(--on-surface-dim)',
+            color: 'var(--text-secondary)',
           }}
         >
           <option>Tous résultats</option>

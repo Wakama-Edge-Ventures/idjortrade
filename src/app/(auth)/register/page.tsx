@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 function passwordStrength(pw: string): { label: string; color: string; width: string } {
   if (pw.length === 0) return { label: "", color: "transparent", width: "0%" };
@@ -11,13 +11,15 @@ function passwordStrength(pw: string): { label: string; color: string; width: st
     (/[A-Z]/.test(pw) ? 1 : 0) +
     (/[0-9]/.test(pw) ? 1 : 0) +
     (/[^A-Za-z0-9]/.test(pw) ? 1 : 0);
-  if (score <= 1) return { label: "Faible", color: "#FF3B5C", width: "25%" };
+  if (score <= 1) return { label: "Faible", color: "var(--bearish)", width: "25%" };
   if (score === 2) return { label: "Moyen", color: "#F5A623", width: "55%" };
-  return { label: "Fort", color: "#00FF88", width: "100%" };
+  return { label: "Fort", color: "var(--bullish)", width: "100%" };
 }
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const refCode = searchParams.get("ref") ?? undefined;
   const [prenom, setPrenom] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,7 +32,7 @@ export default function RegisterPage() {
 
   const inputStyle = {
     background: "var(--surface-highest)",
-    border: "1px solid var(--outline)",
+    border: "1px solid var(--border)",
     borderRadius: "0.75rem",
     padding: "0.75rem 1rem",
     color: "white",
@@ -53,7 +55,7 @@ export default function RegisterPage() {
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prenom, email, password }),
+      body: JSON.stringify({ prenom, email, password, refCode }),
     });
 
     const data = await res.json() as { success?: boolean; error?: string; requiresVerification?: boolean };
@@ -79,8 +81,8 @@ export default function RegisterPage() {
   return (
     <>
       <div className="space-y-1">
-        <h1 className="font-headline font-bold text-2xl text-white">Créer un compte</h1>
-        <p className="text-sm" style={{ color: "var(--on-surface-dim)" }}>
+        <h1 className="font-display font-semibold text-2xl text-white">Créer un compte</h1>
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
           Commencez à analyser vos charts en 30 secondes
         </p>
       </div>
@@ -88,29 +90,29 @@ export default function RegisterPage() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
           <label className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: "var(--on-surface-dim)" }}>Prénom</label>
+            style={{ color: "var(--text-secondary)" }}>Prénom</label>
           <input type="text" value={prenom} onChange={e => setPrenom(e.target.value)}
             placeholder="Kofi" required style={inputStyle}
-            onFocus={e => (e.target.style.borderColor = "rgba(0,255,136,0.4)")}
-            onBlur={e => (e.target.style.borderColor = "var(--outline)")} />
+            onFocus={e => (e.target.style.borderColor = "rgba(153,69,255,0.5)")}
+            onBlur={e => (e.target.style.borderColor = "var(--border)")} />
         </div>
 
         <div className="space-y-1.5">
           <label className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: "var(--on-surface-dim)" }}>Email</label>
+            style={{ color: "var(--text-secondary)" }}>Email</label>
           <input type="email" value={email} onChange={e => setEmail(e.target.value)}
             placeholder="kofi@example.com" required style={inputStyle}
-            onFocus={e => (e.target.style.borderColor = "rgba(0,255,136,0.4)")}
-            onBlur={e => (e.target.style.borderColor = "var(--outline)")} />
+            onFocus={e => (e.target.style.borderColor = "rgba(153,69,255,0.5)")}
+            onBlur={e => (e.target.style.borderColor = "var(--border)")} />
         </div>
 
         <div className="space-y-1.5">
           <label className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: "var(--on-surface-dim)" }}>Mot de passe</label>
+            style={{ color: "var(--text-secondary)" }}>Mot de passe</label>
           <input type="password" value={password} onChange={e => setPassword(e.target.value)}
             placeholder="••••••••" required minLength={8} style={inputStyle}
-            onFocus={e => (e.target.style.borderColor = "rgba(0,255,136,0.4)")}
-            onBlur={e => (e.target.style.borderColor = "var(--outline)")} />
+            onFocus={e => (e.target.style.borderColor = "rgba(153,69,255,0.5)")}
+            onBlur={e => (e.target.style.borderColor = "var(--border)")} />
           {password.length > 0 && (
             <div className="space-y-1">
               <div className="h-1 rounded-full w-full" style={{ background: "var(--surface-highest)" }}>
@@ -126,16 +128,16 @@ export default function RegisterPage() {
 
         <div className="space-y-1.5">
           <label className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: "var(--on-surface-dim)" }}>Confirmer le mot de passe</label>
+            style={{ color: "var(--text-secondary)" }}>Confirmer le mot de passe</label>
           <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)}
             placeholder="••••••••" required style={{
               ...inputStyle,
-              borderColor: mismatch ? "rgba(255,59,92,0.5)" : "var(--outline)",
+              borderColor: mismatch ? "rgba(244,63,94,0.5)" : "var(--border)",
             }}
-            onFocus={e => (e.target.style.borderColor = mismatch ? "rgba(255,59,92,0.5)" : "rgba(0,255,136,0.4)")}
-            onBlur={e => (e.target.style.borderColor = mismatch ? "rgba(255,59,92,0.5)" : "var(--outline)")} />
+            onFocus={e => (e.target.style.borderColor = mismatch ? "rgba(244,63,94,0.5)" : "rgba(153,69,255,0.5)")}
+            onBlur={e => (e.target.style.borderColor = mismatch ? "rgba(244,63,94,0.5)" : "var(--border)")} />
           {mismatch && (
-            <p className="text-[10px] font-semibold" style={{ color: "#FF3B5C" }}>
+            <p className="text-[10px] font-semibold" style={{ color: "var(--bearish)" }}>
               Les mots de passe ne correspondent pas
             </p>
           )}
@@ -143,7 +145,7 @@ export default function RegisterPage() {
 
         {error && (
           <div className="px-4 py-3 rounded-xl text-xs font-medium"
-            style={{ background: "rgba(255,59,92,0.08)", border: "1px solid rgba(255,59,92,0.2)", color: "#FF3B5C" }}>
+            style={{ background: "var(--bearish-muted)", border: "1px solid rgba(244,63,94,0.2)", color: "var(--bearish)" }}>
             {error}
           </div>
         )}
@@ -151,10 +153,10 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={loading || mismatch}
-          className="w-full py-3 rounded-2xl font-headline font-bold text-sm transition-all"
+          className="w-full py-3 rounded-2xl font-display font-semibold text-sm transition-all"
           style={{
-            background: loading || mismatch ? "var(--surface-highest)" : "#00FF88",
-            color: loading || mismatch ? "var(--on-surface-dim)" : "#0A0E1A",
+            background: loading || mismatch ? "var(--surface-highest)" : "var(--sol-gradient)",
+            color: "white",
             opacity: loading ? 0.7 : 1,
             cursor: loading || mismatch ? "not-allowed" : "pointer",
           }}
@@ -163,12 +165,20 @@ export default function RegisterPage() {
         </button>
       </form>
 
-      <p className="text-center text-sm" style={{ color: "var(--on-surface-dim)" }}>
+      <p className="text-center text-sm" style={{ color: "var(--text-secondary)" }}>
         Déjà un compte ?{" "}
-        <Link href="/login" className="font-semibold hover:underline" style={{ color: "#00FF88" }}>
+        <Link href="/login" className="font-semibold hover:underline" style={{ color: "var(--bullish)" }}>
           Se connecter
         </Link>
       </p>
     </>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense>
+      <RegisterForm />
+    </Suspense>
   );
 }

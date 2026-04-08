@@ -27,17 +27,17 @@ export default function IdjorPage() {
             <Sparkles className="w-7 h-7 text-white" />
           </div>
           <div>
-            <h1 className="font-headline font-bold text-xl">
+            <h1 className="font-display font-semibold text-xl">
               <span style={{ color: '#F5A623' }}>Idjor</span>
-              <span style={{ color: 'var(--on-surface)' }}> — Conseiller IA</span>
+              <span style={{ color: 'var(--text-primary)' }}> — Conseiller IA</span>
             </h1>
             <div className="flex items-center gap-3 mt-0.5">
               <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#00FF88' }} />
-                <span className="text-xs" style={{ color: 'var(--on-surface-dim)' }}>En ligne</span>
+                <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--sol-gradient)' }} />
+                <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>En ligne</span>
               </div>
-              <span className="text-xs" style={{ color: 'var(--outline)' }}>•</span>
-              <span className="text-xs" style={{ color: 'var(--on-surface-dim)' }}>
+              <span className="text-xs" style={{ color: 'var(--border)' }}>•</span>
+              <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                 Formation · Analyse · Coaching
               </span>
             </div>
@@ -47,13 +47,13 @@ export default function IdjorPage() {
         {/* Stats chips */}
         <div className="flex flex-wrap gap-2">
           <div className="card px-3 py-1.5 rounded-full text-xs font-semibold">
-            <span style={{ color: '#00FF88' }}>847</span>
-            <span style={{ color: 'var(--on-surface-dim)' }}> traders formés</span>
+            <span style={{ color: 'var(--bullish)' }}>847</span>
+            <span style={{ color: 'var(--text-secondary)' }}> traders formés</span>
           </div>
-          <div className="card px-3 py-1.5 rounded-full text-xs" style={{ color: 'var(--on-surface)' }}>
+          <div className="card px-3 py-1.5 rounded-full text-xs" style={{ color: 'var(--text-primary)' }}>
             ⭐ 4.9
           </div>
-          <div className="card px-3 py-1.5 rounded-full text-xs" style={{ color: 'var(--on-surface)' }}>
+          <div className="card px-3 py-1.5 rounded-full text-xs" style={{ color: 'var(--text-primary)' }}>
             🇫🇷 Français
           </div>
         </div>
@@ -67,7 +67,7 @@ export default function IdjorPage() {
         {/* Bibliothèque */}
         <div className="card p-5 overflow-y-auto flex flex-col gap-4">
           <h2
-            className="font-headline font-bold text-lg sticky top-0 pb-2 z-10"
+            className="font-display font-semibold text-lg sticky top-0 pb-2 z-10"
             style={{ background: 'var(--surface-mid)' }}
           >
             📚 Bibliothèque de Formation

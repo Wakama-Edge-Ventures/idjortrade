@@ -21,7 +21,7 @@ export default function StepIndicator({ currentStep, totalSteps }: StepIndicator
                 <div
                   className="absolute top-4 right-1/2 left-0 h-px -translate-y-1/2"
                   style={{
-                    background: completed || active ? "rgba(0,255,136,0.4)" : "var(--outline)",
+                    background: completed || active ? "rgba(153,69,255,0.5)" : "var(--border)",
                   }}
                 />
               )}
@@ -30,7 +30,7 @@ export default function StepIndicator({ currentStep, totalSteps }: StepIndicator
                 <div
                   className="absolute top-4 left-1/2 right-0 h-px -translate-y-1/2"
                   style={{
-                    background: completed ? "rgba(0,255,136,0.4)" : "var(--outline)",
+                    background: completed ? "rgba(153,69,255,0.5)" : "var(--border)",
                   }}
                 />
               )}
@@ -40,12 +40,12 @@ export default function StepIndicator({ currentStep, totalSteps }: StepIndicator
                 className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold relative z-10"
                 style={{
                   background: active
-                    ? "#00FF88"
+                    ? "var(--bullish)"
                     : completed
-                    ? "rgba(0,255,136,0.25)"
+                    ? "rgba(20,241,149,0.25)"
                     : "var(--surface-high)",
-                  color: active ? "#0A0E1A" : completed ? "#00FF88" : "var(--on-surface-dim)",
-                  border: active ? "none" : completed ? "1px solid rgba(0,255,136,0.4)" : "1px solid var(--outline)",
+                  color: active ? "white" : completed ? "var(--bullish)" : "var(--text-secondary)",
+                  border: active ? "none" : completed ? "1px solid rgba(153,69,255,0.5)" : "1px solid var(--border)",
                 }}
               >
                 {completed ? "✓" : step}
@@ -54,7 +54,7 @@ export default function StepIndicator({ currentStep, totalSteps }: StepIndicator
               {/* Label — desktop only */}
               <span
                 className="hidden md:block text-[10px] mt-1.5 font-medium text-center"
-                style={{ color: active ? "var(--on-surface)" : "var(--on-surface-dim)" }}
+                style={{ color: active ? "var(--text-primary)" : "var(--text-secondary)" }}
               >
                 {stepLabels[i]}
               </span>

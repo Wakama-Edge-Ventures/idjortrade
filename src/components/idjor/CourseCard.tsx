@@ -26,7 +26,7 @@ export default function CourseCard({ course }: { course: Course }) {
           </span>
           <span
             className="text-[10px] font-medium px-2 py-0.5 rounded-full"
-            style={{ background: 'var(--surface-highest)', color: 'var(--on-surface-dim)' }}
+            style={{ background: 'var(--surface-highest)', color: 'var(--text-secondary)' }}
           >
             {course.duration}
           </span>
@@ -34,7 +34,7 @@ export default function CourseCard({ course }: { course: Course }) {
         <p className="text-sm font-bold text-white leading-snug">
           {course.emoji} {course.title}
         </p>
-        <p className="text-xs leading-relaxed" style={{ color: 'var(--on-surface-dim)' }}>
+        <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
           {course.description}
         </p>
       </div>
@@ -44,7 +44,7 @@ export default function CourseCard({ course }: { course: Course }) {
         {course.locked ? (
           <Lock size={16} style={{ color: '#F5A623' }} />
         ) : (
-          <PlayCircle size={16} style={{ color: 'var(--on-surface-dim)' }} />
+          <PlayCircle size={16} style={{ color: 'var(--text-secondary)' }} />
         )}
       </div>
     </div>

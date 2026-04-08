@@ -3,10 +3,10 @@ type TradePoint = { openedAt: Date | string; pnlFCFA: number | null; status: str
 /** Maps a performance value to its cell background color */
 function cellColor(value: number): string {
   if (value === 0) return 'var(--surface-high)';
-  if (value === -1) return 'rgba(255,59,92,0.5)';
-  if (value === 1) return 'rgba(0,255,136,0.25)';
-  if (value === 2) return 'rgba(0,255,136,0.55)';
-  return '#00FF88';
+  if (value === -1) return 'rgba(244,63,94,0.5)';
+  if (value === 1) return 'rgba(20,241,149,0.25)';
+  if (value === 2) return 'rgba(20,241,149,0.55)';
+  return 'var(--bullish)';
 }
 
 export default function HeatmapCalendar({ trades }: { trades: TradePoint[] }) {
@@ -46,10 +46,10 @@ export default function HeatmapCalendar({ trades }: { trades: TradePoint[] }) {
   return (
     <div className="card p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-headline font-bold text-base text-white">
+        <h3 className="font-display font-semibold text-base text-white">
           Calendrier de performance
         </h3>
-        <span className="text-xs" style={{ color: 'var(--on-surface-dim)' }}>
+        <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
           90 derniers jours
         </span>
       </div>
@@ -71,7 +71,7 @@ export default function HeatmapCalendar({ trades }: { trades: TradePoint[] }) {
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--on-surface-dim)' }}>
+      <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--text-secondary)' }}>
         <span>Moins</span>
         {[0, 1, 2, 3, -1].map((v, i) => (
           <div
@@ -82,7 +82,7 @@ export default function HeatmapCalendar({ trades }: { trades: TradePoint[] }) {
         ))}
         <span>Plus</span>
         <span className="ml-2 flex items-center gap-1">
-          <div className="w-3 h-3 rounded-sm" style={{ background: 'rgba(255,59,92,0.5)' }} />
+          <div className="w-3 h-3 rounded-sm" style={{ background: 'rgba(244,63,94,0.5)' }} />
           Perte
         </span>
       </div>

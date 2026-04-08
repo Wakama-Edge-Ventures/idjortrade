@@ -10,14 +10,14 @@ interface AnalyseUploadPanelProps {
 }
 
 export default function AnalyseUploadPanel({
-  accentColor = "#00FF88",
+  accentColor = "var(--bullish)",
   analyseHref = "/resultat",
 }: AnalyseUploadPanelProps) {
   const [, setFile] = useState<File | null>(null);
 
   return (
     <div className="card p-6 flex flex-col gap-5">
-      <h2 className="font-headline font-bold text-base text-white">
+      <h2 className="font-display font-semibold text-base text-white">
         Charger votre graphique
       </h2>
 
@@ -29,10 +29,10 @@ export default function AnalyseUploadPanel({
       <Link
         href={analyseHref}
         className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl
-          font-headline font-bold text-base transition-all"
+          font-display font-semibold text-base transition-all"
         style={{
           background: accentColor,
-          color: "#0A0E1A",
+          color: "white",
         }}
       >
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -43,7 +43,7 @@ export default function AnalyseUploadPanel({
         Analyser ce chart
       </Link>
 
-      <p className="text-center text-xs" style={{ color: "var(--on-surface-dim)" }}>
+      <p className="text-center text-xs" style={{ color: "var(--text-secondary)" }}>
         ⚠ L’IA analyse l’image — résultats indicatifs uniquement
       </p>
     </div>

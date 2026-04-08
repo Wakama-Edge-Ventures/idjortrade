@@ -18,20 +18,20 @@ export default function Step5Psychologie({ data, onChange }: Props) {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="font-headline font-bold text-2xl text-white">🧠 Ton profil psychologique</h2>
-        <p className="text-sm" style={{ color: "var(--on-surface-dim)" }}>
+        <h2 className="font-display font-semibold text-2xl text-white">🧠 Ton profil psychologique</h2>
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
           {"Réponds honnêtement — il n'y a pas de bonnes ou mauvaises réponses."}
         </p>
       </div>
 
       {/* Progress interne */}
       <div className="space-y-1">
-        <div className="flex justify-between text-xs" style={{ color: "var(--on-surface-dim)" }}>
+        <div className="flex justify-between text-xs" style={{ color: "var(--text-secondary)" }}>
           <span>Question {qIndex + 1} / {questionsPsycho.length}</span>
           <span>{Math.round(progress)}%</span>
         </div>
         <div className="h-1 rounded-full" style={{ background: "var(--surface-highest)" }}>
-          <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, background: "#00FF88" }} />
+          <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, background: "var(--sol-gradient)" }} />
         </div>
       </div>
 
@@ -46,8 +46,8 @@ export default function Step5Psychologie({ data, onChange }: Props) {
                 onClick={() => onChange({ [currentQ.id]: opt.id } as Partial<OnboardingData>)}
                 className="flex flex-col items-center gap-2 p-4 rounded-2xl text-center transition-all"
                 style={{
-                  background: active ? "rgba(0,255,136,0.08)" : "var(--surface-high)",
-                  border: active ? "1px solid rgba(0,255,136,0.4)" : "1px solid rgba(255,255,255,0.06)",
+                  background: active ? "var(--bullish-muted)" : "var(--surface-high)",
+                  border: active ? "1px solid rgba(153,69,255,0.5)" : "1px solid rgba(255,255,255,0.06)",
                 }}>
                 <span className="text-3xl">{opt.emoji}</span>
                 <span className="text-sm font-medium text-white leading-snug">{opt.label}</span>
@@ -61,7 +61,7 @@ export default function Step5Psychologie({ data, onChange }: Props) {
       <div className="flex justify-between items-center pt-2">
         {qIndex > 0 ? (
           <button onClick={() => setQIndex(q => q - 1)} className="text-sm font-semibold"
-            style={{ color: "var(--on-surface-dim)" }}>
+            style={{ color: "var(--text-secondary)" }}>
             ← Précédent
           </button>
         ) : <div />}
@@ -72,8 +72,8 @@ export default function Step5Psychologie({ data, onChange }: Props) {
             disabled={!currentAnswer}
             className="px-5 py-2 rounded-xl text-sm font-bold transition-all"
             style={{
-              background: currentAnswer ? "#00FF88" : "var(--surface-highest)",
-              color: currentAnswer ? "#0A0E1A" : "var(--on-surface-dim)",
+              background: currentAnswer ? "var(--bullish)" : "var(--surface-highest)",
+              color: currentAnswer ? "white" : "var(--text-secondary)",
               cursor: currentAnswer ? "pointer" : "not-allowed",
             }}>
             Question suivante →
@@ -81,7 +81,7 @@ export default function Step5Psychologie({ data, onChange }: Props) {
         )}
       </div>
 
-      <p className="text-xs text-center" style={{ color: "var(--on-surface-dim)" }}>
+      <p className="text-xs text-center" style={{ color: "var(--text-secondary)" }}>
         {"Tes réponses créent ton profil psychologique. Idjor t'alertera sur tes biais comportementaux."}
       </p>
     </div>

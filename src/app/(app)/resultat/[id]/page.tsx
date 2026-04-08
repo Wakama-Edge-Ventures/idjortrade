@@ -53,14 +53,14 @@ export default function ResultatPage() {
     return (
       <div className="max-w-2xl mx-auto p-8 flex flex-col items-center gap-6 text-center">
         <AlertTriangle size={40} style={{ color: "#F5A623" }} />
-        <h1 className="font-headline font-bold text-xl text-white">Résultat introuvable</h1>
-        <p className="text-sm" style={{ color: "var(--on-surface-dim)" }}>
+        <h1 className="font-display font-semibold text-xl text-white">Résultat introuvable</h1>
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
           Cette analyse n'est plus disponible. Les résultats sont stockés localement dans votre navigateur.
         </p>
         <div className="flex gap-3">
           <Link href="/swing"
             className="px-5 py-2.5 rounded-xl text-sm font-semibold"
-            style={{ background: "rgba(0,255,136,0.12)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.3)" }}>
+            style={{ background: "rgba(20,241,149,0.12)", color: "var(--bullish)", border: "1px solid rgba(20,241,149,0.3)" }}>
             Swing Trading
           </Link>
           <Link href="/scalp"
@@ -77,10 +77,10 @@ export default function ResultatPage() {
     return (
       <div className="max-w-2xl mx-auto p-8 flex flex-col items-center gap-4">
         <svg className="animate-spin" width="32" height="32" viewBox="0 0 32 32" fill="none">
-          <circle cx="16" cy="16" r="12" stroke="rgba(0,255,136,0.2)" strokeWidth="3" />
-          <path d="M16 4a12 12 0 0 1 12 12" stroke="#00FF88" strokeWidth="3" strokeLinecap="round" />
+          <circle cx="16" cy="16" r="12" stroke="rgba(20,241,149,0.2)" strokeWidth="3" />
+          <path d="M16 4a12 12 0 0 1 12 12" stroke="var(--bullish)" strokeWidth="3" strokeLinecap="round" />
         </svg>
-        <p className="text-sm" style={{ color: "var(--on-surface-dim)" }}>Chargement…</p>
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>Chargement…</p>
       </div>
     );
   }
@@ -89,15 +89,15 @@ export default function ResultatPage() {
   const accentColor = isSwing ? "#0EA5E9" : "#F5A623";
 
   const signalConfig = {
-    BUY: { label: "ACHAT", color: "#00FF88", bg: "rgba(0,255,136,0.12)", border: "rgba(0,255,136,0.3)", Icon: TrendingUp },
-    SELL: { label: "VENTE", color: "#FF3B5C", bg: "rgba(255,59,92,0.12)", border: "rgba(255,59,92,0.3)", Icon: TrendingDown },
+    BUY: { label: "ACHAT", color: "var(--bullish)", bg: "rgba(20,241,149,0.12)", border: "rgba(20,241,149,0.3)", Icon: TrendingUp },
+    SELL: { label: "VENTE", color: "var(--bearish)", bg: "rgba(244,63,94,0.12)", border: "rgba(244,63,94,0.3)", Icon: TrendingDown },
     NEUTRE: { label: "NEUTRE", color: "#F5A623", bg: "rgba(245,166,35,0.12)", border: "rgba(245,166,35,0.3)", Icon: Minus },
   }[result.signal];
 
   const reasonColor = (type: AnalyseReason["type"]) =>
-    type === "positive" ? "#00FF88" : type === "warning" ? "#F5A623" : "#FF3B5C";
+    type === "positive" ? "var(--bullish)" : type === "warning" ? "#F5A623" : "var(--bearish)";
   const reasonBg = (type: AnalyseReason["type"]) =>
-    type === "positive" ? "rgba(0,255,136,0.08)" : type === "warning" ? "rgba(245,166,35,0.08)" : "rgba(255,59,92,0.08)";
+    type === "positive" ? "var(--bullish-muted)" : type === "warning" ? "rgba(245,166,35,0.08)" : "var(--bearish-muted)";
   const reasonDot = (type: AnalyseReason["type"]) =>
     type === "positive" ? "▲" : type === "warning" ? "◆" : "▼";
 
@@ -126,12 +126,12 @@ export default function ResultatPage() {
       <div className="flex items-center justify-between">
         <button onClick={() => router.back()}
           className="flex items-center gap-2 text-sm font-semibold transition-opacity hover:opacity-70"
-          style={{ color: "var(--on-surface-dim)" }}>
+          style={{ color: "var(--text-secondary)" }}>
           <ArrowLeft size={16} />
           Retour
         </button>
         <div className="text-right">
-          <p className="text-xs font-mono-data" style={{ color: "var(--on-surface-dim)" }}>{date}</p>
+          <p className="text-xs font-data" style={{ color: "var(--text-secondary)" }}>{date}</p>
           <p className="text-xs font-semibold" style={{ color: accentColor }}>
             {result.asset} · {result.timeframe} · {result.mode === "swing" ? "Swing" : "Scalp"}
           </p>
@@ -145,33 +145,33 @@ export default function ResultatPage() {
           <div className="flex items-center gap-3 px-5 py-2.5 rounded-2xl"
             style={{ background: signalConfig.bg, border: `1.5px solid ${signalConfig.border}` }}>
             <signalConfig.Icon size={20} style={{ color: signalConfig.color }} />
-            <span className="font-headline font-bold text-xl tracking-widest" style={{ color: signalConfig.color }}>
+            <span className="font-display font-semibold text-xl tracking-widest" style={{ color: signalConfig.color }}>
               {signalConfig.label}
             </span>
           </div>
-          <p className="text-xs text-center" style={{ color: "var(--on-surface-dim)" }}>
+          <p className="text-xs text-center" style={{ color: "var(--text-secondary)" }}>
             {result.patternDetected}
           </p>
         </div>
 
-        <div className="hidden sm:block w-px self-stretch" style={{ background: "var(--outline)" }} />
+        <div className="hidden sm:block w-px self-stretch" style={{ background: "var(--border)" }} />
 
         <div className="flex flex-col items-center gap-1 text-center">
           <ConfidenceRing confidence={result.confidence ?? 0} size={96} />
         </div>
 
-        <div className="hidden sm:block w-px self-stretch" style={{ background: "var(--outline)" }} />
+        <div className="hidden sm:block w-px self-stretch" style={{ background: "var(--border)" }} />
 
         <div className="flex-1 space-y-2 text-sm">
           <p className="font-semibold text-white">{result.tendance}</p>
           <div className="space-y-1">
-            <p className="text-xs font-mono-data" style={{ color: "var(--on-surface-dim)" }}>
+            <p className="text-xs font-data" style={{ color: "var(--text-secondary)" }}>
               RSI <span className="text-white">{result.rsiInfo}</span>
             </p>
-            <p className="text-xs font-mono-data" style={{ color: "var(--on-surface-dim)" }}>
+            <p className="text-xs font-data" style={{ color: "var(--text-secondary)" }}>
               MACD <span className="text-white">{result.macdInfo}</span>
             </p>
-            <p className="text-xs font-mono-data" style={{ color: "var(--on-surface-dim)" }}>
+            <p className="text-xs font-data" style={{ color: "var(--text-secondary)" }}>
               Bollinger <span className="text-white">{result.bollingerInfo}</span>
             </p>
           </div>
@@ -182,58 +182,58 @@ export default function ResultatPage() {
       <div className="grid grid-cols-2 gap-3">
         {/* Entry */}
         <div className="card p-4 space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>
+          <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
             Entrée
           </p>
-          <p className="font-headline font-bold text-lg text-white font-mono-data">
+          <p className="font-display font-semibold text-lg text-white font-data">
             {fmtPrice(result.entry)}
           </p>
         </div>
 
         {/* Stop Loss */}
-        <div className="card p-4 space-y-1" style={{ border: "1px solid rgba(255,59,92,0.2)" }}>
-          <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>
+        <div className="card p-4 space-y-1" style={{ border: "1px solid rgba(244,63,94,0.2)" }}>
+          <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
             Stop Loss
           </p>
-          <p className="font-headline font-bold text-lg font-mono-data" style={{ color: "#FF3B5C" }}>
+          <p className="font-display font-semibold text-lg font-data" style={{ color: "var(--bearish)" }}>
             {fmtPrice(result.stopLoss)}
           </p>
         </div>
 
         {/* TP1 */}
-        <div className="card p-4 space-y-1" style={{ border: "1px solid rgba(0,255,136,0.2)" }}>
-          <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>
+        <div className="card p-4 space-y-1" style={{ border: "1px solid rgba(20,241,149,0.2)" }}>
+          <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
             Take Profit 1
           </p>
-          <p className="font-headline font-bold text-lg font-mono-data" style={{ color: "#00FF88" }}>
+          <p className="font-display font-semibold text-lg font-data" style={{ color: "var(--bullish)" }}>
             {fmtPrice(result.tp1)}
           </p>
-          <p className="text-xs font-mono-data" style={{ color: "#00FF88" }}>
+          <p className="text-xs font-data" style={{ color: "var(--bullish)" }}>
             +{fmt(result.gainTP1FCFA)} FCFA
           </p>
         </div>
 
         {/* TP2 or RR */}
         {result.tp2 ? (
-          <div className="card p-4 space-y-1" style={{ border: "1px solid rgba(0,255,136,0.12)" }}>
-            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>
+          <div className="card p-4 space-y-1" style={{ border: "1px solid rgba(20,241,149,0.12)" }}>
+            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
               Take Profit 2
             </p>
-            <p className="font-headline font-bold text-lg font-mono-data" style={{ color: "#00FF88" }}>
+            <p className="font-display font-semibold text-lg font-data" style={{ color: "var(--bullish)" }}>
               {fmtPrice(result.tp2)}
             </p>
             {result.gainTP2FCFA && (
-              <p className="text-xs font-mono-data" style={{ color: "#00FF88" }}>
+              <p className="text-xs font-data" style={{ color: "var(--bullish)" }}>
                 +{fmt(result.gainTP2FCFA)} FCFA
               </p>
             )}
           </div>
         ) : (
           <div className="card p-4 space-y-1">
-            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>
+            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
               Ratio R/R
             </p>
-            <p className="font-headline font-bold text-lg font-mono-data text-white">
+            <p className="font-display font-semibold text-lg font-data text-white">
               {result.rrRatio != null ? `1:${result.rrRatio}` : '—'}
             </p>
           </div>
@@ -242,31 +242,31 @@ export default function ResultatPage() {
 
       {/* Risk & Position Size */}
       <div className="card p-5 flex flex-col sm:flex-row items-center gap-5"
-        style={{ border: "1px solid var(--outline)" }}>
+        style={{ border: "1px solid var(--border)" }}>
         <div className="flex-1 text-center space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>
+          <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
             Risque engagé
           </p>
-          <p className="font-headline font-bold text-xl font-mono-data" style={{ color: "#FF3B5C" }}>
+          <p className="font-display font-semibold text-xl font-data" style={{ color: "var(--bearish)" }}>
             {fmt(result.riskFCFA)} FCFA
           </p>
         </div>
-        <div className="hidden sm:block w-px self-stretch" style={{ background: "var(--outline)" }} />
+        <div className="hidden sm:block w-px self-stretch" style={{ background: "var(--border)" }} />
         <div className="flex-1 text-center space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>
+          <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
             Taille de position
           </p>
-          <p className="font-headline font-bold text-xl font-mono-data text-white">
+          <p className="font-display font-semibold text-xl font-data text-white">
             {result.positionSize != null ? result.positionSize : '—'}{' '}
             <span className="text-sm font-normal">{result.positionUnit ?? ''}</span>
           </p>
         </div>
-        <div className="hidden sm:block w-px self-stretch" style={{ background: "var(--outline)" }} />
+        <div className="hidden sm:block w-px self-stretch" style={{ background: "var(--border)" }} />
         <div className="flex-1 text-center space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--on-surface-dim)" }}>
+          <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
             Gain cible (TP1)
           </p>
-          <p className="font-headline font-bold text-xl font-mono-data" style={{ color: "#00FF88" }}>
+          <p className="font-display font-semibold text-xl font-data" style={{ color: "var(--bullish)" }}>
             {fmt(result.gainTP1FCFA)} FCFA
           </p>
         </div>
@@ -274,7 +274,7 @@ export default function ResultatPage() {
 
       {/* Reasons */}
       <div className="card p-5 space-y-3">
-        <h3 className="font-headline font-bold text-sm text-white">
+        <h3 className="font-display font-semibold text-sm text-white">
           Explication de l'analyse
         </h3>
         <div className="space-y-2">
@@ -295,7 +295,7 @@ export default function ResultatPage() {
 
       {/* Disclaimer */}
       <div className="px-4 py-3 rounded-xl text-xs"
-        style={{ background: "rgba(245,166,35,0.06)", border: "1px solid rgba(245,166,35,0.15)", color: "var(--on-surface-dim)" }}>
+        style={{ background: "rgba(245,166,35,0.06)", border: "1px solid rgba(245,166,35,0.15)", color: "var(--text-secondary)" }}>
         ⚠ {result.disclaimer}
       </div>
 
@@ -305,16 +305,16 @@ export default function ResultatPage() {
         <div className="max-w-3xl mx-auto flex gap-3">
           <button
             onClick={() => router.push(result.mode === "swing" ? "/swing" : "/scalp")}
-            className="flex-1 py-3 rounded-2xl text-sm font-bold font-headline transition-all"
-            style={{ background: "var(--surface-highest)", color: "var(--on-surface-dim)", border: "1px solid var(--outline)" }}>
+            className="flex-1 py-3 rounded-2xl text-sm font-bold font-display transition-all"
+            style={{ background: "var(--surface-highest)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
             Nouvelle analyse
           </button>
           <button
             onClick={() => {
-              const text = `Signal: ${signalConfig.label} | ${result.asset} ${result.timeframe}\nEntrée: ${fmtPrice(result.entry)} | SL: ${fmtPrice(result.stopLoss)} | TP1: ${fmtPrice(result.tp1)}\nConfiance: ${result.confidence}%\nVia IdjorTrade`;
+              const text = `Signal: ${signalConfig.label} | ${result.asset} ${result.timeframe}\nEntrée: ${fmtPrice(result.entry)} | SL: ${fmtPrice(result.stopLoss)} | TP1: ${fmtPrice(result.tp1)}\nConfiance: ${result.confidence}%\nVia Wickox`;
               navigator.clipboard.writeText(text).catch(() => {});
             }}
-            className="flex-1 py-3 rounded-2xl text-sm font-bold font-headline transition-all"
+            className="flex-1 py-3 rounded-2xl text-sm font-bold font-display transition-all"
             style={{ background: signalConfig.bg, color: signalConfig.color, border: `1px solid ${signalConfig.border}` }}>
             Copier le signal
           </button>
@@ -322,11 +322,11 @@ export default function ResultatPage() {
           <button
             onClick={saveToJournal}
             disabled={saving || saved || result.signal === 'NEUTRE'}
-            className="flex-1 py-3 rounded-2xl text-sm font-bold font-headline transition-all"
+            className="flex-1 py-3 rounded-2xl text-sm font-bold font-display transition-all"
             style={{
-              background: saved ? "rgba(0,255,136,0.12)" : "rgba(0,255,136,0.08)",
-              color: "#00FF88",
-              border: "1px solid rgba(0,255,136,0.3)",
+              background: saved ? "rgba(20,241,149,0.12)" : "var(--bullish-muted)",
+              color: "var(--bullish)",
+              border: "1px solid rgba(20,241,149,0.3)",
               opacity: result.signal === 'NEUTRE' ? 0.4 : 1,
             }}
           >

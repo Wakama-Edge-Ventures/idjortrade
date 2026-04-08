@@ -11,7 +11,9 @@ export async function POST(req: NextRequest) {
   console.log('RESEND_API_KEY present:', !!process.env.RESEND_API_KEY);
 
   try {
-    const { email, password, prenom } = await req.json();
+    const { email, password, prenom, refCode } = await req.json() as {
+      email: string; password: string; prenom: string; refCode?: string;
+    };
 
     // Validate required fields
     if (!email || !password || !prenom) {
@@ -36,6 +38,17 @@ export async function POST(req: NextRequest) {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expires = new Date(Date.now() + 10 * 60 * 1000);
 
+    // Resolve referral code → userId of referrer
+    let referredBy: string | undefined;
+    if (refCode) {
+      const referral = await prisma.referral.findUnique({ where: { code: refCode } });
+      if (referral) {
+        referredBy = referral.userId;
+        // Increment signups counter (non-blocking, don't fail registration if this errors)
+        prisma.referral.update({ where: { code: refCode }, data: { signups: { increment: 1 } } }).catch(() => {});
+      }
+    }
+
     // Create user + verification code in one step
     await prisma.user.create({
       data: {
@@ -44,6 +57,7 @@ export async function POST(req: NextRequest) {
         prenom,
         verifyCode: code,
         verifyExpires: expires,
+        referredBy,
         profile: { create: {} },
       },
     });

@@ -27,7 +27,7 @@ export default function DayPage() {
 
           {/* Section 1 — Configuration */}
           <div className="pb-6 lg:pb-0 lg:pr-6 lg:w-[38%]">
-            <h2 className="font-headline font-bold text-base text-white mb-5">Configuration du trade</h2>
+            <h2 className="font-display font-semibold text-base text-white mb-5">Configuration du trade</h2>
             <RiskForm ref={formRef} mode="day"
               onAssetChange={setAsset}
               onProductTypeChange={setProductType} />
@@ -35,14 +35,14 @@ export default function DayPage() {
 
           {/* Section 2 — Upload + Analyse */}
           <div className="py-6 lg:py-0 lg:px-6 lg:w-[35%] flex flex-col gap-5">
-            <h2 className="font-headline font-bold text-base text-white">Charger votre graphique</h2>
+            <h2 className="font-display font-semibold text-base text-white">Charger votre graphique</h2>
             <ChartUploadZone ref={uploadRef} accentColor="#0EA5E9" />
             <AnalyseButton
               mode="day"
               getFormData={() => formRef.current?.getFormData() ?? null}
               getImageData={() => uploadRef.current?.getImageData() ?? null}
             />
-            <p className="text-center text-xs" style={{ color: "var(--on-surface-dim)" }}>
+            <p className="text-center text-xs" style={{ color: "var(--text-secondary)" }}>
               ⚠ L&apos;IA analyse l&apos;image — résultats indicatifs uniquement
             </p>
           </div>

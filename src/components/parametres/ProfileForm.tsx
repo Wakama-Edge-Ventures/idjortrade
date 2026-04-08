@@ -39,8 +39,8 @@ export default function ProfileForm() {
 
   const inputStyle: React.CSSProperties = {
     background: "var(--surface-highest)",
-    border: "1px solid var(--outline)",
-    color: "var(--on-surface)",
+    border: "1px solid var(--border)",
+    color: "var(--text-primary)",
     borderRadius: "12px",
     padding: "12px 16px",
     fontSize: "14px",
@@ -53,7 +53,7 @@ export default function ProfileForm() {
     fontWeight: 600,
     textTransform: "uppercase",
     letterSpacing: "0.1em",
-    color: "var(--on-surface-dim)",
+    color: "var(--text-secondary)",
     marginBottom: "6px",
     display: "block",
   };
@@ -101,7 +101,7 @@ export default function ProfileForm() {
       <div className="flex items-center gap-5">
         <div
           className="relative w-16 h-16 rounded-2xl flex items-center justify-center text-lg font-bold cursor-pointer overflow-hidden flex-shrink-0"
-          style={{ background: "rgba(0,255,136,0.15)", color: "#00FF88" }}
+          style={{ background: "rgba(20,241,149,0.15)", color: "var(--bullish)" }}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
         >
@@ -117,7 +117,7 @@ export default function ProfileForm() {
         </div>
         <div>
           <p className="text-sm font-semibold text-white">{prenom || session?.user?.email}</p>
-          <p className="text-xs" style={{ color: "var(--on-surface-dim)" }}>Plan {planLabel}</p>
+          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>Plan {planLabel}</p>
         </div>
       </div>
 
@@ -130,8 +130,8 @@ export default function ProfileForm() {
             value={prenom}
             onChange={(e) => setPrenom(e.target.value)}
             style={inputStyle}
-            onFocus={(e) => { e.target.style.borderColor = "rgba(0,255,136,0.4)"; }}
-            onBlur={(e) => { e.target.style.borderColor = "var(--outline)"; }}
+            onFocus={(e) => { e.target.style.borderColor = "rgba(153,69,255,0.5)"; }}
+            onBlur={(e) => { e.target.style.borderColor = "var(--border)"; }}
           />
         </div>
 
@@ -153,8 +153,8 @@ export default function ProfileForm() {
             onChange={(e) => setPhone(e.target.value)}
             placeholder="+225 07 00 00 00 00"
             style={inputStyle}
-            onFocus={(e) => { e.target.style.borderColor = "rgba(0,255,136,0.4)"; }}
-            onBlur={(e) => { e.target.style.borderColor = "var(--outline)"; }}
+            onFocus={(e) => { e.target.style.borderColor = "rgba(153,69,255,0.5)"; }}
+            onBlur={(e) => { e.target.style.borderColor = "var(--border)"; }}
           />
         </div>
 
@@ -164,8 +164,8 @@ export default function ProfileForm() {
             value={country}
             onChange={(e) => setCountry(e.target.value)}
             style={{ ...inputStyle, cursor: "pointer" }}
-            onFocus={(e) => { e.target.style.borderColor = "rgba(0,255,136,0.4)"; }}
-            onBlur={(e) => { e.target.style.borderColor = "var(--outline)"; }}
+            onFocus={(e) => { e.target.style.borderColor = "rgba(153,69,255,0.5)"; }}
+            onBlur={(e) => { e.target.style.borderColor = "var(--border)"; }}
           >
             {countries.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
@@ -177,8 +177,8 @@ export default function ProfileForm() {
             value={timezone}
             onChange={(e) => setTimezone(e.target.value)}
             style={{ ...inputStyle, cursor: "pointer" }}
-            onFocus={(e) => { e.target.style.borderColor = "rgba(0,255,136,0.4)"; }}
-            onBlur={(e) => { e.target.style.borderColor = "var(--outline)"; }}
+            onFocus={(e) => { e.target.style.borderColor = "rgba(153,69,255,0.5)"; }}
+            onBlur={(e) => { e.target.style.borderColor = "var(--border)"; }}
           >
             {timezones.map((tz) => <option key={tz} value={tz}>{tz}</option>)}
           </select>
@@ -188,14 +188,14 @@ export default function ProfileForm() {
       {error && (
         <p
           className="text-xs font-semibold px-4 py-3 rounded-xl"
-          style={{ background: "rgba(255,59,92,0.08)", color: "#FF3B5C", border: "1px solid rgba(255,59,92,0.2)" }}
+          style={{ background: "var(--bearish-muted)", color: "var(--bearish)", border: "1px solid rgba(244,63,94,0.2)" }}
         >
           {error}
         </p>
       )}
 
       {saved && (
-        <p className="text-xs font-semibold" style={{ color: "#00FF88" }}>
+        <p className="text-xs font-semibold" style={{ color: "var(--bullish)" }}>
           ✓ Profil sauvegardé
         </p>
       )}
@@ -205,8 +205,8 @@ export default function ProfileForm() {
         disabled={saving}
         className="px-6 py-3 rounded-xl text-sm font-bold transition-all"
         style={{
-          background: saving ? "var(--surface-highest)" : "#00FF88",
-          color: saving ? "var(--on-surface-dim)" : "#0A0E1A",
+          background: saving ? "var(--surface-highest)" : "var(--bullish)",
+          color: saving ? "var(--text-secondary)" : "white",
           cursor: saving ? "not-allowed" : "pointer",
           opacity: saving ? 0.7 : 1,
         }}

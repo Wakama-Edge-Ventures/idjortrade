@@ -19,7 +19,7 @@ export const plans: Plan[] = [
     name: "GRATUIT",
     priceFCFA: 0,
     priceAnnualFCFA: 0,
-    tagline: "Pour découvrir IdjorTrade",
+    tagline: "Pour découvrir Wickox",
     highlighted: false,
     features: [
       { text: "1 analyse/jour (signal uniquement)", included: true },

@@ -5,12 +5,12 @@ const cols = ["", "GRATUIT", "STARTER", "BASIC", "PRO", "TRADER"];
 function Cell({ value, isProCol }: { value: string | boolean; isProCol?: boolean }) {
   if (typeof value === "boolean") {
     return (
-      <span style={{ color: value ? "#00FF88" : "var(--outline)" }}>
+      <span style={{ color: value ? "var(--bullish)" : "var(--border)" }}>
         {value ? "✓" : "✗"}
       </span>
     );
   }
-  return <span style={{ color: isProCol ? "#00FF88" : "var(--on-surface)" }}>{value}</span>;
+  return <span style={{ color: isProCol ? "var(--bullish)" : "var(--text-primary)" }}>{value}</span>;
 }
 
 export default function ComparisonTable() {
@@ -24,8 +24,8 @@ export default function ComparisonTable() {
                 key={col}
                 className="px-4 py-4 text-left text-xs font-bold tracking-widest"
                 style={{
-                  background: i === 4 ? "rgba(0,255,136,0.04)" : "var(--surface-mid)",
-                  color: i === 4 ? "#00FF88" : i === 2 ? "#0EA5E9" : "var(--on-surface-dim)",
+                  background: i === 4 ? "rgba(20,241,149,0.04)" : "var(--surface-mid)",
+                  color: i === 4 ? "var(--bullish)" : i === 2 ? "#0EA5E9" : "var(--text-secondary)",
                   borderRight: i < cols.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
                 }}
               >
@@ -43,7 +43,7 @@ export default function ComparisonTable() {
                 borderBottom: "1px solid rgba(255,255,255,0.03)",
               }}
             >
-              <td className="px-4 py-3 text-xs font-medium" style={{ color: "var(--on-surface-dim)" }}>
+              <td className="px-4 py-3 text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
                 {row.feature}
               </td>
               {(["free", "starter", "basic", "pro", "trader"] as const).map((key, i) => (
@@ -51,7 +51,7 @@ export default function ComparisonTable() {
                   key={key}
                   className="px-4 py-3 text-center text-xs font-semibold"
                   style={{
-                    background: key === "pro" ? "rgba(0,255,136,0.04)" : "transparent",
+                    background: key === "pro" ? "rgba(20,241,149,0.04)" : "transparent",
                     borderRight: i < 4 ? "1px solid rgba(255,255,255,0.04)" : "none",
                   }}
                 >

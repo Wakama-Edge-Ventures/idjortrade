@@ -10,7 +10,7 @@ export default function PricingToggle() {
       <button
         onClick={() => setIsAnnual(false)}
         className="text-sm font-semibold transition-colors"
-        style={{ color: !isAnnual ? "var(--on-surface)" : "var(--on-surface-dim)" }}
+        style={{ color: !isAnnual ? "var(--text-primary)" : "var(--text-secondary)" }}
       >
         Mensuel
       </button>
@@ -18,19 +18,19 @@ export default function PricingToggle() {
       {/* Toggle track */}
       <button
         onClick={() => setIsAnnual(!isAnnual)}
-        className="relative w-12 h-6 rounded-full transition-colors flex-shrink-0"
+        className="relative w-11 h-6 rounded-full transition-colors flex-shrink-0"
         style={{
-          background: isAnnual ? "rgba(0,255,136,0.25)" : "var(--surface-highest)",
-          border: isAnnual ? "1px solid rgba(0,255,136,0.4)" : "1px solid var(--outline)",
+          background: isAnnual ? "rgba(20,241,149,0.25)" : "var(--surface-highest)",
+          border: isAnnual ? "1px solid rgba(153,69,255,0.5)" : "1px solid var(--border)",
         }}
         aria-label="Basculer facturation annuelle"
       >
         {/* Knob */}
         <span
-          className="absolute top-0.5 w-5 h-5 rounded-full transition-transform"
+          className="absolute top-1 left-1 w-4 h-4 rounded-full transition-transform duration-200"
           style={{
-            background: isAnnual ? "#00FF88" : "var(--on-surface-dim)",
-            transform: isAnnual ? "translateX(26px)" : "translateX(2px)",
+            background: isAnnual ? "var(--bullish)" : "var(--text-secondary)",
+            transform: isAnnual ? "translateX(20px)" : "translateX(0px)",
           }}
         />
       </button>
@@ -39,16 +39,16 @@ export default function PricingToggle() {
         <button
           onClick={() => setIsAnnual(true)}
           className="text-sm font-semibold transition-colors"
-          style={{ color: isAnnual ? "var(--on-surface)" : "var(--on-surface-dim)" }}
+          style={{ color: isAnnual ? "var(--text-primary)" : "var(--text-secondary)" }}
         >
           Annuel
         </button>
         <span
           className="text-[10px] font-bold px-2 py-0.5 rounded-full"
           style={{
-            background: "rgba(0,255,136,0.12)",
-            color: "#00FF88",
-            border: "1px solid rgba(0,255,136,0.2)",
+            background: "rgba(20,241,149,0.12)",
+            color: "var(--bullish)",
+            border: "1px solid rgba(20,241,149,0.2)",
           }}
         >
           −20%

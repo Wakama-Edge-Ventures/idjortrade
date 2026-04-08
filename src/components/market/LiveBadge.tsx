@@ -28,20 +28,20 @@ export default function LiveBadge({ refreshInterval = 30 }: LiveBadgeProps) {
         <>
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
-              style={{ background: "#00FF88" }} />
+              style={{ background: "var(--sol-gradient)" }} />
             <span className="relative inline-flex rounded-full h-2 w-2"
-              style={{ background: "#00FF88" }} />
+              style={{ background: "var(--sol-gradient)" }} />
           </span>
-          <span className="text-[10px] font-bold tracking-wider" style={{ color: "#00FF88" }}>
+          <span className="text-[10px] font-bold tracking-wider" style={{ color: "var(--bullish)" }}>
             LIVE
           </span>
         </>
       ) : (
         <>
           <span className="inline-flex rounded-full h-2 w-2"
-            style={{ background: "var(--outline)" }} />
-          <span className="text-[10px] font-semibold font-mono-data"
-            style={{ color: "var(--on-surface-dim)" }}>
+            style={{ background: "var(--border)" }} />
+          <span className="text-[10px] font-semibold font-data"
+            style={{ color: "var(--text-secondary)" }}>
             {countdown}s
           </span>
         </>

@@ -24,7 +24,7 @@ export function formatPrice(p: number): string {
 // ─── Mini Sparkline ───────────────────────────────────────────────────────────
 
 function Sparkline({ prices, positive }: { prices: number[]; positive: boolean }) {
-  if (!prices || prices.length < 2) return <span style={{ color: "var(--on-surface-dim)" }}>—</span>;
+  if (!prices || prices.length < 2) return <span style={{ color: "var(--text-secondary)" }}>—</span>;
 
   const w = 80;
   const h = 32;
@@ -42,7 +42,7 @@ function Sparkline({ prices, positive }: { prices: number[]; positive: boolean }
 
   const pathD = "M " + pts.join(" L ");
 
-  const color = positive ? "#00FF88" : "#FF3B5C";
+  const color = positive ? "var(--bullish)" : "var(--bearish)";
 
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{ display: "block" }}>
@@ -55,11 +55,11 @@ function Sparkline({ prices, positive }: { prices: number[]; positive: boolean }
 
 function PctCell({ value }: { value: number | null }) {
   if (value === null || value === undefined) {
-    return <span style={{ color: "var(--on-surface-dim)" }}>—</span>;
+    return <span style={{ color: "var(--text-secondary)" }}>—</span>;
   }
   const pos = value >= 0;
   return (
-    <span style={{ color: pos ? "#00FF88" : "#FF3B5C" }} className="font-mono-data text-sm">
+    <span style={{ color: pos ? "var(--bullish)" : "var(--bearish)" }} className="font-data text-sm">
       {pos ? "+" : ""}{value.toFixed(2)}%
     </span>
   );
@@ -102,7 +102,7 @@ export default function CryptoTable({ coins }: CryptoTableProps) {
         <svg
           width="16" height="16" viewBox="0 0 16 16" fill="none"
           className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-          style={{ color: "var(--on-surface-dim)" }}
+          style={{ color: "var(--text-secondary)" }}
         >
           <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.5" />
           <line x1="10.5" y1="10.5" x2="14" y2="14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -115,12 +115,12 @@ export default function CryptoTable({ coins }: CryptoTableProps) {
           className="w-full text-sm rounded-xl pl-9 pr-4 py-2.5"
           style={{
             background: "var(--surface-highest)",
-            border: "1px solid var(--outline)",
+            border: "1px solid var(--border)",
             color: "white",
             outline: "none",
           }}
-          onFocus={(e) => (e.target.style.borderColor = "rgba(0,255,136,0.4)")}
-          onBlur={(e) => (e.target.style.borderColor = "var(--outline)")}
+          onFocus={(e) => (e.target.style.borderColor = "rgba(153,69,255,0.5)")}
+          onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
         />
       </div>
 
@@ -128,13 +128,13 @@ export default function CryptoTable({ coins }: CryptoTableProps) {
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
-            <tr style={{ borderBottom: "1px solid var(--outline)" }}>
+            <tr style={{ borderBottom: "1px solid var(--border)" }}>
               {["#", "Monnaie", "Cours", "1h%", "24h%", "7j%", "Volume 24h", "Cap. Boursière", "7 jours"].map(
                 (col) => (
                   <th
                     key={col}
                     className={`text-xs font-semibold uppercase tracking-widest py-3 ${col === "Monnaie" ? "text-left" : "text-right"} ${["1h%", "7j%", "Volume 24h", "7 jours"].includes(col) ? "hidden md:table-cell" : ""}`}
-                    style={{ color: "var(--on-surface-dim)", paddingLeft: col === "#" ? "0" : "0.75rem", paddingRight: col === "7 jours" ? "0" : "0.75rem", whiteSpace: "nowrap" }}
+                    style={{ color: "var(--text-secondary)", paddingLeft: col === "#" ? "0" : "0.75rem", paddingRight: col === "7 jours" ? "0" : "0.75rem", whiteSpace: "nowrap" }}
                   >
                     {col}
                   </th>
@@ -152,7 +152,7 @@ export default function CryptoTable({ coins }: CryptoTableProps) {
                   className="hover:bg-white/5 transition-colors"
                 >
                   {/* Rank */}
-                  <td className="py-3 pr-3 text-right font-mono-data text-sm" style={{ color: "var(--on-surface-dim)", minWidth: "2.5rem" }}>
+                  <td className="py-3 pr-3 text-right font-data text-sm" style={{ color: "var(--text-secondary)", minWidth: "2.5rem" }}>
                     {coin.market_cap_rank ?? "—"}
                   </td>
 
@@ -169,13 +169,13 @@ export default function CryptoTable({ coins }: CryptoTableProps) {
                       />
                       <div>
                         <p className="text-sm font-bold text-white leading-tight">{coin.name}</p>
-                        <p className="text-xs uppercase font-mono-data" style={{ color: "var(--on-surface-dim)" }}>{coin.symbol}</p>
+                        <p className="text-xs uppercase font-data" style={{ color: "var(--text-secondary)" }}>{coin.symbol}</p>
                       </div>
                     </div>
                   </td>
 
                   {/* Price */}
-                  <td className="py-3 px-3 text-right font-mono-data font-bold text-sm text-white whitespace-nowrap">
+                  <td className="py-3 px-3 text-right font-data font-bold text-sm text-white whitespace-nowrap">
                     ${formatPrice(coin.current_price)}
                   </td>
 
@@ -195,12 +195,12 @@ export default function CryptoTable({ coins }: CryptoTableProps) {
                   </td>
 
                   {/* Volume — hidden on mobile */}
-                  <td className="py-3 px-3 text-right font-mono-data text-sm hidden md:table-cell whitespace-nowrap" style={{ color: "var(--on-surface-dim)" }}>
+                  <td className="py-3 px-3 text-right font-data text-sm hidden md:table-cell whitespace-nowrap" style={{ color: "var(--text-secondary)" }}>
                     ${formatLargeNumber(coin.total_volume)}
                   </td>
 
                   {/* Market Cap */}
-                  <td className="py-3 px-3 text-right font-mono-data text-sm whitespace-nowrap" style={{ color: "var(--on-surface-dim)" }}>
+                  <td className="py-3 px-3 text-right font-data text-sm whitespace-nowrap" style={{ color: "var(--text-secondary)" }}>
                     ${formatLargeNumber(coin.market_cap)}
                   </td>
 
@@ -217,7 +217,7 @@ export default function CryptoTable({ coins }: CryptoTableProps) {
 
             {paginated.length === 0 && (
               <tr>
-                <td colSpan={9} className="py-12 text-center text-sm" style={{ color: "var(--on-surface-dim)" }}>
+                <td colSpan={9} className="py-12 text-center text-sm" style={{ color: "var(--text-secondary)" }}>
                   Aucun résultat pour « {search} »
                 </td>
               </tr>
@@ -229,7 +229,7 @@ export default function CryptoTable({ coins }: CryptoTableProps) {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-2">
-          <p className="text-xs" style={{ color: "var(--on-surface-dim)" }}>
+          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
             {filtered.length} cryptos — page {page}/{totalPages}
           </p>
           <div className="flex gap-2">
@@ -239,8 +239,8 @@ export default function CryptoTable({ coins }: CryptoTableProps) {
               className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
               style={{
                 background: "var(--surface-highest)",
-                color: page === 1 ? "var(--on-surface-dim)" : "white",
-                border: "1px solid var(--outline)",
+                color: page === 1 ? "var(--text-secondary)" : "white",
+                border: "1px solid var(--border)",
                 opacity: page === 1 ? 0.4 : 1,
                 cursor: page === 1 ? "not-allowed" : "pointer",
               }}
@@ -256,9 +256,9 @@ export default function CryptoTable({ coins }: CryptoTableProps) {
                   onClick={() => setPage(pageNum)}
                   className="w-8 h-8 rounded-lg text-xs font-semibold transition-all"
                   style={{
-                    background: pageNum === page ? "#00FF88" : "var(--surface-highest)",
-                    color: pageNum === page ? "#0A0E1A" : "white",
-                    border: "1px solid var(--outline)",
+                    background: pageNum === page ? "var(--bullish)" : "var(--surface-highest)",
+                    color: pageNum === page ? "white" : "white",
+                    border: "1px solid var(--border)",
                     cursor: "pointer",
                   }}
                 >
@@ -272,8 +272,8 @@ export default function CryptoTable({ coins }: CryptoTableProps) {
               className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
               style={{
                 background: "var(--surface-highest)",
-                color: page === totalPages ? "var(--on-surface-dim)" : "white",
-                border: "1px solid var(--outline)",
+                color: page === totalPages ? "var(--text-secondary)" : "white",
+                border: "1px solid var(--border)",
                 opacity: page === totalPages ? 0.4 : 1,
                 cursor: page === totalPages ? "not-allowed" : "pointer",
               }}

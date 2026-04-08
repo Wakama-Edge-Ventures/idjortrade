@@ -150,7 +150,7 @@ export default function IdjorChat({ initialMessages, quickPrompts }: IdjorChatPr
   // Quota bar rendering
   const showQuota = quotaInfo && quotaInfo.limit !== Infinity && quotaInfo.limit < 9999;
   const quotaPct = showQuota ? Math.min((quotaInfo.used / quotaInfo.limit) * 100, 100) : 0;
-  const quotaColor = quotaPct >= 100 ? '#FF3B5C' : quotaPct >= 80 ? '#F5A623' : '#00FF88';
+  const quotaColor = quotaPct >= 100 ? 'var(--bearish)' : quotaPct >= 80 ? '#F5A623' : 'var(--bullish)';
   const quotaReached = !!(showQuota && quotaInfo && quotaInfo.used >= quotaInfo.limit);
 
   return (
@@ -160,7 +160,7 @@ export default function IdjorChat({ initialMessages, quickPrompts }: IdjorChatPr
         {/* Show skeleton while loading history */}
         {!historyLoaded && (
           <div className="flex justify-center py-4">
-            <span className="text-xs" style={{ color: 'var(--on-surface-dim)' }}>Chargement de l'historique…</span>
+            <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>Chargement de l'historique…</span>
           </div>
         )}
         {messages.map((msg) => (
@@ -182,7 +182,7 @@ export default function IdjorChat({ initialMessages, quickPrompts }: IdjorChatPr
                     background: 'linear-gradient(135deg, #2A1F0A, #141928)',
                     border: '1px solid rgba(245,166,35,0.2)',
                     borderRadius: '12px 12px 12px 2px',
-                    color: 'var(--on-surface)',
+                    color: 'var(--text-primary)',
                   }}
                 >
                   {renderMarkdown(msg.content)}
@@ -193,9 +193,9 @@ export default function IdjorChat({ initialMessages, quickPrompts }: IdjorChatPr
                 className="max-w-[80%] px-4 py-3 text-sm leading-relaxed"
                 style={{
                   background: 'linear-gradient(135deg, #1A2F1E, #141928)',
-                  border: '1px solid rgba(0,255,136,0.15)',
+                  border: '1px solid rgba(20,241,149,0.15)',
                   borderRadius: '12px 12px 2px 12px',
-                  color: 'var(--on-surface)',
+                  color: 'var(--text-primary)',
                 }}
               >
                 {msg.content}
@@ -253,8 +253,8 @@ export default function IdjorChat({ initialMessages, quickPrompts }: IdjorChatPr
             className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors"
             style={{
               background: 'var(--surface-highest)',
-              color: 'var(--on-surface-dim)',
-              border: '1px solid var(--outline)',
+              color: 'var(--text-secondary)',
+              border: '1px solid var(--border)',
               opacity: isLoading ? 0.5 : 1,
               cursor: isLoading ? 'not-allowed' : 'pointer',
             }}
@@ -268,11 +268,11 @@ export default function IdjorChat({ initialMessages, quickPrompts }: IdjorChatPr
       {showQuota && (
         <div className="px-4 pb-2 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-xs" style={{ color: 'var(--on-surface-dim)' }}>
+            <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
               {quotaInfo.used}/{quotaInfo.limit === Infinity ? '∞' : quotaInfo.limit} messages aujourd&apos;hui
             </span>
             {quotaReached && (
-              <Link href="/plans" className="text-xs font-semibold" style={{ color: '#00FF88' }}>
+              <Link href="/plans" className="text-xs font-semibold" style={{ color: 'var(--bullish)' }}>
                 Passer à Pro →
               </Link>
             )}
@@ -292,9 +292,9 @@ export default function IdjorChat({ initialMessages, quickPrompts }: IdjorChatPr
           <p
             className="text-xs font-semibold px-3 py-2 rounded-xl"
             style={{
-              background: 'rgba(255,59,92,0.08)',
-              color: '#FF3B5C',
-              border: '1px solid rgba(255,59,92,0.2)',
+              background: 'var(--bearish-muted)',
+              color: 'var(--bearish)',
+              border: '1px solid rgba(244,63,94,0.2)',
             }}
           >
             {error}
@@ -318,8 +318,8 @@ export default function IdjorChat({ initialMessages, quickPrompts }: IdjorChatPr
           className="flex-1 resize-none rounded-xl px-3 py-2.5 text-sm outline-none transition-colors"
           style={{
             background: 'var(--surface-highest)',
-            border: '1px solid var(--outline)',
-            color: 'var(--on-surface)',
+            border: '1px solid var(--border)',
+            color: 'var(--text-primary)',
             maxHeight: '120px',
             opacity: quotaReached ? 0.5 : 1,
             cursor: quotaReached ? 'not-allowed' : 'text',
@@ -330,7 +330,7 @@ export default function IdjorChat({ initialMessages, quickPrompts }: IdjorChatPr
             t.style.height = Math.min(t.scrollHeight, 120) + 'px';
           }}
           onFocus={(e) => { if (!quotaReached) e.currentTarget.style.borderColor = 'rgba(245,166,35,0.4)'; }}
-          onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--outline)'; }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; }}
         />
         <button
           onClick={handleSend}
@@ -338,7 +338,7 @@ export default function IdjorChat({ initialMessages, quickPrompts }: IdjorChatPr
           className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-all"
           style={{
             background: input.trim() && !isLoading && !quotaReached ? '#F5A623' : 'var(--surface-highest)',
-            color: input.trim() && !isLoading && !quotaReached ? '#0A0E1A' : 'var(--on-surface-dim)',
+            color: input.trim() && !isLoading && !quotaReached ? '#0A0E1A' : 'var(--text-secondary)',
           }}
         >
           <Send size={16} />

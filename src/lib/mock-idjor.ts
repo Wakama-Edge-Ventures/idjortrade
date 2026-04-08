@@ -22,15 +22,15 @@ export const courses: Course[] = [
 ];
 
 export const levelColors: Record<CourseLevel, { bg: string; text: string }> = {
-  DÉBUTANT: { bg: 'rgba(0,255,136,0.12)', text: '#00FF88' },
+  DÉBUTANT: { bg: 'rgba(20,241,149,0.12)', text: 'var(--bullish)' },
   INTERMÉDIAIRE: { bg: 'rgba(245,166,35,0.12)', text: '#F5A623' },
-  AVANCÉ: { bg: 'rgba(255,59,92,0.12)', text: '#FF3B5C' },
+  AVANCÉ: { bg: 'rgba(244,63,94,0.12)', text: 'var(--bearish)' },
 };
 
 export const levelBorderColors: Record<CourseLevel, string> = {
-  DÉBUTANT: '#00FF88',
+  DÉBUTANT: 'var(--bullish)',
   INTERMÉDIAIRE: '#F5A623',
-  AVANCÉ: '#FF3B5C',
+  AVANCÉ: 'var(--bearish)',
 };
 
 export type Message = {

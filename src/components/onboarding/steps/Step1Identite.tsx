@@ -16,7 +16,7 @@ const inputStyle: React.CSSProperties = {
   borderRadius: "12px",
   padding: "12px 16px",
   fontSize: "14px",
-  color: "var(--on-surface)",
+  color: "var(--text-primary)",
   width: "100%",
   outline: "none",
 };
@@ -27,7 +27,7 @@ const labelStyle: React.CSSProperties = {
   fontWeight: 600,
   textTransform: "uppercase" as const,
   letterSpacing: "0.1em",
-  color: "var(--on-surface-dim)",
+  color: "var(--text-secondary)",
   marginBottom: "8px",
 };
 
@@ -35,8 +35,8 @@ export default function Step1Identite({ data, onChange }: Props) {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="font-headline font-bold text-2xl text-white">👋 Bienvenue ! Parlons de toi</h2>
-        <p className="text-sm" style={{ color: "var(--on-surface-dim)" }}>
+        <h2 className="font-display font-semibold text-2xl text-white">👋 Bienvenue ! Parlons de toi</h2>
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
           Ces informations permettent à Idjor de personnaliser ses conseils.
         </p>
       </div>
@@ -50,7 +50,7 @@ export default function Step1Identite({ data, onChange }: Props) {
             value={data.prenom || ""}
             onChange={(e) => onChange({ prenom: e.target.value })}
             style={inputStyle}
-            onFocus={(e) => { e.target.style.borderColor = "rgba(0,255,136,0.4)"; }}
+            onFocus={(e) => { e.target.style.borderColor = "rgba(153,69,255,0.5)"; }}
             onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.08)"; }}
           />
         </div>
@@ -61,7 +61,7 @@ export default function Step1Identite({ data, onChange }: Props) {
             value={data.age || ""}
             onChange={(e) => onChange({ age: e.target.value })}
             style={{ ...inputStyle, cursor: "pointer" }}
-            onFocus={(e) => { e.target.style.borderColor = "rgba(0,255,136,0.4)"; }}
+            onFocus={(e) => { e.target.style.borderColor = "rgba(153,69,255,0.5)"; }}
             onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.08)"; }}
           >
             <option value="">Sélectionner</option>
@@ -75,7 +75,7 @@ export default function Step1Identite({ data, onChange }: Props) {
             value={data.pays || "Côte d'Ivoire"}
             onChange={(e) => onChange({ pays: e.target.value })}
             style={{ ...inputStyle, cursor: "pointer" }}
-            onFocus={(e) => { e.target.style.borderColor = "rgba(0,255,136,0.4)"; }}
+            onFocus={(e) => { e.target.style.borderColor = "rgba(153,69,255,0.5)"; }}
             onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.08)"; }}
           >
             {countries.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -90,13 +90,13 @@ export default function Step1Identite({ data, onChange }: Props) {
             value={data.ville || ""}
             onChange={(e) => onChange({ ville: e.target.value })}
             style={inputStyle}
-            onFocus={(e) => { e.target.style.borderColor = "rgba(0,255,136,0.4)"; }}
+            onFocus={(e) => { e.target.style.borderColor = "rgba(153,69,255,0.5)"; }}
             onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.08)"; }}
           />
         </div>
       </div>
 
-      <p className="text-xs text-center italic" style={{ color: "var(--on-surface-dim)" }}>
+      <p className="text-xs text-center italic" style={{ color: "var(--text-secondary)" }}>
         🔒 Ces informations sont confidentielles et ne sont jamais partagées.
       </p>
     </div>

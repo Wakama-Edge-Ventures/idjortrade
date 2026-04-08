@@ -41,8 +41,8 @@ export default function MarketTabs() {
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
                 style={
                   active
-                    ? { background: "rgba(0,255,136,0.12)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.25)" }
-                    : { color: "var(--on-surface-dim)", border: "1px solid transparent" }
+                    ? { background: "rgba(20,241,149,0.12)", color: "var(--bullish)", border: "1px solid rgba(20,241,149,0.25)" }
+                    : { color: "var(--text-secondary)", border: "1px solid transparent" }
                 }
               >
                 <span>{tab.icon}</span>
@@ -68,7 +68,7 @@ export default function MarketTabs() {
       {/* Error */}
       {error && (
         <p className="text-xs px-3 py-2 rounded-lg"
-          style={{ background: "rgba(255,59,92,0.08)", color: "#FF3B5C", border: "1px solid rgba(255,59,92,0.15)" }}>
+          style={{ background: "var(--bearish-muted)", color: "var(--bearish)", border: "1px solid rgba(244,63,94,0.15)" }}>
           {error}
         </p>
       )}

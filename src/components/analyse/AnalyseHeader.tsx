@@ -45,17 +45,17 @@ export default function AnalyseHeader({
 
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <h1 className="font-headline text-2xl font-bold text-white">{title}</h1>
+            <h1 className="font-display text-2xl font-semibold text-white">{title}</h1>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
               style={{
-                background: "rgba(0,255,136,0.12)",
-                color: "#00FF88",
-                border: "1px solid rgba(0,255,136,0.2)",
+                background: "rgba(20,241,149,0.12)",
+                color: "var(--bullish)",
+                border: "1px solid rgba(20,241,149,0.2)",
               }}>
               ACTIF
             </span>
           </div>
-          <p className="text-sm" style={{ color: "var(--on-surface-dim)" }}>{subtitle}</p>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{subtitle}</p>
         </div>
       </div>
 
@@ -66,7 +66,7 @@ export default function AnalyseHeader({
           border: "1px solid rgba(245,166,35,0.15)",
         }}>
         <span style={{ color: "#F5A623" }}>⚠</span>
-        <p className="text-[11px]" style={{ color: "var(--on-surface-dim)" }}>
+        <p className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
           Pas un conseil financier
         </p>
       </div>

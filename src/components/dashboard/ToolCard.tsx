@@ -52,8 +52,8 @@ export default function ToolCard({
 
       {/* Text */}
       <div className="flex flex-col gap-1.5 flex-1">
-        <h3 className="font-headline font-bold text-base text-white">{title}</h3>
-        <p className="text-sm leading-relaxed" style={{ color: "var(--on-surface-dim)" }}>
+        <h3 className="font-display font-semibold text-base" style={{ color: "var(--text-primary)", letterSpacing: "-0.01em" }}>{title}</h3>
+        <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
           {description}
         </p>
       </div>

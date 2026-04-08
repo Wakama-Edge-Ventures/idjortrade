@@ -8,14 +8,14 @@ function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
       onClick={onToggle}
       className="relative w-11 h-6 rounded-full transition-colors flex-shrink-0"
       style={{
-        background: on ? "rgba(0,255,136,0.25)" : "var(--surface-high)",
-        border: on ? "1px solid rgba(0,255,136,0.4)" : "1px solid var(--outline)",
+        background: on ? "rgba(20,241,149,0.25)" : "var(--surface-high)",
+        border: on ? "1px solid rgba(153,69,255,0.5)" : "1px solid var(--border)",
       }}
     >
       <span
         className="absolute top-0.5 w-5 h-5 rounded-full transition-transform"
         style={{
-          background: on ? "#00FF88" : "var(--on-surface-dim)",
+          background: on ? "var(--bullish)" : "var(--text-secondary)",
           transform: on ? "translateX(22px)" : "translateX(2px)",
         }}
       />
@@ -41,8 +41,8 @@ function ButtonGroup({
           className="px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors"
           style={
             value === opt
-              ? { background: "rgba(0,255,136,0.15)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.3)" }
-              : { background: "var(--surface-highest)", color: "var(--on-surface-dim)", border: "1px solid transparent" }
+              ? { background: "rgba(20,241,149,0.15)", color: "var(--bullish)", border: "1px solid rgba(20,241,149,0.3)" }
+              : { background: "var(--surface-highest)", color: "var(--text-secondary)", border: "1px solid transparent" }
           }
         >
           {opt}
@@ -96,14 +96,14 @@ export default function PreferencesForm() {
   const rowClass = "flex items-center justify-between py-4";
   const separatorStyle: React.CSSProperties = { borderTop: "1px solid rgba(255,255,255,0.05)" };
   const labelStyle = "text-sm font-semibold text-white";
-  const subStyle: React.CSSProperties = { fontSize: "11px", color: "var(--on-surface-dim)" };
+  const subStyle: React.CSSProperties = { fontSize: "11px", color: "var(--text-secondary)" };
 
   return (
     <div className="space-y-1 max-w-lg">
 
       {/* Saved confirmation */}
       {savedMsg && (
-        <p className="text-xs font-semibold" style={{ color: "#00FF88" }}>
+        <p className="text-xs font-semibold" style={{ color: "var(--bullish)" }}>
           Sauvegardé ✓
         </p>
       )}
@@ -150,7 +150,7 @@ export default function PreferencesForm() {
             <p className={labelStyle}>Risque par trade</p>
             <p style={subStyle}>{risque}% du capital</p>
           </div>
-          <span className="font-mono-data text-sm font-bold" style={{ color: "#00FF88" }}>{risque}%</span>
+          <span className="font-data text-sm font-bold" style={{ color: "var(--bullish)" }}>{risque}%</span>
         </div>
         <input
           type="range"
@@ -163,8 +163,8 @@ export default function PreferencesForm() {
           onTouchEnd={() => savePrefs({ risqueDefaut: risque })}
           className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
           style={{
-            accentColor: "var(--primary)",
-            background: `linear-gradient(to right, #00FF88 0%, #00FF88 ${(risque / 5) * 100}%, var(--surface-highest) ${(risque / 5) * 100}%, var(--surface-highest) 100%)`,
+            accentColor: "var(--sol-purple)",
+            background: `linear-gradient(to right, #14F195 0%, #14F195 ${(risque / 5) * 100}%, var(--surface-highest) ${(risque / 5) * 100}%, var(--surface-highest) 100%)`,
           }}
         />
       </div>

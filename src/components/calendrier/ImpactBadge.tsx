@@ -5,7 +5,7 @@ interface ImpactBadgeProps {
 /** Displays a 3-bar impact indicator styled by impact level */
 export default function ImpactBadge({ impact }: ImpactBadgeProps) {
   const bars = impact === 'high' ? 3 : impact === 'medium' ? 2 : 1;
-  const color = impact === 'high' ? '#FF3B5C' : impact === 'medium' ? '#F5A623' : '#00FF88';
+  const color = impact === 'high' ? 'var(--bearish)' : impact === 'medium' ? '#F5A623' : 'var(--bullish)';
 
   return (
     <div
@@ -18,7 +18,7 @@ export default function ImpactBadge({ impact }: ImpactBadgeProps) {
           className="w-1 rounded-sm"
           style={{
             height: `${i * 4 + 4}px`,
-            background: i <= bars ? color : "var(--outline)",
+            background: i <= bars ? color : "var(--border)",
           }}
         />
       ))}

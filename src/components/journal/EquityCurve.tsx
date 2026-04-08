@@ -9,7 +9,7 @@ export default function EquityCurve({ trades }: { trades: TradePoint[] }) {
   if (closed.length === 0) {
     return (
       <div className="card p-5 h-full flex items-center justify-center">
-        <p className="text-sm text-center" style={{ color: 'var(--on-surface-dim)' }}>
+        <p className="text-sm text-center" style={{ color: 'var(--text-secondary)' }}>
           Aucune donnée — clôture tes premiers trades pour voir la courbe
         </p>
       </div>
@@ -38,19 +38,19 @@ export default function EquityCurve({ trades }: { trades: TradePoint[] }) {
 
   // Determine color based on final P&L
   const finalPnl = points[points.length - 1] ?? 0;
-  const lineColor = finalPnl >= 0 ? '#00FF88' : '#FF3B5C';
+  const lineColor = finalPnl >= 0 ? 'var(--bullish)' : 'var(--bearish)';
 
   return (
     <div className="card p-5 h-full">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-headline font-bold text-base text-white">
+        <h3 className="font-display font-semibold text-base text-white">
           Courbe d&apos;équité
         </h3>
         <span
-          className="text-xs font-semibold px-2 py-1 rounded-lg font-mono-data"
+          className="text-xs font-semibold px-2 py-1 rounded-lg font-data"
           style={{
             background: 'var(--surface-highest)',
-            color: finalPnl >= 0 ? '#00FF88' : '#FF3B5C',
+            color: finalPnl >= 0 ? 'var(--bullish)' : 'var(--bearish)',
           }}
         >
           {finalPnl >= 0 ? '+' : ''}{finalPnl.toLocaleString('fr-FR')} F

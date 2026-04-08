@@ -17,9 +17,9 @@ export default function TradeCards({ trades }: { trades: TradeEntry[] }) {
     <div className="space-y-3 md:hidden">
       {trades.length === 0 && (
         <div className="py-12 text-center">
-          <p className="text-sm" style={{ color: 'var(--on-surface-dim)' }}>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
             Aucun trade pour l'instant. Fais ta première analyse sur{" "}
-            <a href="/swing" style={{ color: '#00FF88' }}>Swing Trading</a>
+            <a href="/swing" style={{ color: 'var(--bullish)' }}>Swing Trading</a>
           </p>
         </div>
       )}
@@ -27,8 +27,8 @@ export default function TradeCards({ trades }: { trades: TradeEntry[] }) {
         <div key={trade.id} className="card p-4 flex items-center gap-4">
           {/* Asset abbreviation icon */}
           <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0 font-mono-data"
-            style={{ background: 'var(--surface-highest)', color: 'var(--on-surface)' }}
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0 font-data"
+            style={{ background: 'var(--surface-highest)', color: 'var(--text-primary)' }}
           >
             {trade.asset.split('/')[0].slice(0, 3)}
           </div>
@@ -40,14 +40,14 @@ export default function TradeCards({ trades }: { trades: TradeEntry[] }) {
                 className="text-[10px] font-bold px-1.5 py-0.5 rounded"
                 style={
                   trade.direction === 'BUY'
-                    ? { background: 'rgba(0,255,136,0.12)', color: '#00FF88' }
-                    : { background: 'rgba(255,59,92,0.12)', color: '#FF3B5C' }
+                    ? { background: 'rgba(20,241,149,0.12)', color: 'var(--bullish)' }
+                    : { background: 'rgba(244,63,94,0.12)', color: 'var(--bearish)' }
                 }
               >
                 {trade.direction === 'BUY' ? 'ACHAT' : 'VENTE'}
               </span>
             </div>
-            <p className="text-xs" style={{ color: 'var(--on-surface-dim)' }}>{trade.date}</p>
+            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{trade.date}</p>
           </div>
 
           {/* P&L */}
@@ -55,12 +55,12 @@ export default function TradeCards({ trades }: { trades: TradeEntry[] }) {
             {trade.pnlFCFA !== null ? (
               <>
                 <p
-                  className="font-mono-data text-base font-bold"
-                  style={{ color: trade.pnlFCFA >= 0 ? '#00FF88' : '#FF3B5C' }}
+                  className="font-data text-base font-bold"
+                  style={{ color: trade.pnlFCFA >= 0 ? 'var(--bullish)' : 'var(--bearish)' }}
                 >
                   {trade.pnlFCFA >= 0 ? '+' : ''}{trade.pnlFCFA.toLocaleString('fr-FR')}
                 </p>
-                <p className="text-[10px]" style={{ color: 'var(--on-surface-dim)' }}>FCFA</p>
+                <p className="text-[10px]" style={{ color: 'var(--text-secondary)' }}>FCFA</p>
               </>
             ) : (
               <p className="text-xs font-semibold" style={{ color: '#F5A623' }}>En cours</p>

@@ -11,6 +11,7 @@ import Step4Capital from "./steps/Step4Capital";
 import Step5Psychologie from "./steps/Step5Psychologie";
 import Step6Disponibilite from "./steps/Step6Disponibilite";
 import Step7Recap from "./steps/Step7Recap";
+import WeexBanner from "@/components/shared/WeexBanner";
 
 const TOTAL_STEPS = 7;
 
@@ -75,13 +76,21 @@ export default function OnboardingShell() {
 
   return (
     <div
-      className="min-h-screen circuit-bg flex flex-col items-center justify-start py-8 px-4"
+      className="min-h-screen flex flex-col items-center justify-start py-8 px-4"
       style={{ background: "var(--surface)" }}
     >
       {/* Logo */}
-      <div className="flex items-baseline gap-0.5 mb-8">
-        <span className="font-headline text-2xl font-bold" style={{ color: "#00FF88" }}>Idjor</span>
-        <span className="font-headline text-2xl font-bold text-white">Trade</span>
+      <div className="flex items-center gap-2.5 mb-8">
+        <div
+          className="w-8 h-8 rounded-xl flex items-center justify-center"
+          style={{ background: "var(--sol-gradient)", boxShadow: "0 0 14px rgba(153,69,255,0.3)" }}
+        >
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 12L8 4l5 8H3z" fill="white" fillOpacity="0.9" />
+            <circle cx="8" cy="9" r="2" fill="white" fillOpacity="0.6" />
+          </svg>
+        </div>
+        <span className="font-display text-xl font-semibold text-gradient-sol-static">Wickox</span>
       </div>
 
       {/* Step indicator */}
@@ -103,12 +112,19 @@ export default function OnboardingShell() {
         {step === 6 && <Step6Disponibilite {...stepProps} />}
         {step === 7 && <Step7Recap data={data} />}
 
+        {/* Weex banner on last step */}
+        {step === TOTAL_STEPS && (
+          <div className="mt-6">
+            <WeexBanner />
+          </div>
+        )}
+
         {/* Navigation buttons */}
         <div className="flex items-center justify-between mt-8 pt-6" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
           {step > 1 ? (
             <button onClick={back}
               className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors"
-              style={{ border: "1px solid var(--outline)", color: "var(--on-surface-dim)" }}>
+              style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
               ← Précédent
             </button>
           ) : <div />}
@@ -118,8 +134,8 @@ export default function OnboardingShell() {
             disabled={!valid}
             className="px-6 py-2.5 rounded-xl text-sm font-bold transition-all"
             style={{
-              background: valid ? "#00FF88" : "var(--surface-highest)",
-              color: valid ? "#0A0E1A" : "var(--on-surface-dim)",
+              background: valid ? "var(--bullish)" : "var(--surface-highest)",
+              color: valid ? "white" : "var(--text-secondary)",
               cursor: valid ? "pointer" : "not-allowed",
             }}>
             {step === TOTAL_STEPS ? "Commencer avec Idjor →" : "Suivant →"}
@@ -127,7 +143,7 @@ export default function OnboardingShell() {
         </div>
       </div>
 
-      <p className="text-xs mt-6 text-center" style={{ color: "var(--on-surface-dim)" }}>
+      <p className="text-xs mt-6 text-center" style={{ color: "var(--text-secondary)" }}>
         Étape {step} sur {TOTAL_STEPS}
       </p>
     </div>

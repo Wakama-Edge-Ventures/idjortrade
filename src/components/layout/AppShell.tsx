@@ -19,18 +19,23 @@ import {
   LogOut,
   Sun,
   ChevronUp,
+  ChevronDown,
+  BellDot,
+  Gift,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SessionTicker from "./SessionTicker";
 import { useSession, signOut } from "next-auth/react";
+import { usePathname } from "next/navigation";
 
+/* ── Types ──────────────────────────────────────────────────────────────────── */
 interface NavItem {
   label: string;
   href: string;
   icon: React.ElementType;
-  color?: string;
   badge?: string;
+  badgeType?: "new" | "pro";
 }
 
 interface NavGroup {
@@ -38,56 +43,59 @@ interface NavGroup {
   items: NavItem[];
 }
 
+/* ── Config nav ─────────────────────────────────────────────────────────────── */
 const navGroups: NavGroup[] = [
   {
     title: "OUTILS",
     items: [
-      { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-      { label: "Swing Trading", href: "/swing", icon: TrendingUp },
-      { label: "Day Trading", href: "/day", icon: Sun },
-      { label: "Scalp Trading", href: "/scalp", icon: Zap },
-      { label: "Marché", href: "/marche", icon: Globe },
-      { label: "Calendrier", href: "/calendrier", icon: CalendarDays },
+      { label: "Dashboard",     href: "/dashboard",  icon: LayoutDashboard },
+      { label: "Swing Trading", href: "/swing",       icon: TrendingUp },
+      { label: "Day Trading",   href: "/day",         icon: Sun },
+      { label: "Scalp Trading", href: "/scalp",       icon: Zap },
+      { label: "Marché",        href: "/marche",      icon: Globe },
+      { label: "Calendrier",    href: "/calendrier",  icon: CalendarDays },
     ],
   },
   {
     title: "APPRENDRE",
     items: [
-      {
-        label: "Idjor IA",
-        href: "/idjor",
-        icon: Sparkles,
-        color: "#F5A623",
-        badge: "NEW",
-      },
-      { label: "Formation", href: "/formation", icon: GraduationCap },
-      { label: "Journal", href: "/journal", icon: BookOpen },
-      { label: "Historique", href: "/historique", icon: History },
+      { label: "Idjor IA",  href: "/idjor",      icon: Sparkles, badge: "NEW",  badgeType: "new" },
+      { label: "Formation", href: "/formation",   icon: GraduationCap },
+      { label: "Journal",   href: "/journal",     icon: BookOpen },
+      { label: "Historique",href: "/historique",  icon: History },
     ],
   },
   {
     title: "COMPTE",
     items: [
-      { label: "Plans", href: "/plans", icon: CreditCard },
-      { label: "Paramètres", href: "/parametres", icon: Settings },
+      { label: "Plans",       href: "/plans",       icon: CreditCard },
+      { label: "Parrainage",  href: "/affiliation", icon: Gift },
+      { label: "Paramètres",  href: "/parametres",  icon: Settings },
     ],
   },
 ];
 
-const analyseMenuItems = [
-  { label: "Swing", href: "/swing", icon: TrendingUp, color: "#00FF88" },
-  { label: "Day", href: "/day", icon: Sun, color: "#0EA5E9" },
-  { label: "Scalp", href: "/scalp", icon: Zap, color: "#F5A623" },
+const analyseItems = [
+  { label: "Swing", href: "/swing", icon: TrendingUp },
+  { label: "Day",   href: "/day",   icon: Sun },
+  { label: "Scalp", href: "/scalp", icon: Zap },
 ];
 
 const mobileNavItems = [
   { label: "Accueil", href: "/dashboard", icon: Home },
-  { label: "Journal", href: "/journal", icon: BookOpen },
-  { label: "Idjor", href: "/idjor", icon: Sparkles },
-  { label: "Profil", href: "/parametres", icon: User },
+  { label: "Journal", href: "/journal",   icon: BookOpen },
+  { label: "Idjor",   href: "/idjor",     icon: Sparkles },
+  { label: "Profil",  href: "/parametres",icon: User },
 ];
 
-function getAbidjanTime(): string {
+const PLAN_CONFIG: Record<string, { label: string; style: React.CSSProperties }> = {
+  FREE:   { label: "FREE",   style: { background: "rgba(255,255,255,0.06)", color: "#64748B" } },
+  BASIC:  { label: "BASIC",  style: { background: "rgba(20,241,149,0.12)", color: "var(--bullish)" } },
+  PRO:    { label: "PRO",    style: { background: "rgba(153,69,255,0.18)", color: "var(--sol-purple)" } },
+  TRADER: { label: "TRADER", style: { background: "rgba(201,168,76,0.15)", color: "#C9A84C" } },
+};
+
+function getAbidjanDate(): string {
   return new Date().toLocaleDateString("fr-FR", {
     timeZone: "Africa/Abidjan",
     weekday: "long",
@@ -96,124 +104,132 @@ function getAbidjanTime(): string {
   });
 }
 
+/* ── Component ──────────────────────────────────────────────────────────────── */
 interface AppShellProps {
   children: React.ReactNode;
   activePage: string;
 }
 
-const PLAN_LABELS: Record<string, { label: string; color: string; bg: string }> = {
-  FREE:   { label: "Gratuit", color: "#717584", bg: "rgba(255,255,255,0.05)" },
-  BASIC:  { label: "Basic",   color: "#00FF88", bg: "rgba(0,255,136,0.10)" },
-  PRO:    { label: "Pro",     color: "#F5A623", bg: "rgba(245,166,35,0.15)" },
-  TRADER: { label: "Trader",  color: "#FF3B5C", bg: "rgba(255,59,92,0.10)" },
-};
-
-export default function AppShell({
-  children,
-  activePage,
-}: AppShellProps) {
+export default function AppShell({ children, activePage }: AppShellProps) {
   const { data: session } = useSession();
-  const prenom = session?.user?.prenom ?? "Trader";
-  const plan = (session?.user?.plan as string) ?? "FREE";
-  const planConfig = PLAN_LABELS[plan] ?? PLAN_LABELS.FREE;
-  const [analyseMenuOpen, setAnalyseMenuOpen] = useState(false);
+  const prenom   = session?.user?.prenom ?? "Trader";
+  const plan     = (session?.user?.plan as string) ?? "FREE";
+  const planCfg  = PLAN_CONFIG[plan] ?? PLAN_CONFIG.FREE;
 
-  const planBadgeStyle: React.CSSProperties = {
-    background: planConfig.bg,
-    color: planConfig.color,
-  };
+  const [analyseOpen, setAnalyseOpen] = useState(false);
+  const [mounted, setMounted]         = useState(false);
+  const [hasNotif, setHasNotif]       = useState(true);
+
+  useEffect(() => { setMounted(true); }, []);
 
   const isActive = (href: string) =>
     activePage === href || activePage.startsWith(href + "/");
 
-  const analyseIsActive = ["/swing", "/day", "/scalp"].some(h => isActive(h));
+  const analyseActive = ["/swing", "/day", "/scalp"].some(h => isActive(h));
+
+  const initial = prenom.charAt(0).toUpperCase();
 
   return (
-    <div className="min-h-screen flex">
-      {/* ── Sidebar desktop ── */}
+    <div className="min-h-screen flex" style={{ background: "var(--surface)" }}>
+
+      {/* ══════════════════════════════════════════════════════════
+          SIDEBAR DESKTOP
+      ══════════════════════════════════════════════════════════ */}
       <aside
-        className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-[220px] border-r"
+        className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 z-30"
         style={{
+          width: 240,
           background: "var(--surface-low)",
-          borderColor: "rgba(255,255,255,0.05)",
+          borderRight: "1px solid var(--border)",
         }}
       >
-        {/* Logo */}
-        <div className="px-5 pt-6 pb-4">
-          <div className="flex items-baseline gap-0.5">
-            <span
-              className="font-headline text-2xl font-bold"
-              style={{ color: "#00FF88" }}
-            >
-              Idjor
-            </span>
-            <span className="font-headline text-2xl font-bold text-white">
-              Trade
-            </span>
-          </div>
-          <p
-            className="text-[10px] font-semibold tracking-widest mt-0.5"
-            style={{ color: "var(--on-surface-dim)" }}
-          >
-            TERMINAL IA
-          </p>
+        {/* ── Logo ── */}
+        <div className="px-6 pt-7 pb-5">
+          <Link href="/dashboard" className="block group">
+            <div className="flex items-baseline gap-0 mb-1">
+              <span
+                className="font-display text-2xl font-semibold text-gradient-sol-static"
+                style={{ letterSpacing: "-0.02em" }}
+              >
+                Idjor
+              </span>
+              <span
+                className="font-display text-2xl font-semibold"
+                style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}
+              >
+                Trade
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div
+                className="h-0.5 rounded-full"
+                style={{
+                  width: 32,
+                  background: "var(--sol-gradient)",
+                }}
+              />
+              <p className="section-label" style={{ fontSize: 9 }}>
+                TERMINAL IA
+              </p>
+            </div>
+          </Link>
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 px-3 py-2 overflow-y-auto space-y-5">
-          {navGroups.map((group) => (
-            <div key={group.title}>
-              <p
-                className="text-[10px] font-semibold tracking-widest px-3 mb-1.5"
-                style={{ color: "var(--on-surface-dim)" }}
-              >
-                {group.title}
-              </p>
+        {/* ── Navigation ── */}
+        <nav className="flex-1 px-3 overflow-y-auto space-y-6 py-2">
+          {navGroups.map((group, gi) => (
+            <div
+              key={group.title}
+              className={mounted ? "animate-fade-in-right" : ""}
+              style={{ animationDelay: `${gi * 0.06}s` }}
+            >
+              <p className="section-label px-3 mb-2">{group.title}</p>
               <ul className="space-y-0.5">
-                {group.items.map((item) => {
+                {group.items.map((item, ii) => {
                   const active = isActive(item.href);
-                  const Icon = item.icon;
+                  const Icon   = item.icon;
                   return (
-                    <li key={item.href}>
+                    <li
+                      key={item.href}
+                      className={mounted ? "animate-fade-in-right" : ""}
+                      style={{ animationDelay: `${gi * 0.06 + ii * 0.04 + 0.1}s` }}
+                    >
                       <Link
                         href={item.href}
-                        className="flex items-center gap-3 px-3 py-2 rounded text-sm transition-colors"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer"
                         style={{
-                          color: active
-                            ? "#00FF88"
-                            : item.color
-                            ? item.color
-                            : "var(--on-surface-dim)",
-                          background: active
-                            ? "rgba(0,255,136,0.06)"
-                            : "transparent",
-                          borderLeft: active
-                            ? "2px solid #00FF88"
-                            : "2px solid transparent",
+                          color:      active ? "var(--sol-green)"  : "var(--text-secondary)",
+                          background: active ? "rgba(20,241,149,0.07)" : "transparent",
+                          borderLeft: active ? "2px solid var(--sol-green)" : "2px solid transparent",
+                          paddingLeft: active ? "10px" : "12px",
                         }}
-                        onMouseEnter={(e) => {
+                        onMouseEnter={e => {
                           if (!active) {
-                            (e.currentTarget as HTMLElement).style.color = "white";
+                            (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
                             (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
                           }
                         }}
-                        onMouseLeave={(e) => {
+                        onMouseLeave={e => {
                           if (!active) {
-                            (e.currentTarget as HTMLElement).style.color =
-                              item.color || "var(--on-surface-dim)";
+                            (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
                             (e.currentTarget as HTMLElement).style.background = "transparent";
                           }
                         }}
                       >
-                        <Icon size={16} />
+                        <Icon
+                          size={16}
+                          style={{ color: active ? "var(--sol-green)" : undefined, flexShrink: 0 }}
+                        />
                         <span className="flex-1">{item.label}</span>
-                        {item.badge && (
+                        {item.badge && item.badgeType === "new" && (
+                          <span className="badge-new" style={{ color: "var(--sol-purple)" }}>
+                            {item.badge}
+                          </span>
+                        )}
+                        {item.badge && item.badgeType === "pro" && (
                           <span
                             className="text-[9px] font-bold px-1.5 py-0.5 rounded"
-                            style={{
-                              background: "rgba(245,166,35,0.15)",
-                              color: "#F5A623",
-                            }}
+                            style={{ background: "var(--gold-muted)", color: "var(--gold)" }}
                           >
                             {item.badge}
                           </span>
@@ -227,34 +243,64 @@ export default function AppShell({
           ))}
         </nav>
 
-        {/* User footer */}
+        {/* ── User footer ── */}
         <div
-          className="px-4 py-4 border-t space-y-2"
-          style={{ borderColor: "rgba(255,255,255,0.05)" }}
+          className="px-4 py-4 space-y-3"
+          style={{ borderTop: "1px solid var(--border)" }}
         >
+          {/* Avatar + nom */}
           <div className="flex items-center gap-3">
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-              style={{ background: "rgba(0,255,136,0.15)", color: "#00FF88" }}
-            >
-              {prenom.charAt(0).toUpperCase()}
+            {/* Avatar avec ring gradient */}
+            <div className="relative flex-shrink-0">
+              <div
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background: "var(--sol-gradient)",
+                  padding: 1.5,
+                }}
+              />
+              <div
+                className="relative w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
+                style={{
+                  background: "var(--surface-highest)",
+                  color: "var(--sol-green)",
+                  border: "2px solid transparent",
+                  backgroundClip: "padding-box",
+                  boxShadow: "0 0 0 2px var(--surface-low), 0 0 0 3.5px var(--sol-purple)",
+                }}
+              >
+                {initial}
+              </div>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{prenom}</p>
+              <p
+                className="text-sm font-semibold truncate"
+                style={{ color: "var(--text-primary)" }}
+              >
+                {prenom}
+              </p>
               <span
                 className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                style={planBadgeStyle}
+                style={planCfg.style}
               >
-                {plan}
+                {planCfg.label}
               </span>
             </div>
           </div>
+
+          {/* Déconnexion */}
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
-            style={{ color: "var(--on-surface-dim)" }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#FF3B5C"; (e.currentTarget as HTMLElement).style.background = "rgba(255,59,92,0.06)"; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "var(--on-surface-dim)"; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer"
+            style={{ color: "var(--text-tertiary)" }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLElement).style.color = "var(--bearish)";
+              (e.currentTarget as HTMLElement).style.background = "rgba(244,63,94,0.07)";
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLElement).style.color = "var(--text-tertiary)";
+              (e.currentTarget as HTMLElement).style.background = "transparent";
+            }}
           >
             <LogOut size={13} />
             Déconnexion
@@ -262,126 +308,174 @@ export default function AppShell({
         </div>
       </aside>
 
-      {/* ── Main area ── */}
-      <div className="flex-1 flex flex-col md:ml-[220px]">
-        {/* Session ticker — desktop only, above top bar */}
+      {/* ══════════════════════════════════════════════════════════
+          ZONE PRINCIPALE
+      ══════════════════════════════════════════════════════════ */}
+      <div className="flex-1 flex flex-col" style={{ marginLeft: 0 }} id="main-content">
+        <style>{`@media (min-width: 768px) { #main-content { margin-left: 240px; } }`}</style>
+
+        {/* Ticker de session — desktop */}
         <SessionTicker />
-        {/* Top bar desktop */}
+
+        {/* ── Header desktop ── */}
         <header
-          className="hidden md:flex items-center justify-between px-6 py-3 sticky top-0 z-10 border-b"
+          className="hidden md:flex items-center justify-between px-8 py-3.5 sticky top-0 z-20"
           style={{
-            background: "rgba(10,14,26,0.85)",
-            backdropFilter: "blur(12px)",
-            borderColor: "rgba(255,255,255,0.05)",
+            background: "rgba(7,9,15,0.82)",
+            backdropFilter: "blur(20px)",
+            borderBottom: "1px solid var(--border)",
           }}
         >
+          {/* Salutation */}
           <div>
-            <p className="text-sm font-medium text-white">
-              Bonjour, {prenom} 👋
+            <p className="font-display text-base font-semibold" style={{ color: "var(--text-primary)", letterSpacing: "-0.01em" }}>
+              Bonjour,{" "}
+              <span className="text-gradient-sol-static">{prenom}</span>
             </p>
-            <p
-              className="text-xs capitalize"
-              style={{ color: "var(--on-surface-dim)" }}
-            >
-              {getAbidjanTime()}
+            <p className="text-xs capitalize" style={{ color: "var(--text-tertiary)" }}>
+              {getAbidjanDate()}
             </p>
           </div>
-          <div className="flex items-center gap-4">
+
+          {/* Droite */}
+          <div className="flex items-center gap-5">
+            {/* Statut marché */}
             <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span
-                  className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
-                  style={{ background: "#00FF88" }}
-                />
-                <span
-                  className="relative inline-flex rounded-full h-2 w-2"
-                  style={{ background: "#00FF88" }}
-                />
-              </span>
-              <span className="text-xs" style={{ color: "#00FF88" }}>
+              <span className="live-dot" aria-hidden="true" />
+              <span className="text-xs font-medium" style={{ color: "var(--bullish)" }}>
                 Marché ouvert
               </span>
             </div>
+
+            {/* Divider vertical */}
+            <div style={{ width: 1, height: 20, background: "var(--border)" }} />
+
+            {/* Notifications */}
             <button
-              className="relative p-2 rounded-lg transition-colors"
-              style={{ color: "var(--on-surface-dim)" }}
+              className="relative p-2 rounded-lg transition-colors duration-150 cursor-pointer"
+              style={{ color: "var(--text-secondary)" }}
+              aria-label="Notifications"
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)";
+                (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLElement).style.background = "transparent";
+                (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
+              }}
+            >
+              {hasNotif ? <BellDot size={18} /> : <Bell size={18} />}
+              {hasNotif && (
+                <span
+                  className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full"
+                  style={{ background: "var(--sol-purple)" }}
+                />
+              )}
+            </button>
+
+            {/* Mini avatar */}
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold cursor-pointer"
+              style={{
+                background: "rgba(153,69,255,0.15)",
+                color: "var(--sol-purple)",
+                boxShadow: "0 0 0 2px rgba(153,69,255,0.30)",
+              }}
+            >
+              {initial}
+            </div>
+          </div>
+        </header>
+
+        {/* ── Header mobile ── */}
+        <header
+          className="flex md:hidden items-center justify-between px-4 py-3.5 sticky top-0 z-20"
+          style={{
+            background: "rgba(7,9,15,0.90)",
+            backdropFilter: "blur(20px)",
+            borderBottom: "1px solid var(--border)",
+          }}
+        >
+          <div className="flex items-baseline gap-0">
+            <span className="font-display text-xl font-semibold text-gradient-sol-static">
+              Idjor
+            </span>
+            <span className="font-display text-xl font-semibold" style={{ color: "var(--text-primary)" }}>
+              Trade
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              <span className="live-dot" aria-hidden="true" style={{ transform: "scale(0.8)" }} />
+            </div>
+            <button
+              className="relative p-2 rounded-lg"
+              style={{ color: "var(--text-secondary)" }}
               aria-label="Notifications"
             >
               <Bell size={18} />
+              {hasNotif && (
+                <span
+                  className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
+                  style={{ background: "var(--sol-purple)" }}
+                />
+              )}
             </button>
           </div>
         </header>
 
-        {/* Top bar mobile */}
-        <header
-          className="flex md:hidden items-center justify-between px-4 py-3 sticky top-0 z-10 border-b"
-          style={{
-            background: "rgba(10,14,26,0.9)",
-            backdropFilter: "blur(12px)",
-            borderColor: "rgba(255,255,255,0.05)",
-          }}
+        {/* ── Contenu ── */}
+        <main
+          className={`flex-1 pb-24 md:pb-10 ${mounted ? "animate-fade-in" : ""}`}
+          style={{ animationDuration: "0.4s" }}
         >
-          <div className="flex items-baseline gap-0.5">
-            <span
-              className="font-headline text-xl font-bold"
-              style={{ color: "#00FF88" }}
-            >
-              Idjor
-            </span>
-            <span className="font-headline text-xl font-bold text-white">
-              Trade
-            </span>
-          </div>
-          <button
-            className="relative p-2 rounded-lg"
-            style={{ color: "var(--on-surface-dim)" }}
-            aria-label="Notifications"
-          >
-            <Bell size={18} />
-          </button>
-        </header>
-
-        {/* Page content */}
-        <main className="flex-1 pb-20 md:pb-8">{children}</main>
+          {children}
+        </main>
       </div>
 
-      {/* ── Bottom nav mobile ── */}
+      {/* ══════════════════════════════════════════════════════════
+          BOTTOM NAV MOBILE
+      ══════════════════════════════════════════════════════════ */}
       <nav
-        className="fixed bottom-0 left-0 right-0 flex md:hidden items-center h-16 border-t z-20"
+        className="fixed bottom-0 left-0 right-0 flex md:hidden items-center h-[60px] z-30"
         style={{
-          background: "rgba(14,19,32,0.92)",
-          backdropFilter: "blur(12px)",
-          borderColor: "rgba(255,255,255,0.05)",
+          background: "rgba(11,14,24,0.95)",
+          backdropFilter: "blur(24px)",
+          borderTop: "1px solid var(--border)",
         }}
       >
-        {/* Analyser menu popup */}
-        {analyseMenuOpen && (
+        {/* Analyse popup */}
+        {analyseOpen && (
           <>
-            {/* Backdrop */}
+            <div className="fixed inset-0 z-10" onClick={() => setAnalyseOpen(false)} />
             <div
-              className="fixed inset-0 z-10"
-              onClick={() => setAnalyseMenuOpen(false)}
-            />
-            {/* Popup */}
-            <div
-              className="absolute bottom-[68px] left-1/2 -translate-x-1/2 z-20 rounded-2xl p-2 flex gap-1 shadow-2xl"
+              className="absolute bottom-[68px] left-1/2 -translate-x-1/2 z-20 rounded-2xl p-2 flex gap-1 animate-scale-in"
               style={{
-                background: "var(--surface-high)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "var(--surface-highest)",
+                border: "1px solid var(--border-sol)",
+                boxShadow: "var(--shadow-sol), var(--shadow-lg)",
               }}
             >
-              {analyseMenuItems.map((item) => {
+              {analyseItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    onClick={() => setAnalyseMenuOpen(false)}
-                    className="flex flex-col items-center gap-1 px-5 py-2.5 rounded-xl transition-colors"
-                    style={{ color: item.color }}
+                    onClick={() => setAnalyseOpen(false)}
+                    className="flex flex-col items-center gap-1.5 px-5 py-3 rounded-xl transition-all duration-150 cursor-pointer"
+                    style={{ color: "var(--text-secondary)" }}
+                    onMouseEnter={e => {
+                      (e.currentTarget as HTMLElement).style.background = "rgba(153,69,255,0.10)";
+                      (e.currentTarget as HTMLElement).style.color = "var(--sol-purple)";
+                    }}
+                    onMouseLeave={e => {
+                      (e.currentTarget as HTMLElement).style.background = "transparent";
+                      (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
+                    }}
                   >
                     <Icon size={18} />
-                    <span className="text-[10px] font-bold">{item.label}</span>
+                    <span className="text-[10px] font-semibold">{item.label}</span>
                   </Link>
                 );
               })}
@@ -389,7 +483,7 @@ export default function AppShell({
           </>
         )}
 
-        {/* Left items */}
+        {/* Gauche */}
         {mobileNavItems.slice(0, 2).map((item) => {
           const active = isActive(item.href);
           const Icon = item.icon;
@@ -397,31 +491,45 @@ export default function AppShell({
             <Link
               key={item.href}
               href={item.href}
-              className="flex-1 flex flex-col items-center justify-center gap-1 py-2"
-              style={{ color: active ? "#00FF88" : "#717584" }}
+              className="flex-1 flex flex-col items-center justify-center gap-1 py-2 transition-colors duration-150"
+              style={{ color: active ? "var(--sol-green)" : "var(--text-tertiary)" }}
             >
-              <Icon size={20} />
+              <Icon size={19} />
               <span className="text-[10px] font-medium">{item.label}</span>
             </Link>
           );
         })}
 
-        {/* Analyser button — centre */}
+        {/* Bouton Analyser — centre */}
         <button
-          className="flex-1 flex flex-col items-center justify-center gap-1 py-2"
-          style={{ color: analyseIsActive || analyseMenuOpen ? "#00FF88" : "#717584" }}
-          onClick={() => setAnalyseMenuOpen(v => !v)}
+          className="flex-1 flex flex-col items-center justify-center gap-1 py-2 cursor-pointer transition-colors duration-150"
+          style={{ color: analyseActive || analyseOpen ? "var(--sol-purple)" : "var(--text-tertiary)" }}
+          onClick={() => setAnalyseOpen(v => !v)}
         >
-          <div className="relative">
-            <ScanLine size={20} />
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200"
+            style={{
+              background: analyseOpen
+                ? "var(--sol-gradient)"
+                : "rgba(153,69,255,0.10)",
+              transform: analyseOpen ? "scale(1.05)" : "scale(1)",
+            }}
+          >
+            <ScanLine size={18} style={{ color: analyseOpen ? "white" : "var(--sol-purple)" }} />
           </div>
           <span className="text-[10px] font-medium flex items-center gap-0.5">
             Analyser
-            <ChevronUp size={9} style={{ transform: analyseMenuOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
+            <ChevronUp
+              size={9}
+              style={{
+                transform: analyseOpen ? "rotate(180deg)" : "none",
+                transition: "transform 0.2s ease",
+              }}
+            />
           </span>
         </button>
 
-        {/* Right items */}
+        {/* Droite */}
         {mobileNavItems.slice(2).map((item) => {
           const active = isActive(item.href);
           const Icon = item.icon;
@@ -429,10 +537,10 @@ export default function AppShell({
             <Link
               key={item.href}
               href={item.href}
-              className="flex-1 flex flex-col items-center justify-center gap-1 py-2"
-              style={{ color: active ? "#00FF88" : "#717584" }}
+              className="flex-1 flex flex-col items-center justify-center gap-1 py-2 transition-colors duration-150"
+              style={{ color: active ? "var(--sol-green)" : "var(--text-tertiary)" }}
             >
-              <Icon size={20} />
+              <Icon size={19} />
               <span className="text-[10px] font-medium">{item.label}</span>
             </Link>
           );
