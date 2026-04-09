@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { MarketContext as MarketContextData, Candle } from "@/lib/market-context";
 import { isCryptoAsset } from "@/lib/market-context";
+import { useLang } from "@/lib/LangContext";
 
 interface MarketContextProps {
   asset: string;
@@ -75,40 +76,34 @@ function Skeleton() {
 }
 
 export default function MarketContext({ asset, productType }: MarketContextProps) {
+  const { t } = useLang();
   const [data, setData] = useState<MarketContextData | null>(null);
   const [loading, setLoading] = useState(false);
   const [notSupported, setNotSupported] = useState(false);
 
+  const sentimentLabels = {
+    bullish: t("market.sentiment.bullish"),
+    bearish: t("market.sentiment.bearish"),
+    neutral: t("market.sentiment.neutral"),
+  };
+
   useEffect(() => {
     const trimmed = asset.trim().toUpperCase();
-    if (!trimmed || trimmed.length < 3) {
-      setData(null);
-      setNotSupported(false);
-      return;
-    }
-
-    if (!isCryptoAsset(trimmed)) {
-      setData(null);
-      setNotSupported(true);
-      return;
-    }
-
+    if (!trimmed || trimmed.length < 3) { setData(null); setNotSupported(false); return; }
+    if (!isCryptoAsset(trimmed)) { setData(null); setNotSupported(true); return; }
     setNotSupported(false);
     setLoading(true);
-
     const timer = setTimeout(async () => {
       try {
         const res = await fetch(`/api/market/context?asset=${encodeURIComponent(trimmed)}`);
         if (!res.ok) { setData(null); setNotSupported(true); return; }
-        const json = await res.json();
-        setData(json);
+        setData(await res.json());
       } catch {
         setData(null);
       } finally {
         setLoading(false);
       }
     }, 600);
-
     return () => clearTimeout(timer);
   }, [asset]);
 
@@ -117,17 +112,12 @@ export default function MarketContext({ asset, productType }: MarketContextProps
     bearish: "var(--bearish)",
     neutral: "#F5A623",
   };
-  const sentimentLabels = {
-    bullish: "HAUSSIER",
-    bearish: "BAISSIER",
-    neutral: "NEUTRE",
-  };
 
   if (!asset.trim() || asset.trim().length < 3) {
     return (
       <div className="card p-5 flex items-center justify-center" style={{ minHeight: 160 }}>
         <p className="text-xs text-center" style={{ color: "var(--text-secondary)" }}>
-          Renseignez l&apos;actif pour voir le contexte marché
+          {t("market.empty")}
         </p>
       </div>
     );
@@ -137,20 +127,13 @@ export default function MarketContext({ asset, productType }: MarketContextProps
     return (
       <div className="card p-5 flex items-center justify-center" style={{ minHeight: 160 }}>
         <p className="text-xs text-center" style={{ color: "var(--text-secondary)" }}>
-          Données non disponibles pour cet asset — vérifiez le symbole ou utilisez le format <span className="font-data text-white">SOL/USDT</span>
+          {t("market.nodata")}
         </p>
       </div>
     );
   }
 
-  if (loading) {
-    return (
-      <div className="card p-5">
-        <Skeleton />
-      </div>
-    );
-  }
-
+  if (loading) return <div className="card p-5"><Skeleton /></div>;
   if (!data) return null;
 
   const changePositive = data.change24h >= 0;
@@ -159,20 +142,18 @@ export default function MarketContext({ asset, productType }: MarketContextProps
 
   return (
     <div className="card p-5 space-y-4">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <p className="text-[10px] font-bold tracking-widest" style={{ color: "var(--text-secondary)" }}>
-          CONTEXTE MARCHÉ
+          {t("market.title")}
         </p>
         {productType === "futures" && (
           <span className="text-[9px] font-bold px-1.5 py-0.5 rounded"
             style={{ background: "rgba(245,166,35,0.15)", color: "#F5A623" }}>
-            FUTURES
+            {t("market.futures")}
           </span>
         )}
       </div>
 
-      {/* Prix actuel */}
       <div>
         <p className="font-data font-bold text-2xl leading-tight" style={{ color: priceColor }}>
           ${formatPrice(data.currentPrice)}
@@ -181,40 +162,37 @@ export default function MarketContext({ asset, productType }: MarketContextProps
           <span className="text-sm font-semibold" style={{ color: priceColor }}>
             {changePositive ? "▲" : "▼"} {Math.abs(data.change24h).toFixed(2)}%
           </span>
-          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>24h</span>
+          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>{t("market.h24")}</span>
         </div>
       </div>
 
-      {/* Sentiment */}
       <div className="flex items-center gap-2">
         <span className="text-[10px] font-bold px-2 py-1 rounded-lg"
           style={{ background: `${sentimentColor}15`, color: sentimentColor, border: `1px solid ${sentimentColor}30` }}>
           {sentimentLabels[data.marketSentiment]}
         </span>
         <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
-          Vol: {formatVolume(data.volume24h)}
+          {t("market.vol")} {formatVolume(data.volume24h)}
         </span>
       </div>
 
-      {/* High / Low */}
       <div className="grid grid-cols-2 gap-2 text-xs">
         <div className="rounded-lg px-3 py-2" style={{ background: "rgba(20,241,149,0.04)", border: "1px solid rgba(20,241,149,0.1)" }}>
-          <p style={{ color: "var(--text-secondary)" }}>Haut 24h</p>
+          <p style={{ color: "var(--text-secondary)" }}>{t("market.high")}</p>
           <p className="font-data font-semibold text-white">${formatPrice(data.high24h)}</p>
         </div>
         <div className="rounded-lg px-3 py-2" style={{ background: "rgba(244,63,94,0.04)", border: "1px solid rgba(244,63,94,0.1)" }}>
-          <p style={{ color: "var(--text-secondary)" }}>Bas 24h</p>
+          <p style={{ color: "var(--text-secondary)" }}>{t("market.low")}</p>
           <p className="font-data font-semibold text-white">${formatPrice(data.low24h)}</p>
         </div>
       </div>
 
-      {/* Supports / Résistances */}
       {(data.supportLevels.length > 0 || data.resistanceLevels.length > 0) && (
         <div className="space-y-1.5">
           {data.resistanceLevels.length > 0 && (
             <div>
               <p className="text-[9px] font-bold tracking-widest mb-1" style={{ color: "var(--bearish)" }}>
-                RÉSISTANCES
+                {t("market.resistances")}
               </p>
               <div className="flex gap-1 flex-wrap">
                 {data.resistanceLevels.map((r, i) => (
@@ -229,7 +207,7 @@ export default function MarketContext({ asset, productType }: MarketContextProps
           {data.supportLevels.length > 0 && (
             <div>
               <p className="text-[9px] font-bold tracking-widest mb-1" style={{ color: "var(--bullish)" }}>
-                SUPPORTS
+                {t("market.supports")}
               </p>
               <div className="flex gap-1 flex-wrap">
                 {data.supportLevels.map((s, i) => (
@@ -244,11 +222,10 @@ export default function MarketContext({ asset, productType }: MarketContextProps
         </div>
       )}
 
-      {/* Mini candles */}
       {data.recentCandles.length >= 2 && (
         <div>
           <p className="text-[9px] font-bold tracking-widest mb-2" style={{ color: "var(--text-secondary)" }}>
-            BOUGIES 1H (8 dernières)
+            {t("market.candles")}
           </p>
           <MiniCandles candles={data.recentCandles} />
         </div>

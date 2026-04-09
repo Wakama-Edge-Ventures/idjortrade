@@ -1,9 +1,11 @@
 "use client";
 
 import { usePricing } from "@/context/PricingContext";
+import { useLang } from "@/lib/LangContext";
 
 export default function PricingToggle() {
   const { isAnnual, setIsAnnual } = usePricing();
+  const { t } = useLang();
 
   return (
     <div className="flex items-center gap-3">
@@ -12,10 +14,9 @@ export default function PricingToggle() {
         className="text-sm font-semibold transition-colors"
         style={{ color: !isAnnual ? "var(--text-primary)" : "var(--text-secondary)" }}
       >
-        Mensuel
+        {t("plans.toggle.monthly")}
       </button>
 
-      {/* Toggle track */}
       <button
         onClick={() => setIsAnnual(!isAnnual)}
         className="relative w-11 h-6 rounded-full transition-colors flex-shrink-0"
@@ -23,9 +24,8 @@ export default function PricingToggle() {
           background: isAnnual ? "rgba(20,241,149,0.25)" : "var(--surface-highest)",
           border: isAnnual ? "1px solid rgba(153,69,255,0.5)" : "1px solid var(--border)",
         }}
-        aria-label="Basculer facturation annuelle"
+        aria-label="Toggle annual billing"
       >
-        {/* Knob */}
         <span
           className="absolute top-1 left-1 w-4 h-4 rounded-full transition-transform duration-200"
           style={{
@@ -41,7 +41,7 @@ export default function PricingToggle() {
           className="text-sm font-semibold transition-colors"
           style={{ color: isAnnual ? "var(--text-primary)" : "var(--text-secondary)" }}
         >
-          Annuel
+          {t("plans.toggle.annual")}
         </button>
         <span
           className="text-[10px] font-bold px-2 py-0.5 rounded-full"

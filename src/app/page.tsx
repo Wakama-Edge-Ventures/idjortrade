@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   Brain, TrendingUp, Sparkles, BookOpen,
@@ -6,11 +8,79 @@ import {
 import LandingNavbar from "@/components/landing/LandingNavbar";
 import LiveTicker from "@/components/landing/LiveTicker";
 import PromptAnimation from "@/components/landing/PromptAnimation";
+import { useTranslation } from "@/hooks/useTranslation";
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   WICKOX — Landing Page (Server Component — zero onMouse* handlers)
-   ═══════════════════════════════════════════════════════════════════════════ */
 export default function LandingPage() {
+  const { t } = useTranslation();
+
+  const heroStats = [
+    { value: "1 247", labelKey: "landing.hero.stat.traders" },
+    { value: "98%",   labelKey: "landing.hero.stat.satisfaction" },
+    { value: "10s",   labelKey: "landing.hero.stat.speed" },
+    { value: "FCFA",  labelKey: "landing.hero.stat.payment" },
+  ];
+
+  const statsBar = [
+    { num: "5",     labelKey: "landing.stats.markets.label", subKey: "landing.stats.markets.sub" },
+    { num: "3",     labelKey: "landing.stats.modes.label",   subKey: "landing.stats.modes.sub" },
+    { num: "99.9%", labelKey: "landing.stats.uptime.label",  subKey: "landing.stats.uptime.sub" },
+    { num: "FCFA",  labelKey: "landing.stats.payment.label", subKey: "landing.stats.payment.sub" },
+  ];
+
+  const howSteps = [
+    { num: "01", step: 1, color: "var(--sol-purple)", icon: <BarChart3 size={26}/>, titleKey: "landing.how.step1.title", descKey: "landing.how.step1.desc" },
+    { num: "02", step: 2, color: "var(--sol-cyan)",   icon: <Zap size={26}/>,      titleKey: "landing.how.step2.title", descKey: "landing.how.step2.desc" },
+    { num: "03", step: 3, color: "var(--bullish)",    icon: <Sparkles size={26}/>, titleKey: "landing.how.step3.title", descKey: "landing.how.step3.desc" },
+  ] as const;
+
+  const plans = [
+    {
+      nameKey: "landing.pricing.plan.free.name",
+      price: "0",
+      tagKey: "landing.pricing.plan.free.tag",
+      featureKeys: ["landing.pricing.plan.free.f1","landing.pricing.plan.free.f2","landing.pricing.plan.free.f3","landing.pricing.plan.free.f4"],
+      ctaKey: "landing.pricing.plan.free.cta",
+      highlight: false,
+    },
+    {
+      nameKey: "landing.pricing.plan.basic.name",
+      price: "4 900",
+      tagKey: "landing.pricing.plan.basic.tag",
+      featureKeys: ["landing.pricing.plan.basic.f1","landing.pricing.plan.basic.f2","landing.pricing.plan.basic.f3","landing.pricing.plan.basic.f4","landing.pricing.plan.basic.f5"],
+      ctaKey: "landing.pricing.plan.basic.cta",
+      highlight: false,
+    },
+    {
+      nameKey: "landing.pricing.plan.pro.name",
+      price: "14 900",
+      tagKey: "landing.pricing.plan.pro.tag",
+      featureKeys: ["landing.pricing.plan.pro.f1","landing.pricing.plan.pro.f2","landing.pricing.plan.pro.f3","landing.pricing.plan.pro.f4","landing.pricing.plan.pro.f5"],
+      ctaKey: "landing.pricing.plan.pro.cta",
+      highlight: true,
+    },
+  ];
+
+  const footerCols = [
+    {
+      titleKey: "landing.footer.col1",
+      links: ["landing.footer.col1.l1","landing.footer.col1.l2","landing.footer.col1.l3","landing.footer.col1.l4"],
+    },
+    {
+      titleKey: "landing.footer.col2",
+      links: ["landing.footer.col2.l1","landing.footer.col2.l2","landing.footer.col2.l3","landing.footer.col2.l4"],
+    },
+    {
+      titleKey: "landing.footer.col3",
+      links: ["landing.footer.col3.l1","landing.footer.col3.l2","landing.footer.col3.l3","landing.footer.col3.l4"],
+    },
+  ];
+
+  const testimonials = [
+    { name: "Kouamé A.", location: "Abidjan", quote: "J'ai enfin compris le RSI grâce à Idjor. Il m'explique chaque signal en français, simplement.", stars: 5 },
+    { name: "Fatou D.",  location: "Dakar",   quote: "Signal parfait, +2.3R sur SOL. J'ai suivi l'analyse Wickox à la lettre et ça a marché.", stars: 5 },
+    { name: "Ibrahim K.", location: "Abidjan", quote: "Le meilleur outil pour trader en FCFA. Plus besoin de convertir en dollars pour comprendre mon risque.", stars: 5 },
+  ];
+
   return (
     <div className="min-h-screen" style={{ background: "var(--surface)" }}>
 
@@ -28,12 +98,10 @@ export default function LandingPage() {
         className="relative min-h-screen flex flex-col items-center justify-center px-6 overflow-hidden"
         style={{ paddingTop: 160, paddingBottom: 80 }}
       >
-        {/* Orbes de fond */}
         <div className="absolute top-1/4 -left-40 w-[600px] h-[600px] rounded-full pointer-events-none" aria-hidden="true"
           style={{ background: "radial-gradient(circle, rgba(153,69,255,0.10) 0%, transparent 65%)" }} />
         <div className="absolute bottom-1/4 -right-40 w-[500px] h-[500px] rounded-full pointer-events-none" aria-hidden="true"
           style={{ background: "radial-gradient(circle, rgba(20,241,149,0.07) 0%, transparent 65%)" }} />
-        {/* Grille */}
         <div className="absolute inset-0 pointer-events-none" aria-hidden="true"
           style={{
             backgroundImage: "linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px)",
@@ -47,7 +115,7 @@ export default function LandingPage() {
             <a href="#" className="badge-community">
               <span className="live-dot" style={{ transform: "scale(0.8)" }} />
               <span style={{ color: "var(--sol-purple)" }}>
-                Rejoindre la communauté Wickox
+                {t("landing.hero.badge")}
               </span>
               <span style={{ color: "var(--border-hover)" }}>›</span>
             </a>
@@ -59,15 +127,15 @@ export default function LandingPage() {
               className="font-display font-semibold leading-tight"
               style={{ fontSize: "clamp(2.4rem,7vw,5.2rem)", letterSpacing: "-0.03em", color: "var(--text-primary)" }}
             >
-              Wickox AI — Votre assistant
+              {t("landing.hero.title1")}
               <br className="hidden md:block" />
-              <span className="text-gradient-sol"> trading intelligent</span>
+              <span className="text-gradient-sol"> {t("landing.hero.title2")}</span>
               <br className="hidden md:block" />
-              {" "}pour l&apos;Afrique
+              {" "}{t("landing.hero.title3")}
             </h1>
             <p className="max-w-2xl mx-auto text-base md:text-lg leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-              Analyse ton graphique en 10 secondes. Signal Buy/Sell, Entry, SL, TP et taille de position.{" "}
-              <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>En FCFA. En français.</span>
+              {t("landing.hero.subtitle")}{" "}
+              <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{t("landing.hero.subtitle.highlight")}</span>
             </p>
           </div>
 
@@ -75,11 +143,11 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 animate-fade-in-up stagger-2">
             <Link href="/register" className="btn-sol px-7 py-3.5 rounded-xl text-sm font-semibold">
               <Sparkles size={15} aria-hidden="true" />
-              Essayer gratuitement
+              {t("landing.hero.cta.primary")}
               <ArrowRight size={14} aria-hidden="true" />
             </Link>
             <Link href="/login" className="btn-outline px-7 py-3.5 rounded-xl text-sm font-semibold">
-              Voir une démo
+              {t("landing.hero.cta.secondary")}
             </Link>
           </div>
 
@@ -91,18 +159,13 @@ export default function LandingPage() {
           {/* Stats */}
           <div className="flex flex-wrap items-center justify-center gap-8 text-sm animate-fade-in-up stagger-4"
             style={{ color: "var(--text-secondary)" }}>
-            {[
-              { value: "1 247", label: "traders actifs" },
-              { value: "98%",   label: "satisfaction" },
-              { value: "10s",   label: "par analyse" },
-              { value: "FCFA",  label: "paiement local" },
-            ].map(stat => (
-              <div key={stat.label} className="flex items-baseline gap-1.5">
+            {heroStats.map(stat => (
+              <div key={stat.labelKey} className="flex items-baseline gap-1.5">
                 <span className="font-display font-semibold text-lg"
                   style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
                   {stat.value}
                 </span>
-                <span style={{ fontSize: 13 }}>{stat.label}</span>
+                <span style={{ fontSize: 13 }}>{t(stat.labelKey)}</span>
               </div>
             ))}
           </div>
@@ -115,18 +178,13 @@ export default function LandingPage() {
       <div style={{ background: "var(--surface-low)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)", padding: "28px 24px" }}>
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            {[
-              { num: "5",     label: "Marchés couverts",    sub: "Crypto · Forex · Indices · Matières · Actions" },
-              { num: "3",     label: "Modes d'analyse",     sub: "Swing · Day · Scalp" },
-              { num: "99.9%", label: "Uptime garanti",      sub: "Disponibilité 24h/24" },
-              { num: "FCFA",  label: "Paiement nativement", sub: "Wave · Orange · Visa" },
-            ].map(s => (
+            {statsBar.map(s => (
               <div key={s.num} className="space-y-1">
                 <p className="font-display font-semibold" style={{ fontSize: "2rem", letterSpacing: "-0.03em" }}>
                   <span className="text-gradient-sol-static">{s.num}</span>
                 </p>
-                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{s.label}</p>
-                <p style={{ fontSize: 11, color: "var(--text-tertiary)" }}>{s.sub}</p>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{t(s.labelKey)}</p>
+                <p style={{ fontSize: 11, color: "var(--text-tertiary)" }}>{t(s.subKey)}</p>
               </div>
             ))}
           </div>
@@ -140,14 +198,14 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto space-y-14">
 
           <div className="text-center space-y-4">
-            <p className="section-label" style={{ color: "var(--sol-purple)" }}>WICKOX PRO — POUR LES PROFESSIONNELS</p>
+            <p className="section-label" style={{ color: "var(--sol-purple)" }}>{t("landing.features.label")}</p>
             <h2 className="font-display font-semibold"
               style={{ fontSize: "clamp(1.75rem,4vw,2.75rem)", letterSpacing: "-0.02em", color: "var(--text-primary)" }}>
-              Tout ce dont tu as besoin{" "}
-              <span className="text-gradient-sol-static">pour trader mieux</span>
+              {t("landing.features.title")}{" "}
+              <span className="text-gradient-sol-static">{t("landing.features.title.hl")}</span>
             </h2>
             <p style={{ color: "var(--text-secondary)", maxWidth: 500, margin: "0 auto", fontSize: 15 }}>
-              Notre IA analyse tes graphiques et te fournit un plan de trade complet en secondes.
+              {t("landing.features.subtitle")}
             </p>
           </div>
 
@@ -163,10 +221,9 @@ export default function LandingPage() {
                 <Brain size={22} />
               </div>
               <h3 className="font-display font-semibold text-xl"
-                style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}>Analyse IA instantanée</h3>
+                style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}>{t("landing.features.ai.title")}</h3>
               <p style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.7 }}>
-                RSI, MACD, Bollinger, patterns de chandeliers, niveaux de support/résistance —
-                notre IA lit tout automatiquement depuis ta capture d&apos;écran.
+                {t("landing.features.ai.desc")}
               </p>
               <div className="flex flex-wrap gap-2 pt-1">
                 {["RSI","MACD","EMA","S/R","Patterns","Volume"].map(tag => (
@@ -188,9 +245,9 @@ export default function LandingPage() {
                 <TrendingUp size={22} />
               </div>
               <h3 className="font-display font-semibold text-lg"
-                style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}>Entry · SL · TP · R:R précis</h3>
+                style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}>{t("landing.features.entry.title")}</h3>
               <p style={{ color: "var(--text-secondary)", fontSize: 13, lineHeight: 1.7 }}>
-                Niveaux exacts avec taille de position calculée selon ton capital en FCFA.
+                {t("landing.features.entry.desc")}
               </p>
             </div>
 
@@ -202,9 +259,9 @@ export default function LandingPage() {
                 <Sparkles size={22} />
               </div>
               <h3 className="font-display font-semibold text-lg"
-                style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}>Wickox IA Coach</h3>
+                style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}>{t("landing.features.coach.title")}</h3>
               <p style={{ color: "var(--text-secondary)", fontSize: 13, lineHeight: 1.7 }}>
-                Ton conseiller en français. Pose toutes tes questions sur le trading 24h/24.
+                {t("landing.features.coach.desc")}
               </p>
             </div>
 
@@ -216,9 +273,9 @@ export default function LandingPage() {
                 <BookOpen size={22} />
               </div>
               <h3 className="font-display font-semibold text-lg"
-                style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}>Journal de trading intégré</h3>
+                style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}>{t("landing.features.journal.title")}</h3>
               <p style={{ color: "var(--text-secondary)", fontSize: 13, lineHeight: 1.7 }}>
-                Stats avancées, courbe d&apos;équité, heatmap des performances. Apprends de chaque trade.
+                {t("landing.features.journal.desc")}
               </p>
               <div className="grid grid-cols-3 gap-3 pt-1">
                 {[{ label:"Win Rate",value:"67%"},{ label:"R:R Moyen",value:"1.8"},{ label:"Streak",value:"5j"}].map(m => (
@@ -238,9 +295,9 @@ export default function LandingPage() {
                 <Globe size={22} />
               </div>
               <h3 className="font-display font-semibold text-lg"
-                style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}>Tous les marchés</h3>
+                style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}>{t("landing.features.markets.title")}</h3>
               <p style={{ color: "var(--text-secondary)", fontSize: 13, lineHeight: 1.7 }}>
-                Crypto, Forex, Indices, Matières premières, Actions africaines.
+                {t("landing.features.markets.desc")}
               </p>
             </div>
 
@@ -252,9 +309,9 @@ export default function LandingPage() {
                 <Shield size={22} />
               </div>
               <h3 className="font-display font-semibold text-lg"
-                style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}>Données sécurisées</h3>
+                style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}>{t("landing.features.security.title")}</h3>
               <p style={{ color: "var(--text-secondary)", fontSize: 13, lineHeight: 1.7 }}>
-                Vos analyses restent privées. Chiffrement de bout en bout.
+                {t("landing.features.security.desc")}
               </p>
             </div>
 
@@ -266,9 +323,9 @@ export default function LandingPage() {
                 <Zap size={22} />
               </div>
               <h3 className="font-display font-semibold text-lg text-gradient-sol-static"
-                style={{ letterSpacing: "-0.02em" }}>10 secondes chrono</h3>
+                style={{ letterSpacing: "-0.02em" }}>{t("landing.features.speed.title")}</h3>
               <p style={{ color: "var(--text-secondary)", fontSize: 13, lineHeight: 1.7 }}>
-                Upload → Analyse complète en moins de 10 secondes. IA optimisée pour la vitesse.
+                {t("landing.features.speed.desc")}
               </p>
             </div>
 
@@ -283,22 +340,18 @@ export default function LandingPage() {
         style={{ background: "var(--surface-low)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
         <div className="max-w-5xl mx-auto space-y-14">
           <div className="text-center space-y-4">
-            <p className="section-label" style={{ color: "var(--sol-green)" }}>COMMENT ÇA MARCHE</p>
+            <p className="section-label" style={{ color: "var(--sol-green)" }}>{t("landing.how.label")}</p>
             <h2 className="font-display font-semibold"
               style={{ fontSize: "clamp(1.75rem,4vw,2.75rem)", letterSpacing: "-0.02em", color: "var(--text-primary)" }}>
-              3 étapes simples
+              {t("landing.how.title")}
             </h2>
             <p style={{ color: "var(--text-secondary)", fontSize: 15 }}>
-              Du graphique au plan de trade complet en moins de 10 secondes
+              {t("landing.how.subtitle")}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {([
-              { num:"01", title:"Capture ton chart",    desc:"Prends une screenshot de ton graphique sur TradingView, Binance ou n'importe quelle plateforme.", color:"var(--sol-purple)", icon:<BarChart3 size={26}/>, step:1 },
-              { num:"02", title:"Upload sur Wickox",    desc:"Glisse l'image. Sélectionne ton actif, timeframe et mode d'analyse (Swing / Day / Scalp).",         color:"var(--sol-cyan)",   icon:<Zap size={26}/>,      step:2 },
-              { num:"03", title:"Reçois ton analyse",   desc:"Signal Buy/Sell, Entry, Stop-Loss, Take-Profit, taille de position — tout en FCFA.",                color:"var(--bullish)",    icon:<Sparkles size={26}/>, step:3 },
-            ] as const).map(step => (
+            {howSteps.map(step => (
               <div key={step.num} className="relative rounded-2xl p-7 space-y-5 overflow-hidden"
                 style={{ background: "var(--surface-high)", border: "1px solid var(--border)" }}>
                 <span className="absolute top-3 right-4 font-display font-black select-none pointer-events-none" aria-hidden="true"
@@ -317,8 +370,8 @@ export default function LandingPage() {
                 </div>
                 <div className="space-y-2">
                   <h3 className="font-display font-semibold text-lg"
-                    style={{ color: "var(--text-primary)", letterSpacing: "-0.01em" }}>{step.title}</h3>
-                  <p style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.7 }}>{step.desc}</p>
+                    style={{ color: "var(--text-primary)", letterSpacing: "-0.01em" }}>{t(step.titleKey)}</h3>
+                  <p style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.7 }}>{t(step.descKey)}</p>
                 </div>
               </div>
             ))}
@@ -332,24 +385,20 @@ export default function LandingPage() {
       <section id="pricing" className="py-24 px-6">
         <div className="max-w-5xl mx-auto space-y-14">
           <div className="text-center space-y-4">
-            <p className="section-label" style={{ color: "var(--gold)" }}>TARIFS SIMPLES</p>
+            <p className="section-label" style={{ color: "var(--gold)" }}>{t("landing.pricing.label")}</p>
             <h2 className="font-display font-semibold"
               style={{ fontSize: "clamp(1.75rem,4vw,2.75rem)", letterSpacing: "-0.02em", color: "var(--text-primary)" }}>
-              Choisissez votre{" "}
-              <span className="text-gradient-warm">terminal</span>
+              {t("landing.pricing.title")}{" "}
+              <span className="text-gradient-warm">{t("landing.pricing.title.hl")}</span>
             </h2>
             <p style={{ color: "var(--text-secondary)", fontSize: 15 }}>
-              Wave · Orange Money · Visa · Mastercard · Crypto
+              {t("landing.pricing.subtitle")}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {[
-              { name:"GRATUIT", price:"0",      tag:"Pour découvrir",        features:["3 analyses / jour","5 messages Wickox IA","Crypto uniquement","Journal basique"], cta:"Commencer gratuitement", highlight:false },
-              { name:"BASIC",   price:"4 900",  tag:"Pour le trader régulier", features:["20 analyses / jour","30 messages Wickox IA","Forex + Crypto","Export CSV","Journal avancé"],      cta:"Choisir Basic",         highlight:false },
-              { name:"PRO",     price:"14 900", tag:"Tout illimité",          features:["Analyses illimitées","Tous marchés","Alertes temps réel","API access","Support prioritaire"],         cta:"Choisir Pro",           highlight:true  },
-            ].map(plan => (
-              <div key={plan.name} className="relative rounded-2xl overflow-hidden"
+            {plans.map(plan => (
+              <div key={plan.nameKey} className="relative rounded-2xl overflow-hidden"
                 style={plan.highlight ? {
                   background: "var(--surface-glass)", backdropFilter: "blur(20px)",
                   border: "1px solid var(--gold-border)", boxShadow: "var(--shadow-lg),0 0 40px rgba(201,168,76,0.10)",
@@ -359,35 +408,35 @@ export default function LandingPage() {
                 {plan.highlight && (
                   <div className="absolute top-0 left-0 right-0 py-1.5 text-center"
                     style={{ background: "var(--sol-gradient)" }}>
-                    <span style={{ fontSize:10, fontWeight:800, color:"white", letterSpacing:"0.12em" }}>POPULAIRE</span>
+                    <span style={{ fontSize:10, fontWeight:800, color:"white", letterSpacing:"0.12em" }}>{t("landing.pricing.popular")}</span>
                   </div>
                 )}
                 <div className={`p-7 space-y-6 ${plan.highlight ? "pt-11" : ""}`}>
                   <div>
                     <p className="section-label mb-3"
-                      style={{ color: plan.highlight ? "var(--gold)" : "var(--text-tertiary)" }}>{plan.name}</p>
+                      style={{ color: plan.highlight ? "var(--gold)" : "var(--text-tertiary)" }}>{t(plan.nameKey)}</p>
                     <div className="flex items-baseline gap-1.5">
                       <span className="font-display font-semibold"
                         style={{ fontSize:"2.2rem", letterSpacing:"-0.03em", color:"var(--text-primary)" }}>
-                        {plan.price === "0" ? "Gratuit" : plan.price}
+                        {plan.price === "0" ? t("landing.pricing.free") : plan.price}
                       </span>
                       {plan.price !== "0" && (
-                        <span style={{ fontSize:12, color:"var(--text-tertiary)" }}>FCFA/mois</span>
+                        <span style={{ fontSize:12, color:"var(--text-tertiary)" }}>{t("landing.pricing.month")}</span>
                       )}
                     </div>
-                    <p style={{ fontSize:12, color:"var(--text-secondary)", marginTop:4 }}>{plan.tag}</p>
+                    <p style={{ fontSize:12, color:"var(--text-secondary)", marginTop:4 }}>{t(plan.tagKey)}</p>
                   </div>
                   <ul className="space-y-3">
-                    {plan.features.map(f => (
-                      <li key={f} className="flex items-center gap-3" style={{ fontSize:14, color:"var(--text-primary)" }}>
+                    {plan.featureKeys.map(fKey => (
+                      <li key={fKey} className="flex items-center gap-3" style={{ fontSize:14, color:"var(--text-primary)" }}>
                         <Check size={15} style={{ color: plan.highlight ? "var(--gold)" : "var(--bullish)", flexShrink:0 }} />
-                        {f}
+                        {t(fKey)}
                       </li>
                     ))}
                   </ul>
                   <Link href="/plans"
                     className={plan.highlight ? "btn-plan-pro py-3 rounded-xl text-sm font-bold" : "btn-ghost py-3 rounded-xl text-sm font-bold"}>
-                    {plan.cta}
+                    {t(plan.ctaKey)}
                   </Link>
                 </div>
               </div>
@@ -396,7 +445,7 @@ export default function LandingPage() {
 
           <div className="text-center">
             <Link href="/plans" className="link-sol">
-              Voir le tableau complet des plans
+              {t("landing.pricing.seeAll")}
               <ArrowRight size={14} />
             </Link>
           </div>
@@ -420,23 +469,21 @@ export default function LandingPage() {
 
             <div className="relative flex flex-col md:flex-row items-center gap-8">
               <div className="flex-1 space-y-3 text-center md:text-left">
-                <p className="section-label" style={{ color: "var(--bullish)" }}>PARTENAIRE OFFICIEL</p>
+                <p className="section-label" style={{ color: "var(--bullish)" }}>{t("landing.weex.label")}</p>
                 <h2 className="font-display font-semibold text-2xl md:text-3xl"
                   style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
-                  Trade sur <span className="text-gradient-sol-static">Weex</span>
+                  {t("landing.weex.title")} <span className="text-gradient-sol-static">Weex</span>
                 </h2>
                 <p style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.7 }}>
-                  Ouvre ton compte avec le code{" "}
-                  <span className="font-bold font-data" style={{ color: "var(--bullish)" }}>0ajwh</span>
-                  {" "}et bénéficie d&apos;avantages exclusifs pour les traders Wickox.
+                  {t("landing.weex.desc")}
                 </p>
                 <div className="flex flex-wrap justify-center md:justify-start gap-3 pt-1">
-                  {["0% frais maker", "App mobile", "Crypto + Forex"].map(tag => (
-                    <span key={tag} className="font-data"
+                  {(["landing.weex.tag1","landing.weex.tag2","landing.weex.tag3"] as const).map(key => (
+                    <span key={key} className="font-data"
                       style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 5,
                         background: "rgba(20,241,149,0.10)", border: "1px solid rgba(20,241,149,0.22)",
                         color: "var(--bullish)", letterSpacing: "0.04em" }}>
-                      {tag}
+                      {t(key)}
                     </span>
                   ))}
                 </div>
@@ -445,7 +492,7 @@ export default function LandingPage() {
                 <Link href="https://weex.com/register?vipCode=0ajwh" target="_blank" rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm font-bold transition-opacity hover:opacity-90"
                   style={{ background: "var(--bullish)", color: "var(--surface)" }}>
-                  Ouvrir un compte Weex
+                  {t("landing.weex.cta")}
                   <ArrowRight size={15} aria-hidden="true" />
                 </Link>
               </div>
@@ -474,19 +521,18 @@ export default function LandingPage() {
                 <Sparkles size={30} />
               </div>
               <div className="flex-1 space-y-3 text-center md:text-left">
-                <p className="section-label" style={{ color: "var(--gold)" }}>INTELLIGENCE ARTIFICIELLE</p>
+                <p className="section-label" style={{ color: "var(--gold)" }}>{t("landing.coach.label")}</p>
                 <h2 className="font-display font-semibold text-2xl md:text-3xl"
                   style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
-                  Idjor, ton coach IA personnel
+                  {t("landing.coach.title")}
                 </h2>
                 <p style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.7 }}>
-                  Pose tes questions en français 24h/24. Il connaît ton profil et ta psychologie de trader.
-                  Plus tu l&apos;utilises, plus ses conseils sont précis.
+                  {t("landing.coach.desc")}
                 </p>
                 <Link href="/register"
                   className="inline-flex items-center gap-2 text-sm font-bold transition-colors hover:opacity-80"
                   style={{ color: "var(--gold)" }}>
-                  Essayer Idjor gratuitement
+                  {t("landing.coach.cta")}
                   <ArrowRight size={14} aria-hidden="true" />
                 </Link>
               </div>
@@ -503,33 +549,27 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div className="space-y-5">
-              <p className="section-label" style={{ color: "var(--sol-cyan)" }}>INVESTISSEMENT PASSIF</p>
+              <p className="section-label" style={{ color: "var(--sol-cyan)" }}>{t("landing.dca.label")}</p>
               <h2 className="font-display font-semibold"
                 style={{ fontSize: "clamp(1.6rem,4vw,2.4rem)", letterSpacing: "-0.02em", color: "var(--text-primary)" }}>
-                Pas trader ?<br />
-                <span style={{ color: "var(--sol-cyan)" }}>Investis intelligemment.</span>
+                {t("landing.dca.title1")}<br />
+                <span style={{ color: "var(--sol-cyan)" }}>{t("landing.dca.title2")}</span>
               </h2>
               <p style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.8 }}>
-                Investis régulièrement en crypto ou actions avec un petit budget.
-                Même <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>5 000 FCFA/semaine</span> suffisent
-                pour construire un patrimoine sur le long terme.
+                {t("landing.dca.desc")}
               </p>
               <ul className="space-y-2.5">
-                {[
-                  "Automatise tes achats hebdomadaires",
-                  "Lisse le risque sur la durée",
-                  "Suivi de portefeuille en FCFA",
-                ].map(item => (
-                  <li key={item} className="flex items-center gap-3" style={{ fontSize: 14, color: "var(--text-primary)" }}>
+                {(["landing.dca.item1","landing.dca.item2","landing.dca.item3"] as const).map(key => (
+                  <li key={key} className="flex items-center gap-3" style={{ fontSize: 14, color: "var(--text-primary)" }}>
                     <Check size={15} style={{ color: "var(--sol-cyan)", flexShrink: 0 }} />
-                    {item}
+                    {t(key)}
                   </li>
                 ))}
               </ul>
               <Link href="/register"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold"
                 style={{ background: "rgba(3,225,255,0.12)", color: "var(--sol-cyan)", border: "1px solid rgba(3,225,255,0.25)" }}>
-                Commencer à investir
+                {t("landing.dca.cta")}
                 <ArrowRight size={14} aria-hidden="true" />
               </Link>
             </div>
@@ -537,24 +577,23 @@ export default function LandingPage() {
             {/* DCA visual */}
             <div className="rounded-2xl p-6 space-y-4"
               style={{ background: "var(--surface-high)", border: "1px solid var(--border)" }}>
-              <p className="section-label">Simulation DCA — 12 mois</p>
+              <p className="section-label">{t("landing.dca.sim.title")}</p>
               <div className="space-y-3">
                 {[
-                  { label: "Mise hebdo",      value: "5 000 FCFA",  color: "var(--text-primary)" },
-                  { label: "Total investi",   value: "260 000 FCFA", color: "var(--text-primary)" },
-                  { label: "Valeur estimée",  value: "~338 000 FCFA", color: "var(--bullish)" },
-                  { label: "Performance",     value: "+30%",         color: "var(--bullish)" },
+                  { labelKey: "landing.dca.sim.weekly", value: "5 000 FCFA",    color: "var(--text-primary)" },
+                  { labelKey: "landing.dca.sim.total",  value: "260 000 FCFA",  color: "var(--text-primary)" },
+                  { labelKey: "landing.dca.sim.value",  value: "~338 000 FCFA", color: "var(--bullish)" },
+                  { labelKey: "landing.dca.sim.perf",   value: "+30%",          color: "var(--bullish)" },
                 ].map(row => (
-                  <div key={row.label} className="flex items-center justify-between py-2.5 px-4 rounded-xl"
+                  <div key={row.labelKey} className="flex items-center justify-between py-2.5 px-4 rounded-xl"
                     style={{ background: "var(--surface-highest)" }}>
-                    <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>{row.label}</span>
+                    <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>{t(row.labelKey)}</span>
                     <span className="font-data font-bold" style={{ fontSize: 14, color: row.color }}>{row.value}</span>
                   </div>
                 ))}
               </div>
               <p style={{ fontSize: 11, color: "var(--text-tertiary)" }}>
-                * Simulation indicative basée sur une performance historique Bitcoin moyenne.
-                Pas une garantie de rendement.
+                {t("landing.dca.sim.note")}
               </p>
             </div>
           </div>
@@ -567,43 +606,35 @@ export default function LandingPage() {
       <section className="py-20 px-6">
         <div className="max-w-5xl mx-auto space-y-12">
           <div className="text-center space-y-4">
-            <p className="section-label" style={{ color: "var(--sol-purple)" }}>ILS NOUS FONT CONFIANCE</p>
+            <p className="section-label" style={{ color: "var(--sol-purple)" }}>{t("landing.reviews.label")}</p>
             <h2 className="font-display font-semibold"
               style={{ fontSize: "clamp(1.75rem,4vw,2.75rem)", letterSpacing: "-0.02em", color: "var(--text-primary)" }}>
-              Ce que disent les traders
+              {t("landing.reviews.title")}
             </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {[
-              { name: "Kouamé A.", location: "Abidjan", quote: "J'ai enfin compris le RSI grâce à Idjor. Il m'explique chaque signal en français, simplement.", stars: 5 },
-              { name: "Fatou D.",  location: "Dakar",   quote: "Signal parfait, +2.3R sur SOL. J'ai suivi l'analyse Wickox à la lettre et ça a marché.", stars: 5 },
-              { name: "Ibrahim K.", location: "Abidjan", quote: "Le meilleur outil pour trader en FCFA. Plus besoin de convertir en dollars pour comprendre mon risque.", stars: 5 },
-            ].map(t => (
-              <div key={t.name} className="rounded-2xl p-6 space-y-4"
+            {testimonials.map(item => (
+              <div key={item.name} className="rounded-2xl p-6 space-y-4"
                 style={{ background: "var(--surface-high)", border: "1px solid var(--border)" }}>
-                {/* Stars */}
                 <div className="flex gap-1">
-                  {Array.from({ length: t.stars }).map((_, i) => (
+                  {Array.from({ length: item.stars }).map((_, i) => (
                     <svg key={i} width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                      <path d="M7 1l1.5 4H13l-3.5 2.5 1.3 4L7 9 3.2 11.5l1.3-4L1 5h4.5L7 1z"
-                        fill="var(--gold)" />
+                      <path d="M7 1l1.5 4H13l-3.5 2.5 1.3 4L7 9 3.2 11.5l1.3-4L1 5h4.5L7 1z" fill="var(--gold)" />
                     </svg>
                   ))}
                 </div>
-                {/* Quote */}
                 <p style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.75, fontStyle: "italic" }}>
-                  &quot;{t.quote}&quot;
+                  &quot;{item.quote}&quot;
                 </p>
-                {/* Author */}
                 <div className="flex items-center gap-3 pt-1">
                   <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
                     style={{ background: "rgba(153,69,255,0.15)", color: "var(--sol-purple)" }}>
-                    {t.name.charAt(0)}
+                    {item.name.charAt(0)}
                   </div>
                   <div>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>{t.name}</p>
-                    <p style={{ fontSize: 11, color: "var(--text-tertiary)" }}>{t.location}</p>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>{item.name}</p>
+                    <p style={{ fontSize: 11, color: "var(--text-tertiary)" }}>{item.location}</p>
                   </div>
                 </div>
               </div>
@@ -634,26 +665,24 @@ export default function LandingPage() {
             <div className="relative space-y-4">
               <h2 className="font-display font-semibold"
                 style={{ fontSize:"clamp(1.75rem,4vw,2.5rem)", letterSpacing:"-0.02em", color:"var(--text-primary)" }}>
-                Essayez Wickox{" "}
-                <span className="text-gradient-sol">15 jours gratuitement</span>
+                {t("landing.cta.title")}{" "}
+                <span className="text-gradient-sol">{t("landing.cta.title.hl")}</span>
               </h2>
               <p style={{ color: "var(--text-secondary)", fontSize: 15 }}>
-                Rejoins{" "}
-                <span style={{ color:"var(--text-primary)", fontWeight:600 }}>1 247 traders</span>{" "}
-                qui analysent plus vite et tradent mieux avec Wickox.
+                {t("landing.cta.desc")}
               </p>
             </div>
 
             <div className="relative flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link href="/register" className="btn-sol px-8 py-3.5 rounded-xl text-sm font-bold">
                 <Sparkles size={15} aria-hidden="true" />
-                Rejoindre la période d&apos;essai
+                {t("landing.cta.btn")}
                 <ArrowRight size={14} aria-hidden="true" />
               </Link>
             </div>
 
             <p className="relative text-xs" style={{ color: "var(--text-tertiary)" }}>
-              Le trading comporte des risques de perte en capital. Tradez responsablement.
+              {t("landing.cta.risk")}
             </p>
           </div>
         </div>
@@ -680,24 +709,20 @@ export default function LandingPage() {
                   style={{ letterSpacing:"-0.02em" }}>Wickox</span>
               </div>
               <p style={{ fontSize:13, color:"var(--text-tertiary)", lineHeight:1.7 }}>
-                Assistant trading IA pour les traders d&apos;Afrique de l&apos;Ouest.
+                {t("landing.footer.brand.desc")}
               </p>
               <p style={{ fontSize:12, color:"var(--text-tertiary)" }}>
-                © 2026 Wakama Edge Ventures Inc.<br />Abidjan, Côte d&apos;Ivoire
+                {t("landing.footer.brand.copy")}<br />{t("landing.footer.brand.city")}
               </p>
             </div>
 
             {/* Colonnes de liens */}
-            {[
-              { title:"Produit",    links:["Fonctionnalités","Tarifs","Wickox Pro","Formation"] },
-              { title:"Ressources", links:["Documentation","Blog","Changelog","Status"] },
-              { title:"Légal",      links:["Conditions","Confidentialité","Mentions légales","Contact"] },
-            ].map(col => (
-              <div key={col.title} className="space-y-4">
-                <p className="section-label">{col.title}</p>
+            {footerCols.map(col => (
+              <div key={col.titleKey} className="space-y-4">
+                <p className="section-label">{t(col.titleKey)}</p>
                 <ul className="space-y-2.5">
-                  {col.links.map(link => (
-                    <li key={link}><a href="#" className="footer-link">{link}</a></li>
+                  {col.links.map(linkKey => (
+                    <li key={linkKey}><a href="#" className="footer-link">{t(linkKey)}</a></li>
                   ))}
                 </ul>
               </div>
@@ -712,7 +737,7 @@ export default function LandingPage() {
               ))}
             </div>
             <p style={{ fontSize:12, color:"var(--text-tertiary)", textAlign:"center" }}>
-              Pas un conseil financier — Politique de confidentialité
+              {t("landing.footer.legal")}
             </p>
           </div>
         </div>

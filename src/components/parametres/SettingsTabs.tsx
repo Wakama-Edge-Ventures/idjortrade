@@ -5,13 +5,9 @@ import ProfileForm from "./ProfileForm";
 import PreferencesForm from "./PreferencesForm";
 import Link from "next/link";
 import { CreditCard } from "lucide-react";
+import { useLang } from "@/lib/LangContext";
 
 type Tab = "profil" | "preferences" | "abonnement";
-const tabs: { id: Tab; label: string }[] = [
-  { id: "profil", label: "Profil" },
-  { id: "preferences", label: "Préférences" },
-  { id: "abonnement", label: "Abonnement" },
-];
 
 const mockPayments = [
   { date: "01/02/26", montant: 4900, plan: "BASIC", statut: "Remboursé" },
@@ -20,7 +16,20 @@ const mockPayments = [
 ];
 
 export default function SettingsTabs() {
+  const { t } = useLang();
   const [active, setActive] = useState<Tab>("profil");
+
+  const tabs: { id: Tab; label: string }[] = [
+    { id: "profil",       label: t("settings.tab.profil") },
+    { id: "preferences",  label: t("settings.tab.preferences") },
+    { id: "abonnement",   label: t("settings.tab.abonnement") },
+  ];
+
+  const statusLabel = (s: string) => {
+    if (s === "Remboursé") return t("settings.payments.refunded") || s;
+    if (s === "Payé")      return t("settings.payments.paid") || s;
+    return s;
+  };
 
   return (
     <div className="space-y-6">
@@ -61,16 +70,16 @@ export default function SettingsTabs() {
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <p className="text-sm font-semibold text-white">Plan actuel</p>
+                <p className="text-sm font-semibold text-white">{t("settings.plan.current")}</p>
                 <span
                   className="text-[10px] font-bold px-2 py-0.5 rounded"
                   style={{ background: "var(--surface-highest)", color: "var(--text-secondary)" }}
                 >
-                  GRATUIT
+                  {t("settings.plan.tag")}
                 </span>
               </div>
               <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                3 analyses restantes aujourd&apos;hui
+                {t("settings.plan.remaining")}
               </p>
             </div>
             <Link
@@ -78,18 +87,23 @@ export default function SettingsTabs() {
               className="px-4 py-2 rounded-lg text-sm font-bold flex-shrink-0"
               style={{ background: "var(--sol-gradient)", color: "white" }}
             >
-              Upgrader
+              {t("settings.plan.upgrade")}
             </Link>
           </div>
 
           {/* Historique paiements */}
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-white">Historique des paiements</h3>
+            <h3 className="text-sm font-semibold text-white">{t("settings.payments.title")}</h3>
             <div className="card overflow-hidden">
               <table className="w-full text-xs">
                 <thead>
                   <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                    {["Date", "Montant", "Plan", "Statut"].map((h) => (
+                    {[
+                      t("settings.payments.date"),
+                      t("settings.payments.amount"),
+                      t("settings.payments.plan"),
+                      t("settings.payments.status"),
+                    ].map((h) => (
                       <th
                         key={h}
                         className="px-4 py-3 text-left font-semibold uppercase tracking-widest"
@@ -117,7 +131,7 @@ export default function SettingsTabs() {
                       </td>
                       <td className="px-4 py-3">
                         <span style={{ color: p.statut === "Remboursé" ? "#F5A623" : "var(--text-secondary)" }}>
-                          {p.statut}
+                          {statusLabel(p.statut)}
                         </span>
                       </td>
                     </tr>
@@ -133,10 +147,10 @@ export default function SettingsTabs() {
             className="px-4 py-2.5 rounded-xl text-sm font-semibold opacity-40 cursor-not-allowed"
             style={{ border: "1px solid var(--bearish)", color: "var(--bearish)" }}
           >
-            Annuler l&apos;abonnement
+            {t("settings.cancel")}
           </button>
           <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-            Désactivé sur le plan Gratuit.
+            {t("settings.cancel.sub")}
           </p>
         </div>
       )}

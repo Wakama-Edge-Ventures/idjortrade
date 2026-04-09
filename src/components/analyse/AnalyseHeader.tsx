@@ -1,3 +1,7 @@
+"use client";
+
+import { useLang } from "@/lib/LangContext";
+
 interface AnalyseHeaderProps {
   title: string;
   subtitle: string;
@@ -5,16 +9,12 @@ interface AnalyseHeaderProps {
   accentColor: string;
 }
 
-export default function AnalyseHeader({
-  title,
-  subtitle,
-  mode,
-  accentColor,
-}: AnalyseHeaderProps) {
+export default function AnalyseHeader({ title, subtitle, mode, accentColor }: AnalyseHeaderProps) {
+  const { t } = useLang();
+
   return (
     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
       <div className="flex items-start gap-4">
-        {/* Icône SVG custom */}
         <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
           style={{ background: `${accentColor}15`, color: accentColor }}>
           {mode === "swing" ? (
@@ -37,8 +37,7 @@ export default function AnalyseHeader({
           ) : (
             <svg width="24" height="24" viewBox="0 0 22 22" fill="none">
               <polyline points="2,16 6,8 10,13 14,4 18,9 22,4"
-                stroke="currentColor" strokeWidth="2" strokeLinecap="round"
-                strokeLinejoin="round"/>
+                stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           )}
         </div>
@@ -52,14 +51,13 @@ export default function AnalyseHeader({
                 color: "var(--bullish)",
                 border: "1px solid rgba(20,241,149,0.2)",
               }}>
-              ACTIF
+              {t("analyse.active")}
             </span>
           </div>
           <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{subtitle}</p>
         </div>
       </div>
 
-      {/* Disclaimer */}
       <div className="flex items-center gap-2 px-3 py-2 rounded-xl self-start sm:flex-shrink-0"
         style={{
           background: "rgba(245,166,35,0.06)",
@@ -67,7 +65,7 @@ export default function AnalyseHeader({
         }}>
         <span style={{ color: "#F5A623" }}>⚠</span>
         <p className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
-          Pas un conseil financier
+          {t("analyse.disclaimer")}
         </p>
       </div>
     </div>

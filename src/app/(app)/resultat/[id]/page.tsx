@@ -6,11 +6,13 @@ import Link from "next/link";
 import { ArrowLeft, TrendingUp, TrendingDown, Minus, AlertTriangle } from "lucide-react";
 import type { AnalyseResponse, AnalyseReason } from "@/app/api/analyse/types";
 import ConfidenceRing from "@/components/analyse/ConfidenceRing";
+import { useLang } from "@/lib/LangContext";
 
 export default function ResultatPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
+  const { t } = useLang();
 
   const [result, setResult] = useState<AnalyseResponse | null>(null);
   const [error, setError] = useState(false);
@@ -53,9 +55,9 @@ export default function ResultatPage() {
     return (
       <div className="max-w-2xl mx-auto p-8 flex flex-col items-center gap-6 text-center">
         <AlertTriangle size={40} style={{ color: "#F5A623" }} />
-        <h1 className="font-display font-semibold text-xl text-white">Résultat introuvable</h1>
+        <h1 className="font-display font-semibold text-xl text-white">{t("result.notfound")}</h1>
         <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-          Cette analyse n'est plus disponible. Les résultats sont stockés localement dans votre navigateur.
+          {t("result.notfound.desc")}
         </p>
         <div className="flex gap-3">
           <Link href="/swing"
@@ -80,7 +82,7 @@ export default function ResultatPage() {
           <circle cx="16" cy="16" r="12" stroke="rgba(20,241,149,0.2)" strokeWidth="3" />
           <path d="M16 4a12 12 0 0 1 12 12" stroke="var(--bullish)" strokeWidth="3" strokeLinecap="round" />
         </svg>
-        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>Chargement…</p>
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{t("result.loading")}</p>
       </div>
     );
   }
@@ -89,9 +91,9 @@ export default function ResultatPage() {
   const accentColor = isSwing ? "#0EA5E9" : "#F5A623";
 
   const signalConfig = {
-    BUY: { label: "ACHAT", color: "var(--bullish)", bg: "rgba(20,241,149,0.12)", border: "rgba(20,241,149,0.3)", Icon: TrendingUp },
-    SELL: { label: "VENTE", color: "var(--bearish)", bg: "rgba(244,63,94,0.12)", border: "rgba(244,63,94,0.3)", Icon: TrendingDown },
-    NEUTRE: { label: "NEUTRE", color: "#F5A623", bg: "rgba(245,166,35,0.12)", border: "rgba(245,166,35,0.3)", Icon: Minus },
+    BUY:    { label: t("signal.buy"),     color: "var(--bullish)", bg: "rgba(20,241,149,0.12)", border: "rgba(20,241,149,0.3)", Icon: TrendingUp },
+    SELL:   { label: t("signal.sell"),    color: "var(--bearish)", bg: "rgba(244,63,94,0.12)",  border: "rgba(244,63,94,0.3)",  Icon: TrendingDown },
+    NEUTRE: { label: t("signal.neutral"), color: "#F5A623",        bg: "rgba(245,166,35,0.12)", border: "rgba(245,166,35,0.3)", Icon: Minus },
   }[result.signal];
 
   const reasonColor = (type: AnalyseReason["type"]) =>
@@ -128,7 +130,7 @@ export default function ResultatPage() {
           className="flex items-center gap-2 text-sm font-semibold transition-opacity hover:opacity-70"
           style={{ color: "var(--text-secondary)" }}>
           <ArrowLeft size={16} />
-          Retour
+          {t("result.back")}
         </button>
         <div className="text-right">
           <p className="text-xs font-data" style={{ color: "var(--text-secondary)" }}>{date}</p>
@@ -180,30 +182,27 @@ export default function ResultatPage() {
 
       {/* Trade Plan Grid */}
       <div className="grid grid-cols-2 gap-3">
-        {/* Entry */}
         <div className="card p-4 space-y-1">
           <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
-            Entrée
+            {t("result.entry")}
           </p>
           <p className="font-display font-semibold text-lg text-white font-data">
             {fmtPrice(result.entry)}
           </p>
         </div>
 
-        {/* Stop Loss */}
         <div className="card p-4 space-y-1" style={{ border: "1px solid rgba(244,63,94,0.2)" }}>
           <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
-            Stop Loss
+            {t("result.sl")}
           </p>
           <p className="font-display font-semibold text-lg font-data" style={{ color: "var(--bearish)" }}>
             {fmtPrice(result.stopLoss)}
           </p>
         </div>
 
-        {/* TP1 */}
         <div className="card p-4 space-y-1" style={{ border: "1px solid rgba(20,241,149,0.2)" }}>
           <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
-            Take Profit 1
+            {t("result.tp1")}
           </p>
           <p className="font-display font-semibold text-lg font-data" style={{ color: "var(--bullish)" }}>
             {fmtPrice(result.tp1)}
@@ -213,11 +212,10 @@ export default function ResultatPage() {
           </p>
         </div>
 
-        {/* TP2 or RR */}
         {result.tp2 ? (
           <div className="card p-4 space-y-1" style={{ border: "1px solid rgba(20,241,149,0.12)" }}>
             <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
-              Take Profit 2
+              {t("result.tp2")}
             </p>
             <p className="font-display font-semibold text-lg font-data" style={{ color: "var(--bullish)" }}>
               {fmtPrice(result.tp2)}
@@ -231,7 +229,7 @@ export default function ResultatPage() {
         ) : (
           <div className="card p-4 space-y-1">
             <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
-              Ratio R/R
+              {t("result.rr")}
             </p>
             <p className="font-display font-semibold text-lg font-data text-white">
               {result.rrRatio != null ? `1:${result.rrRatio}` : '—'}
@@ -245,7 +243,7 @@ export default function ResultatPage() {
         style={{ border: "1px solid var(--border)" }}>
         <div className="flex-1 text-center space-y-1">
           <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
-            Risque engagé
+            {t("result.risk.engaged")}
           </p>
           <p className="font-display font-semibold text-xl font-data" style={{ color: "var(--bearish)" }}>
             {fmt(result.riskFCFA)} FCFA
@@ -254,7 +252,7 @@ export default function ResultatPage() {
         <div className="hidden sm:block w-px self-stretch" style={{ background: "var(--border)" }} />
         <div className="flex-1 text-center space-y-1">
           <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
-            Taille de position
+            {t("result.size")}
           </p>
           <p className="font-display font-semibold text-xl font-data text-white">
             {result.positionSize != null ? result.positionSize : '—'}{' '}
@@ -264,7 +262,7 @@ export default function ResultatPage() {
         <div className="hidden sm:block w-px self-stretch" style={{ background: "var(--border)" }} />
         <div className="flex-1 text-center space-y-1">
           <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
-            Gain cible (TP1)
+            {t("result.gain.tp1")}
           </p>
           <p className="font-display font-semibold text-xl font-data" style={{ color: "var(--bullish)" }}>
             {fmt(result.gainTP1FCFA)} FCFA
@@ -275,7 +273,7 @@ export default function ResultatPage() {
       {/* Reasons */}
       <div className="card p-5 space-y-3">
         <h3 className="font-display font-semibold text-sm text-white">
-          Explication de l'analyse
+          {t("result.explanation")}
         </h3>
         <div className="space-y-2">
           {result.reasons.map((r, i) => (
@@ -307,7 +305,7 @@ export default function ResultatPage() {
             onClick={() => router.push(result.mode === "swing" ? "/swing" : "/scalp")}
             className="flex-1 py-3 rounded-2xl text-sm font-bold font-display transition-all"
             style={{ background: "var(--surface-highest)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
-            Nouvelle analyse
+            {t("result.new")}
           </button>
           <button
             onClick={() => {
@@ -316,9 +314,8 @@ export default function ResultatPage() {
             }}
             className="flex-1 py-3 rounded-2xl text-sm font-bold font-display transition-all"
             style={{ background: signalConfig.bg, color: signalConfig.color, border: `1px solid ${signalConfig.border}` }}>
-            Copier le signal
+            {t("result.copy")}
           </button>
-          {/* Save to journal button — disabled for NEUTRE signals */}
           <button
             onClick={saveToJournal}
             disabled={saving || saved || result.signal === 'NEUTRE'}
@@ -330,7 +327,7 @@ export default function ResultatPage() {
               opacity: result.signal === 'NEUTRE' ? 0.4 : 1,
             }}
           >
-            {saved ? "✓ Ajouté au journal" : saving ? "Ajout…" : "📌 Sauvegarder"}
+            {saved ? t("result.saved") : saving ? t("result.saving") : t("result.save")}
           </button>
         </div>
       </div>

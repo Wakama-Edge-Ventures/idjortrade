@@ -1,10 +1,21 @@
+"use client";
+
 import { Lock, PlayCircle } from 'lucide-react';
 import type { Course } from '@/lib/mock-idjor';
 import { levelColors, levelBorderColors } from '@/lib/mock-idjor';
+import { useLang } from '@/lib/LangContext';
+
+const LEVEL_KEYS: Record<string, string> = {
+  'DÉBUTANT':      'course.level.debutant',
+  'INTERMÉDIAIRE': 'course.level.intermediaire',
+  'AVANCÉ':        'course.level.avance',
+};
 
 export default function CourseCard({ course }: { course: Course }) {
+  const { t } = useLang();
   const borderColor = levelBorderColors[course.level];
   const levelStyle = levelColors[course.level];
+  const levelLabel = t(LEVEL_KEYS[course.level] ?? 'course.level.debutant');
 
   return (
     <div
@@ -22,7 +33,7 @@ export default function CourseCard({ course }: { course: Course }) {
             className="text-[10px] font-bold px-2 py-0.5 rounded-full"
             style={{ background: levelStyle.bg, color: levelStyle.text }}
           >
-            {course.level}
+            {levelLabel}
           </span>
           <span
             className="text-[10px] font-medium px-2 py-0.5 rounded-full"

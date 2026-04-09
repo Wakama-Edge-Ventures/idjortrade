@@ -19,7 +19,6 @@ import {
   LogOut,
   Sun,
   ChevronUp,
-  ChevronDown,
   BellDot,
   Gift,
 } from "lucide-react";
@@ -27,7 +26,8 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import SessionTicker from "./SessionTicker";
 import { useSession, signOut } from "next-auth/react";
-import { usePathname } from "next/navigation";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { Lang } from "@/lib/i18n";
 
 /* ── Types ──────────────────────────────────────────────────────────────────── */
 interface NavItem {
@@ -43,50 +43,57 @@ interface NavGroup {
   items: NavItem[];
 }
 
-/* ── Config nav ─────────────────────────────────────────────────────────────── */
-const navGroups: NavGroup[] = [
-  {
-    title: "OUTILS",
-    items: [
-      { label: "Dashboard",     href: "/dashboard",  icon: LayoutDashboard },
-      { label: "Swing Trading", href: "/swing",       icon: TrendingUp },
-      { label: "Day Trading",   href: "/day",         icon: Sun },
-      { label: "Scalp Trading", href: "/scalp",       icon: Zap },
-      { label: "Marché",        href: "/marche",      icon: Globe },
-      { label: "Calendrier",    href: "/calendrier",  icon: CalendarDays },
-    ],
-  },
-  {
-    title: "APPRENDRE",
-    items: [
-      { label: "Idjor IA",  href: "/idjor",      icon: Sparkles, badge: "NEW",  badgeType: "new" },
-      { label: "Formation", href: "/formation",   icon: GraduationCap },
-      { label: "Journal",   href: "/journal",     icon: BookOpen },
-      { label: "Historique",href: "/historique",  icon: History },
-    ],
-  },
-  {
-    title: "COMPTE",
-    items: [
-      { label: "Plans",       href: "/plans",       icon: CreditCard },
-      { label: "Parrainage",  href: "/affiliation", icon: Gift },
-      { label: "Paramètres",  href: "/parametres",  icon: Settings },
-    ],
-  },
-];
+/* ── Config nav (dynamic) ───────────────────────────────────────────────────── */
+function buildNavGroups(t: (key: string) => string): NavGroup[] {
+  return [
+    {
+      title: t("nav.group.outils"),
+      items: [
+        { label: t("nav.dashboard"),  href: "/dashboard",  icon: LayoutDashboard },
+        { label: t("nav.swing"),      href: "/swing",       icon: TrendingUp },
+        { label: t("nav.day"),        href: "/day",         icon: Sun },
+        { label: t("nav.scalp"),      href: "/scalp",       icon: Zap },
+        { label: t("nav.marche"),     href: "/marche",      icon: Globe },
+        { label: t("nav.calendrier"), href: "/calendrier",  icon: CalendarDays },
+        { label: t("nav.dca"),        href: "/dca",          icon: TrendingUp },
+      ],
+    },
+    {
+      title: t("nav.group.apprendre"),
+      items: [
+        { label: t("nav.idjor"),      href: "/idjor",      icon: Sparkles, badge: "NEW", badgeType: "new" },
+        { label: t("nav.formation"),  href: "/formation",   icon: GraduationCap },
+        { label: t("nav.journal"),    href: "/journal",     icon: BookOpen },
+        { label: t("nav.historique"), href: "/historique",  icon: History },
+      ],
+    },
+    {
+      title: t("nav.group.compte"),
+      items: [
+        { label: t("nav.plans"),      href: "/plans",       icon: CreditCard },
+        { label: t("nav.parrainage"), href: "/affiliation", icon: Gift },
+        { label: t("nav.parametres"), href: "/parametres",  icon: Settings },
+      ],
+    },
+  ];
+}
 
-const analyseItems = [
-  { label: "Swing", href: "/swing", icon: TrendingUp },
-  { label: "Day",   href: "/day",   icon: Sun },
-  { label: "Scalp", href: "/scalp", icon: Zap },
-];
+function buildAnalyseItems(t: (key: string) => string) {
+  return [
+    { label: "Swing", href: "/swing", icon: TrendingUp },
+    { label: "Day",   href: "/day",   icon: Sun },
+    { label: "Scalp", href: "/scalp", icon: Zap },
+  ];
+}
 
-const mobileNavItems = [
-  { label: "Accueil", href: "/dashboard", icon: Home },
-  { label: "Journal", href: "/journal",   icon: BookOpen },
-  { label: "Idjor",   href: "/idjor",     icon: Sparkles },
-  { label: "Profil",  href: "/parametres",icon: User },
-];
+function buildMobileNavItems(t: (key: string) => string) {
+  return [
+    { label: t("nav.accueil"), href: "/dashboard", icon: Home },
+    { label: t("nav.journal"), href: "/journal",   icon: BookOpen },
+    { label: t("nav.idjor"),   href: "/idjor",     icon: Sparkles },
+    { label: t("nav.profil"),  href: "/parametres",icon: User },
+  ];
+}
 
 const PLAN_CONFIG: Record<string, { label: string; style: React.CSSProperties }> = {
   FREE:   { label: "FREE",   style: { background: "rgba(255,255,255,0.06)", color: "#64748B" } },
@@ -95,8 +102,8 @@ const PLAN_CONFIG: Record<string, { label: string; style: React.CSSProperties }>
   TRADER: { label: "TRADER", style: { background: "rgba(201,168,76,0.15)", color: "#C9A84C" } },
 };
 
-function getAbidjanDate(): string {
-  return new Date().toLocaleDateString("fr-FR", {
+function getLocalDate(locale: string): string {
+  return new Date().toLocaleDateString(locale, {
     timeZone: "Africa/Abidjan",
     weekday: "long",
     day: "numeric",
@@ -112,9 +119,15 @@ interface AppShellProps {
 
 export default function AppShell({ children, activePage }: AppShellProps) {
   const { data: session } = useSession();
+  const { t, lang, setLang } = useTranslation();
+
   const prenom   = session?.user?.prenom ?? "Trader";
   const plan     = (session?.user?.plan as string) ?? "FREE";
   const planCfg  = PLAN_CONFIG[plan] ?? PLAN_CONFIG.FREE;
+
+  const navGroups      = buildNavGroups(t);
+  const analyseItems   = buildAnalyseItems(t);
+  const mobileNavItems = buildMobileNavItems(t);
 
   const [analyseOpen, setAnalyseOpen] = useState(false);
   const [mounted, setMounted]         = useState(false);
@@ -128,6 +141,7 @@ export default function AppShell({ children, activePage }: AppShellProps) {
   const analyseActive = ["/swing", "/day", "/scalp"].some(h => isActive(h));
 
   const initial = prenom.charAt(0).toUpperCase();
+  const dateLocale = lang === "en" ? "en-GB" : "fr-FR";
 
   return (
     <div className="min-h-screen flex" style={{ background: "var(--surface)" }}>
@@ -250,7 +264,6 @@ export default function AppShell({ children, activePage }: AppShellProps) {
         >
           {/* Avatar + nom */}
           <div className="flex items-center gap-3">
-            {/* Avatar avec ring gradient */}
             <div className="relative flex-shrink-0">
               <div
                 className="absolute inset-0 rounded-full"
@@ -303,7 +316,7 @@ export default function AppShell({ children, activePage }: AppShellProps) {
             }}
           >
             <LogOut size={13} />
-            Déconnexion
+            {t("btn.deconnexion")}
           </button>
         </div>
       </aside>
@@ -329,25 +342,57 @@ export default function AppShell({ children, activePage }: AppShellProps) {
           {/* Salutation */}
           <div>
             <p className="font-display text-base font-semibold" style={{ color: "var(--text-primary)", letterSpacing: "-0.01em" }}>
-              Bonjour,{" "}
+              {t("header.greeting")}{" "}
               <span className="text-gradient-sol-static">{prenom}</span>
             </p>
             <p className="text-xs capitalize" style={{ color: "var(--text-tertiary)" }}>
-              {getAbidjanDate()}
+              {mounted ? getLocalDate(dateLocale) : ""}
             </p>
           </div>
 
           {/* Droite */}
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-4">
             {/* Statut marché */}
             <div className="flex items-center gap-2">
               <span className="live-dot" aria-hidden="true" />
               <span className="text-xs font-medium" style={{ color: "var(--bullish)" }}>
-                Marché ouvert
+                {t("header.market.open")}
               </span>
             </div>
 
-            {/* Divider vertical */}
+            {/* Divider */}
+            <div style={{ width: 1, height: 20, background: "var(--border)" }} />
+
+            {/* Lang toggle */}
+            <div
+              className="flex items-center rounded-full flex-shrink-0"
+              style={{
+                border: "1px solid rgba(255,255,255,0.3)",
+                background: "rgba(255,255,255,0.15)",
+                overflow: "hidden",
+              }}
+            >
+              {(["fr", "en"] as Lang[]).map((l, i) => (
+                <button
+                  key={l}
+                  onClick={() => setLang(l)}
+                  className="cursor-pointer transition-all duration-150"
+                  style={{
+                    padding: "4px 8px",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: lang === l ? "white" : "rgba(255,255,255,0.7)",
+                    background: lang === l ? "var(--sol-purple)" : "transparent",
+                    borderRight: i === 0 ? "1px solid rgba(255,255,255,0.2)" : "none",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {l.toUpperCase()}
+                </button>
+              ))}
+            </div>
+
+            {/* Divider */}
             <div style={{ width: 1, height: 20, background: "var(--border)" }} />
 
             {/* Notifications */}
@@ -405,6 +450,35 @@ export default function AppShell({ children, activePage }: AppShellProps) {
             </span>
           </div>
           <div className="flex items-center gap-2">
+            {/* Lang toggle mobile */}
+            <div
+              className="flex items-center rounded-full flex-shrink-0"
+              style={{
+                border: "1px solid rgba(255,255,255,0.3)",
+                background: "rgba(255,255,255,0.15)",
+                overflow: "hidden",
+                minWidth: 70,
+              }}
+            >
+              {(["fr", "en"] as Lang[]).map((l, i) => (
+                <button
+                  key={l}
+                  onClick={() => setLang(l)}
+                  className="cursor-pointer transition-all duration-150 flex-1 text-center"
+                  style={{
+                    padding: "4px 8px",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: lang === l ? "white" : "rgba(255,255,255,0.7)",
+                    background: lang === l ? "var(--sol-purple)" : "transparent",
+                    borderRight: i === 0 ? "1px solid rgba(255,255,255,0.2)" : "none",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {l.toUpperCase()}
+                </button>
+              ))}
+            </div>
             <div className="flex items-center gap-1.5">
               <span className="live-dot" aria-hidden="true" style={{ transform: "scale(0.8)" }} />
             </div>
@@ -518,7 +592,7 @@ export default function AppShell({ children, activePage }: AppShellProps) {
             <ScanLine size={18} style={{ color: analyseOpen ? "white" : "var(--sol-purple)" }} />
           </div>
           <span className="text-[10px] font-medium flex items-center gap-0.5">
-            Analyser
+            {t("nav.analyser")}
             <ChevronUp
               size={9}
               style={{

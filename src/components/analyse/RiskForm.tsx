@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useImperativeHandle, forwardRef } from "react";
 import { TIMEFRAME_GROUPS, defaultTimeframeForMode } from "@/lib/timeframes";
 import type { TradingMode } from "@/lib/timeframes";
+import { useLang } from "@/lib/LangContext";
 
 export type RiskFormData = {
   asset: string;
@@ -28,7 +29,6 @@ interface RiskFormProps {
   onProductTypeChange?: (productType: "spot" | "futures") => void;
 }
 
-const marches = ["Crypto", "Forex", "Actions", "Indices"];
 const rrOptions = ["1:1", "1:2", "1:3", "Custom"];
 const FCFA_PER_USD = 655;
 
@@ -60,9 +60,7 @@ async function fetchBinancePrice(asset: string): Promise<number | null> {
     const data = await res.json();
     const price = parseFloat(data.price);
     return isNaN(price) ? null : price;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
 async function fetchServerPrice(asset: string): Promise<number | null> {
@@ -71,9 +69,7 @@ async function fetchServerPrice(asset: string): Promise<number | null> {
     if (!res.ok) return null;
     const data = await res.json();
     return data?.price ?? null;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
 const defaultTradingMode = (mode: "swing" | "scalp" | "day"): TradingMode =>
@@ -81,6 +77,15 @@ const defaultTradingMode = (mode: "swing" | "scalp" | "day"): TradingMode =>
 
 const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
   function RiskForm({ mode, onAssetChange, onProductTypeChange }, ref) {
+    const { t } = useLang();
+
+    const marches = [
+      t("page.marche.tab.crypto"),
+      "Forex",
+      t("page.marche.tab.actions"),
+      "Indices",
+    ];
+
     const [asset, setAsset] = useState("");
     const [capital, setCapital] = useState("");
     const [risque, setRisque] = useState(1);
@@ -108,13 +113,9 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
 
     const currentGroup = TIMEFRAME_GROUPS.find(g => g.mode === tradingMode) ?? TIMEFRAME_GROUPS[0];
 
-    // Auto-fetch price when asset changes
     useEffect(() => {
       const trimmed = asset.trim();
-      if (!trimmed) {
-        setCurrentPrice(null); setPriceFailed(false); setPriceBadge("");
-        return;
-      }
+      if (!trimmed) { setCurrentPrice(null); setPriceFailed(false); setPriceBadge(""); return; }
       const timer = setTimeout(async () => {
         setPriceLoading(true);
         const assetType = detectAssetType(trimmed);
@@ -128,26 +129,18 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
             price = await fetchServerPrice(trimmed);
             if (price) setPriceBadge(assetType === "forex" ? "LIVE · Forex" : "LIVE");
           }
-          if (price) {
-            setCurrentPrice(price); setPriceFailed(false);
-          } else {
-            setCurrentPrice(null); setPriceFailed(true); setPriceBadge("");
-          }
+          if (price) { setCurrentPrice(price); setPriceFailed(false); }
+          else { setCurrentPrice(null); setPriceFailed(true); setPriceBadge(""); }
         } catch {
           setCurrentPrice(null); setPriceFailed(true); setPriceBadge("");
-        } finally {
-          setPriceLoading(false);
-        }
+        } finally { setPriceLoading(false); }
       }, 800);
       return () => clearTimeout(timer);
     }, [asset]);
 
-    // Close suggestions on outside click
     useEffect(() => {
       function handleClick(e: MouseEvent) {
-        if (assetRef.current && !assetRef.current.contains(e.target as Node)) {
-          setShowSuggestions(false);
-        }
+        if (assetRef.current && !assetRef.current.contains(e.target as Node)) setShowSuggestions(false);
       }
       document.addEventListener("mousedown", handleClick);
       return () => document.removeEventListener("mousedown", handleClick);
@@ -160,64 +153,50 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
         const filtered = ASSET_SUGGESTIONS.filter(s => s.toLowerCase().includes(value.toLowerCase()));
         setSuggestions(filtered.slice(0, 6));
         setShowSuggestions(filtered.length > 0);
-      } else {
-        setSuggestions([]); setShowSuggestions(false);
-      }
+      } else { setSuggestions([]); setShowSuggestions(false); }
     }
 
     function selectSuggestion(s: string) {
-      setAsset(s);
-      onAssetChange?.(s);
-      setSuggestions([]); setShowSuggestions(false);
+      setAsset(s); onAssetChange?.(s); setSuggestions([]); setShowSuggestions(false);
     }
 
     function handleTradingModeChange(newMode: TradingMode) {
-      setTradingMode(newMode);
-      setTimeframe(defaultTimeframeForMode(newMode));
+      setTradingMode(newMode); setTimeframe(defaultTimeframeForMode(newMode));
     }
 
     function handleProductTypeChange(v: "spot" | "futures") {
-      setProductType(v);
-      onProductTypeChange?.(v);
+      setProductType(v); onProductTypeChange?.(v);
     }
 
     useImperativeHandle(ref, () => ({
       getFormData: () => {
         if (!asset.trim()) return null;
         const priceValue = currentPrice ?? (manualPrice ? parseFloat(manualPrice) : undefined);
-        return {
-          asset: asset.trim().toUpperCase(),
-          timeframe, capitalFCFA: capitalNum || 100000,
-          risquePct: risque, ratioRR: rrNum, marche, tradingMode,
-          productType, platform,
-          currentPrice: priceValue,
-          modeAnalyse,
-        };
+        return { asset: asset.trim().toUpperCase(), timeframe, capitalFCFA: capitalNum || 100000,
+          risquePct: risque, ratioRR: rrNum, marche, tradingMode, productType, platform,
+          currentPrice: priceValue, modeAnalyse };
       },
     }));
 
-    const btnBase    = "px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer";
-    const btnActive  = { background: "rgba(20,241,149,0.15)", color: "var(--bullish)", border: "1px solid rgba(20,241,149,0.3)" };
+    const btnBase     = "px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer";
+    const btnActive   = { background: "rgba(20,241,149,0.15)", color: "var(--bullish)", border: "1px solid rgba(20,241,149,0.3)" };
     const btnInactive = { background: "var(--surface-highest)", color: "var(--text-secondary)", border: "1px solid transparent" };
 
     return (
       <div className="space-y-5">
 
-        {/* Actif avec suggestions */}
+        {/* Actif */}
         <div className="space-y-1.5" ref={assetRef}>
           <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
-            Actif *
+            {t("form.asset.label")}
           </label>
           <div className="relative">
-            <input
-              type="text" value={asset}
-              onChange={e => handleAssetChange(e.target.value)}
-              placeholder="Ex: SOL/USDT, BTC/USDT, EUR/USD"
+            <input type="text" value={asset} onChange={e => handleAssetChange(e.target.value)}
+              placeholder={t("form.asset.placeholder")}
               className="w-full rounded-xl px-4 py-3 text-sm font-data text-white outline-none transition-colors"
               style={{ background: "var(--surface-highest)", border: "1px solid var(--border)" }}
               onFocus={e => { (e.target as HTMLElement).style.borderColor = "rgba(153,69,255,0.5)"; if (suggestions.length > 0) setShowSuggestions(true); }}
-              onBlur={e => { (e.target as HTMLElement).style.borderColor = "var(--border)"; }}
-            />
+              onBlur={e => { (e.target as HTMLElement).style.borderColor = "var(--border)"; }} />
             {showSuggestions && suggestions.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-1 rounded-xl overflow-hidden z-30 shadow-2xl"
                 style={{ background: "var(--surface-high)", border: "1px solid rgba(255,255,255,0.08)" }}>
@@ -239,16 +218,20 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
         {/* Type de produit */}
         <div className="space-y-2">
           <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
-            Type de produit
+            {t("form.product.label")}
           </label>
           <div className="flex gap-2">
-            <button className={btnBase} style={productType === "spot" ? btnActive : btnInactive} onClick={() => handleProductTypeChange("spot")}>Spot</button>
-            <button className={btnBase} style={productType === "futures" ? btnActive : btnInactive} onClick={() => handleProductTypeChange("futures")}>Futures / Perpétuel</button>
+            <button className={btnBase} style={productType === "spot" ? btnActive : btnInactive} onClick={() => handleProductTypeChange("spot")}>
+              {t("form.product.spot")}
+            </button>
+            <button className={btnBase} style={productType === "futures" ? btnActive : btnInactive} onClick={() => handleProductTypeChange("futures")}>
+              {t("form.product.futures")}
+            </button>
           </div>
           {productType === "futures" && (
             <p className="text-xs px-3 py-2 rounded-lg"
               style={{ background: "rgba(245,166,35,0.06)", border: "1px solid rgba(245,166,35,0.2)", color: "#F5A623" }}>
-              ⚠️ Les prix Futures peuvent différer du Spot. Vérifiez le prix exact sur votre plateforme.
+              {t("form.product.futures.warn")}
             </p>
           )}
         </div>
@@ -256,7 +239,7 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
         {/* Plateforme */}
         <div className="space-y-1.5">
           <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
-            Plateforme de trading
+            {t("form.platform.label")}
           </label>
           <select value={platform} onChange={e => setPlatform(e.target.value)}
             className="w-full rounded-xl px-4 py-3 text-sm text-white outline-none appearance-none cursor-pointer"
@@ -268,7 +251,7 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
         {/* Prix actuel */}
         <div className="space-y-1.5">
           <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
-            Prix actuel de l&apos;asset
+            {t("form.price.label")}
           </label>
           <div className="relative">
             {priceLoading ? (
@@ -278,7 +261,7 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
                   <circle cx="6" cy="6" r="4" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.3"/>
                   <path d="M6 2a4 4 0 0 1 4 4" stroke="var(--bullish)" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
-                Récupération du prix…
+                {t("form.price.loading")}
               </div>
             ) : currentPrice != null ? (
               <>
@@ -292,17 +275,16 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
               </>
             ) : (
               <input type="number" value={manualPrice} onChange={e => setManualPrice(e.target.value)}
-                placeholder={priceFailed ? "Entrez le prix manuellement" : "Renseignez l'actif pour auto-remplir"}
+                placeholder={priceFailed ? t("form.price.manual") : t("form.price.hint.empty")}
                 className="w-full rounded-xl px-4 py-3 text-sm font-data text-white outline-none transition-colors"
                 style={{ background: "var(--surface-highest)", border: "1px solid var(--border)" }}
                 onFocus={e => { (e.target as HTMLElement).style.borderColor = "rgba(153,69,255,0.5)"; }}
-                onBlur={e => { (e.target as HTMLElement).style.borderColor = "var(--border)"; }}
-              />
+                onBlur={e => { (e.target as HTMLElement).style.borderColor = "var(--border)"; }} />
             )}
           </div>
           {currentPrice != null && (
             <p className="text-[10px]" style={{ color: "var(--text-secondary)" }}>
-              Prix récupéré automatiquement — vérifiez sur votre plateforme avant d&apos;analyser
+              {t("form.price.hint.auto")}
             </p>
           )}
         </div>
@@ -310,7 +292,7 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
         {/* Capital */}
         <div className="space-y-1.5">
           <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
-            Capital disponible
+            {t("form.capital.label")}
           </label>
           <div className="relative">
             <input type="number" value={capital} onChange={e => setCapital(e.target.value)} placeholder="250 000"
@@ -329,7 +311,7 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
-              Risque par trade
+              {t("form.risk.label")}
             </label>
             <span className="text-sm font-bold font-data" style={{ color: "var(--bullish)" }}>
               {risque}% {capitalNum > 0 && `= ${riskFCFA.toLocaleString("fr-FR")} FCFA`}
@@ -345,7 +327,9 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
 
         {/* R/R */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>Ratio R/R</label>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
+            {t("form.rr.label")}
+          </label>
           <div className="flex gap-2 flex-wrap">
             {rrOptions.map(opt => (
               <button key={opt} className={btnBase} style={rr === opt ? btnActive : btnInactive} onClick={() => setRr(opt)}>{opt}</button>
@@ -355,7 +339,9 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
 
         {/* Marché */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>Marché</label>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
+            {t("form.market.label")}
+          </label>
           <div className="flex gap-2 flex-wrap">
             {marches.map(m => (
               <button key={m} className={btnBase} style={marche === m ? btnActive : btnInactive} onClick={() => setMarche(m)}>{m}</button>
@@ -363,9 +349,11 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
           </div>
         </div>
 
-        {/* Trading Mode + Timeframe */}
+        {/* Style · Timeframe */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>Style · Timeframe</label>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
+            {t("form.style.label")}
+          </label>
           <div className="flex gap-1.5">
             {TIMEFRAME_GROUPS.map(g => (
               <button key={g.mode} className={btnBase} style={tradingMode === g.mode ? btnActive : btnInactive}
@@ -382,13 +370,14 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
 
         {/* Mode analyse */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>Mode analyse</label>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
+            {t("form.mode.label")}
+          </label>
           <div className="flex gap-2">
             {(["rapide", "approfondi"] as const).map(m => (
-              <button key={m} className={btnBase}
-                style={modeAnalyse === m ? btnActive : btnInactive}
+              <button key={m} className={btnBase} style={modeAnalyse === m ? btnActive : btnInactive}
                 onClick={() => setModeAnalyse(m)}>
-                {m === "rapide" ? "⚡ Rapide" : "🔬 Approfondi"}
+                {m === "rapide" ? t("form.mode.fast") : t("form.mode.deep")}
               </button>
             ))}
           </div>
@@ -398,8 +387,8 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
         {capitalNum > 0 && (
           <div className="rounded-xl px-4 py-3" style={{ background: "rgba(20,241,149,0.04)", border: "1px solid rgba(20,241,149,0.12)" }}>
             <p className="text-xs font-data" style={{ color: "var(--text-secondary)" }}>
-              Risque: <span style={{ color: "var(--bearish)" }}>{riskFCFA.toLocaleString("fr-FR")} FCFA</span>
-              {" → "}Gain cible: <span style={{ color: "var(--bullish)" }}>{gainFCFA.toLocaleString("fr-FR")} FCFA</span>
+              {t("form.recap.risk")} <span style={{ color: "var(--bearish)" }}>{riskFCFA.toLocaleString("fr-FR")} FCFA</span>
+              {" → "}{t("form.recap.gain")} <span style={{ color: "var(--bullish)" }}>{gainFCFA.toLocaleString("fr-FR")} FCFA</span>
               {" "}({rr === "Custom" ? "Custom" : rr})
             </p>
           </div>
@@ -416,14 +405,13 @@ const RiskForm = forwardRef<RiskFormRef, RiskFormProps>(
               setTimeframe(defaultTimeframeForMode(defaultTradingMode(mode)));
               setModeAnalyse("rapide"); onAssetChange?.(""); onProductTypeChange?.("spot");
             }}>
-            Réinitialiser
+            {t("form.reset")}
           </button>
           <button className="flex-1 py-2 rounded-xl text-sm font-semibold transition-colors"
             style={{ border: "1px solid rgba(20,241,149,0.3)", color: "var(--bullish)" }}>
-            Sauvegarder défaut
+            {t("form.save")}
           </button>
         </div>
-
       </div>
     );
   }

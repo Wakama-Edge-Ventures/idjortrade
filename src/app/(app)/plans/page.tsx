@@ -1,13 +1,24 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { PricingProvider } from "@/context/PricingContext";
 import PricingToggle from "@/components/plans/PricingToggle";
 import PlanCard from "@/components/plans/PlanCard";
 import PaymentBadges from "@/components/plans/PaymentBadges";
 import FaqAccordion from "@/components/plans/FaqAccordion";
 import ComparisonTable from "@/components/plans/ComparisonTable";
-import { plans, faqItems } from "@/lib/mock-plans";
+import { plans } from "@/lib/mock-plans";
+import { getT, LANG_COOKIE, type Lang } from "@/lib/i18n";
 
-export default function PlansPage() {
+export default async function PlansPage() {
+  const cookieStore = await cookies();
+  const lang = (cookieStore.get(LANG_COOKIE)?.value ?? "fr") as Lang;
+  const t = getT(lang);
+
+  const faqItems = Array.from({ length: 7 }, (_, i) => ({
+    q: t(`faq.${i}.q`),
+    a: t(`faq.${i}.a`),
+  }));
+
   return (
     <PricingProvider>
       <div className="max-w-6xl mx-auto p-4 md:p-8 space-y-16">
@@ -22,13 +33,13 @@ export default function PlansPage() {
               border: "1px solid rgba(20,241,149,0.15)",
             }}
           >
-            💳 Paiement local
+            {t("plans.hero.badge")}
           </span>
           <h1 className="font-display font-semibold text-3xl md:text-4xl text-white">
-            Choisissez votre Terminal
+            {t("plans.hero.title")}
           </h1>
           <p className="text-sm md:text-base max-w-xl mx-auto" style={{ color: "var(--text-secondary)" }}>
-            Wave · Orange Money · Visa · Mastercard · Crypto — 100% en FCFA
+            {t("plans.hero.sub")}
           </p>
           <div className="flex justify-center">
             <PricingToggle />
@@ -48,7 +59,7 @@ export default function PlansPage() {
         {/* Comparison table */}
         <section className="space-y-5">
           <h2 className="font-display font-semibold text-2xl text-white text-center">
-            Comparaison détaillée
+            {t("plans.comparison.title")}
           </h2>
           <ComparisonTable />
         </section>
@@ -56,7 +67,7 @@ export default function PlansPage() {
         {/* FAQ */}
         <section className="max-w-2xl mx-auto space-y-5">
           <h2 className="font-display font-semibold text-2xl text-white text-center">
-            Questions fréquentes
+            {t("plans.faq.title")}
           </h2>
           <FaqAccordion items={faqItems} />
         </section>
@@ -70,24 +81,23 @@ export default function PlansPage() {
           }}
         >
           <h3 className="font-display font-semibold text-xl text-white">
-            Pas encore prêt à passer Pro ?
+            {t("plans.cta.title")}
           </h3>
           <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-            Le plan Gratuit est disponible sans limite de temps.
+            {t("plans.cta.sub")}
           </p>
           <Link
             href="/dashboard"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold"
             style={{ background: "var(--sol-gradient)", color: "white" }}
           >
-            Démarrer avec le plan Gratuit
+            {t("plans.cta.btn")}
           </Link>
         </div>
 
         {/* Disclaimer */}
         <p className="text-center text-xs pb-4" style={{ color: "var(--text-secondary)" }}>
-          ⚠️ Le trading de crypto-monnaies et de Forex comporte des risques de perte en capital.
-          Wickox est un outil d&apos;aide à la décision et ne constitue pas un conseil financier.
+          ⚠️ {t("plans.disclaimer")}
         </p>
 
       </div>

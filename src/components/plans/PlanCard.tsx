@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { usePricing } from "@/context/PricingContext";
+import { useLang } from "@/lib/LangContext";
 import type { Plan } from "@/lib/mock-plans";
 import PaymentModal from "@/components/plans/PaymentModal";
 import type { PlanKey } from "@/lib/plans-config";
@@ -10,6 +11,7 @@ import Link from "next/link";
 
 export default function PlanCard({ plan }: { plan: Plan }) {
   const { isAnnual } = usePricing();
+  const { t } = useLang();
   const [showModal, setShowModal] = useState(false);
   const [hovered, setHovered] = useState(false);
   const price = isAnnual ? plan.priceAnnualFCFA : plan.priceFCFA;
@@ -43,7 +45,6 @@ export default function PlanCard({ plan }: { plan: Plan }) {
     transition: "transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
   };
 
-  // Couleur d'accent par plan — même style outlined pour tous
   const accentColor = isPro
     ? "var(--bullish)"
     : isTrader
@@ -77,7 +78,13 @@ export default function PlanCard({ plan }: { plan: Plan }) {
     transition: "border-color 200ms ease, background 200ms ease",
   };
 
-  const nameColor = accentColor;
+  // Translate plan data via i18n keys
+  const tagline = t(`plan.${plan.id}.tagline`);
+  const cta     = t(`plan.${plan.id}.cta`);
+  const features = plan.features.map((f, i) => ({
+    ...f,
+    text: t(`plan.${plan.id}.f${i}`),
+  }));
 
   return (
     <>
@@ -87,7 +94,6 @@ export default function PlanCard({ plan }: { plan: Plan }) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        {/* Badge */}
         {plan.badge && (
           <span
             className="absolute -top-3 right-4 text-[10px] font-bold px-3 py-1 rounded-full"
@@ -105,18 +111,18 @@ export default function PlanCard({ plan }: { plan: Plan }) {
 
         {/* Header */}
         <div>
-          <p className="text-xs font-bold tracking-widest mb-2" style={{ color: nameColor }}>
+          <p className="text-xs font-bold tracking-widest mb-2" style={{ color: accentColor }}>
             {plan.name}
           </p>
           <div className="flex items-baseline gap-2 mb-1">
             {isFree ? (
-              <span className="font-data text-4xl font-bold text-white">Gratuit</span>
+              <span className="font-data text-4xl font-bold text-white">{t("plans.price.free")}</span>
             ) : (
               <>
                 <span className="font-data text-4xl font-bold text-white">
                   {price.toLocaleString("fr-FR")}
                 </span>
-                <span className="text-sm" style={{ color: "var(--text-secondary)" }}>FCFA/mois</span>
+                <span className="text-sm" style={{ color: "var(--text-secondary)" }}>{t("plans.price.month")}</span>
               </>
             )}
           </div>
@@ -126,7 +132,7 @@ export default function PlanCard({ plan }: { plan: Plan }) {
             </p>
           )}
           <p className="text-xs mt-1.5" style={{ color: "var(--text-secondary)" }}>
-            {plan.tagline}
+            {tagline}
           </p>
         </div>
 
@@ -137,7 +143,7 @@ export default function PlanCard({ plan }: { plan: Plan }) {
             className="w-full py-2.5 rounded-xl text-sm font-semibold text-center block"
             style={ctaStyle}
           >
-            {plan.cta}
+            {cta}
           </Link>
         ) : (
           <button
@@ -145,16 +151,15 @@ export default function PlanCard({ plan }: { plan: Plan }) {
             style={ctaStyle}
             onClick={() => setShowModal(true)}
           >
-            {plan.cta}
+            {cta}
           </button>
         )}
 
-        {/* Separator */}
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }} />
 
         {/* Features */}
         <ul className="space-y-2.5 flex-1">
-          {plan.features.map((f, i) => (
+          {features.map((f, i) => (
             <li key={i} className="flex items-center gap-2.5 text-sm">
               {f.included ? (
                 <CheckCircle2 size={15} style={{ color: "var(--bullish)", flexShrink: 0 }} />

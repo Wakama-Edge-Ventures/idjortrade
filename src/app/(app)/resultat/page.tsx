@@ -1,26 +1,27 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import type { AnalyseReason } from "@/app/api/analyse/types";
 import ConfidenceRing from "@/components/analyse/ConfidenceRing";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import WeexBanner from "@/components/shared/WeexBanner";
+import { getT, LANG_COOKIE, type Lang } from "@/lib/i18n";
 
-const CIRCUMFERENCE = 2 * Math.PI * 42;
 
-function SignalBadge({ signal }: { signal: "BUY" | "SELL" | "NEUTRE" }) {
+function SignalBadge({ signal, label }: { signal: "BUY" | "SELL" | "NEUTRE"; label: string }) {
   const config = {
-    BUY:    { label: "ACHAT",  color: "var(--bullish)", bg: "rgba(20,241,149,0.12)", border: "rgba(20,241,149,0.3)", Icon: TrendingUp },
-    SELL:   { label: "VENTE",  color: "var(--bearish)", bg: "rgba(244,63,94,0.12)",  border: "rgba(244,63,94,0.3)",  Icon: TrendingDown },
-    NEUTRE: { label: "NEUTRE", color: "#F5A623",        bg: "rgba(245,166,35,0.12)", border: "rgba(245,166,35,0.3)", Icon: Minus },
+    BUY:    { color: "var(--bullish)", bg: "rgba(20,241,149,0.12)", border: "rgba(20,241,149,0.3)", Icon: TrendingUp },
+    SELL:   { color: "var(--bearish)", bg: "rgba(244,63,94,0.12)",  border: "rgba(244,63,94,0.3)",  Icon: TrendingDown },
+    NEUTRE: { color: "#F5A623",        bg: "rgba(245,166,35,0.12)", border: "rgba(245,166,35,0.3)", Icon: Minus },
   }[signal];
   return (
     <div className="flex items-center gap-3 px-5 py-2.5 rounded-2xl"
       style={{ background: config.bg, border: `1.5px solid ${config.border}` }}>
       <config.Icon size={20} style={{ color: config.color }} />
       <span className="font-display font-semibold text-xl tracking-widest" style={{ color: config.color }}>
-        {config.label}
+        {label}
       </span>
     </div>
   );
@@ -53,6 +54,10 @@ export default async function ResultatPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
+  const cookieStore = await cookies();
+  const lang = (cookieStore.get(LANG_COOKIE)?.value ?? "fr") as Lang;
+  const t = getT(lang);
+
   const analyse = await prisma.analyse.findFirst({
     where: { userId: session.user.id },
     orderBy: { createdAt: "desc" },
@@ -65,9 +70,9 @@ export default async function ResultatPage() {
           style={{ background: "rgba(153,69,255,0.1)", color: "var(--sol-purple)", fontSize: 28 }}>
           📊
         </div>
-        <h1 className="font-display font-semibold text-xl text-white">Aucune analyse</h1>
+        <h1 className="font-display font-semibold text-xl text-white">{t("result.no.analyses")}</h1>
         <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-          Upload ton premier chart pour obtenir un signal IA.
+          {t("result.no.analyses.desc")}
         </p>
         <div className="flex gap-3">
           <Link href="/swing"
@@ -88,6 +93,7 @@ export default async function ResultatPage() {
   const signal = analyse.signal as "BUY" | "SELL" | "NEUTRE";
   const isBuy = signal === "BUY";
   const signalColor = isBuy ? "var(--bullish)" : signal === "SELL" ? "var(--bearish)" : "#F5A623";
+  const signalLabel = signal === "BUY" ? t("signal.buy") : signal === "SELL" ? t("signal.sell") : t("signal.neutral");
 
   const reasons = (analyse.reasons ?? []) as AnalyseReason[];
 
@@ -125,7 +131,7 @@ export default async function ResultatPage() {
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          Retour
+          {t("result.back")}
         </Link>
         <div className="flex items-center gap-3">
           <span className="font-data text-sm font-bold text-white">{analyse.asset}</span>
@@ -143,13 +149,13 @@ export default async function ResultatPage() {
       {/* Signal Hero */}
       <div className="card p-6">
         <div className="flex flex-col md:flex-row items-center gap-6">
-          <SignalBadge signal={signal} />
+          <SignalBadge signal={signal} label={signalLabel} />
           <ConfidenceRing confidence={analyse.confidence} size={96} />
           <div className="flex flex-col gap-2 text-sm md:ml-auto text-center md:text-right">
             <p style={{ color: "var(--text-secondary)" }}>
               <span className="text-white font-semibold">{analyse.asset}</span> · {analyse.timeframe.toUpperCase()}
             </p>
-            <p style={{ color: "var(--text-secondary)" }}>Mode: <span className="text-white capitalize">{analyse.mode}</span></p>
+            <p style={{ color: "var(--text-secondary)" }}>{t("result.mode")}: <span className="text-white capitalize">{analyse.mode}</span></p>
             <p style={{ color: "var(--text-secondary)" }}>{date}</p>
           </div>
         </div>
@@ -163,26 +169,26 @@ export default async function ResultatPage() {
       {/* Trade Plan */}
       <div className="grid grid-cols-2 gap-3">
         <TradePlanCard
-          label="Point d'entrée"
+          label={t("result.entry.price")}
           price={fmtPrice(analyse.entry)}
-          sub="Prix suggéré"
+          sub={t("result.entry.sub")}
           color={signalColor}
         />
         <TradePlanCard
-          label="Stop-Loss"
+          label={t("result.sl")}
           price={fmtPrice(analyse.stopLoss)}
           sub={`−${slDistancePct}% · ${fmt(analyse.riskFCFA)} FCFA`}
           color="#F43F5E"
         />
         <TradePlanCard
-          label="Take Profit 1"
+          label={t("result.tp1")}
           price={fmtPrice(analyse.tp1)}
           sub={`+${tp1Pct}% · ${fmt(analyse.gainTP1FCFA)} FCFA`}
           color="#00CC6A"
         />
         {analyse.tp2 ? (
           <TradePlanCard
-            label="Take Profit 2"
+            label={t("result.tp2")}
             price={fmtPrice(analyse.tp2)}
             sub={analyse.gainTP2FCFA ? `+${fmt(analyse.gainTP2FCFA)} FCFA` : undefined}
             color="var(--bullish)"
@@ -190,7 +196,7 @@ export default async function ResultatPage() {
           />
         ) : (
           <TradePlanCard
-            label="Ratio R/R"
+            label={t("result.rr")}
             price={`1 : ${analyse.rrRatio}`}
             color="var(--text-primary)"
           />
@@ -201,7 +207,7 @@ export default async function ResultatPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="card p-6 space-y-4">
           <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
-            Ratio Risque / Récompense
+            {t("result.rr.label")}
           </p>
           <p className="font-data text-5xl font-bold text-white">
             1 : <span style={{ color: "var(--bullish)" }}>{analyse.rrRatio}</span>
@@ -213,14 +219,14 @@ export default async function ResultatPage() {
               style={{ width: `${rrSegmentReward}%`, background: "var(--sol-gradient)" }} />
           </div>
           <div className="flex justify-between text-xs" style={{ color: "var(--text-secondary)" }}>
-            <span>Risque</span>
-            <span>Récompense</span>
+            <span>{t("result.risk.label")}</span>
+            <span>{t("result.reward.label")}</span>
           </div>
         </div>
 
         <div className="card p-6 space-y-4">
           <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
-            Taille de position
+            {t("result.position")}
           </p>
           <div className="flex items-baseline gap-2">
             <span className="font-data text-4xl font-bold text-white">{analyse.positionSize}</span>
@@ -228,20 +234,20 @@ export default async function ResultatPage() {
           </div>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span style={{ color: "var(--text-secondary)" }}>Perte max</span>
+              <span style={{ color: "var(--text-secondary)" }}>{t("result.max.loss")}</span>
               <span className="font-data font-bold" style={{ color: "var(--bearish)" }}>
                 −{fmt(analyse.riskFCFA)} FCFA
               </span>
             </div>
             <div className="flex justify-between">
-              <span style={{ color: "var(--text-secondary)" }}>Gain TP1</span>
+              <span style={{ color: "var(--text-secondary)" }}>{t("result.gain.label")}</span>
               <span className="font-data font-bold" style={{ color: "#00CC6A" }}>
                 +{fmt(analyse.gainTP1FCFA)} FCFA
               </span>
             </div>
             {analyse.gainTP2FCFA && (
               <div className="flex justify-between">
-                <span style={{ color: "var(--text-secondary)" }}>Gain TP2</span>
+                <span style={{ color: "var(--text-secondary)" }}>{t("result.gain.tp2")}</span>
                 <span className="font-data font-bold" style={{ color: "var(--bullish)" }}>
                   +{fmt(analyse.gainTP2FCFA)} FCFA
                 </span>
@@ -255,7 +261,7 @@ export default async function ResultatPage() {
       {reasons.length > 0 && (
         <div className="card p-6 space-y-4">
           <h3 className="font-display font-semibold text-lg text-white flex items-center gap-2">
-            <span>💡</span> Pourquoi ce signal ?
+            {t("result.why")}
           </h3>
           <ul className="space-y-3">
             {reasons.map((reason, i) => (
@@ -284,20 +290,19 @@ export default async function ResultatPage() {
           className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-bold"
           style={{ background: "var(--sol-gradient)", color: "white" }}
         >
-          🔄 Nouvelle analyse
+          {t("result.new.analysis")}
         </Link>
         <Link
           href="/historique"
           className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-bold"
           style={{ border: "1px solid rgba(20,241,149,0.3)", color: "var(--bullish)" }}
         >
-          📋 Voir l'historique
+          {t("result.history")}
         </Link>
       </div>
 
       <p className="text-center text-xs pb-2" style={{ color: "var(--text-secondary)" }}>
-        ⚠ Ce résultat est fourni à titre indicatif uniquement et ne constitue pas un conseil financier.
-        Tradez responsablement.
+        ⚠ {t("result.disclaimer")}
       </p>
     </div>
   );

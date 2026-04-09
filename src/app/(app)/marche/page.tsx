@@ -2,24 +2,16 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Globe } from "lucide-react";
-import CryptoTable, { formatPrice, formatLargeNumber } from "@/components/market/CryptoTable";
+import CryptoTable, { formatPrice } from "@/components/market/CryptoTable";
 import type { CoinMarket, ForexRate } from "@/lib/coingecko";
 import type { Quote } from "@/lib/twelvedata";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+import { useLang } from "@/lib/LangContext";
 
 type Tab = "crypto" | "forex" | "actions" | "matieres";
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: "crypto", label: "Crypto" },
-  { id: "forex", label: "Forex" },
-  { id: "actions", label: "Actions" },
-  { id: "matieres", label: "Matières" },
-];
+const REFRESH_INTERVAL = 60;
 
-// ─── LIVE Badge + Countdown ───────────────────────────────────────────────────
-
-function LiveBadge({ countdown }: { countdown: number }) {
+function LiveBadge({ countdown, refreshLabel }: { countdown: number; refreshLabel: string }) {
   return (
     <div className="flex items-center gap-2">
       <span
@@ -33,15 +25,18 @@ function LiveBadge({ countdown }: { countdown: number }) {
         LIVE
       </span>
       <span className="text-xs tabular-nums" style={{ color: "var(--text-secondary)" }}>
-        Actu. dans {countdown}s
+        {refreshLabel} {countdown}s
       </span>
     </div>
   );
 }
 
-// ─── Forex Table ──────────────────────────────────────────────────────────────
-
-function ForexTable({ rates }: { rates: ForexRate[] }) {
+function ForexTable({ rates, searchPlaceholder, colLabels, emptyLabel }: {
+  rates: ForexRate[];
+  searchPlaceholder: string;
+  colLabels: string[];
+  emptyLabel: string;
+}) {
   const [search, setSearch] = useState("");
   const filtered = rates.filter((r) =>
     r.pair.toLowerCase().includes(search.toLowerCase()) ||
@@ -59,7 +54,7 @@ function ForexTable({ rates }: { rates: ForexRate[] }) {
         </svg>
         <input
           type="text"
-          placeholder="Rechercher une paire…"
+          placeholder={searchPlaceholder}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full text-sm rounded-xl pl-9 pr-4 py-2.5"
@@ -72,9 +67,9 @@ function ForexTable({ rates }: { rates: ForexRate[] }) {
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: "1px solid var(--border)" }}>
-              {["Paire", "Description", "Cours", "Var. 24h"].map((col) => (
+              {colLabels.map((col, idx) => (
                 <th key={col}
-                  className={`text-xs font-semibold uppercase tracking-widest py-3 ${col === "Paire" || col === "Description" ? "text-left" : "text-right"} ${col === "Description" ? "hidden md:table-cell" : ""}`}
+                  className={`text-xs font-semibold uppercase tracking-widest py-3 ${idx === 0 || idx === 1 ? "text-left" : "text-right"} ${idx === 1 ? "hidden md:table-cell" : ""}`}
                   style={{ color: "var(--text-secondary)", paddingLeft: "0.75rem", paddingRight: "0.75rem", whiteSpace: "nowrap" }}>
                   {col}
                 </th>
@@ -110,7 +105,7 @@ function ForexTable({ rates }: { rates: ForexRate[] }) {
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><td colSpan={4} className="py-12 text-center text-sm" style={{ color: "var(--text-secondary)" }}>Aucun résultat</td></tr>
+              <tr><td colSpan={4} className="py-12 text-center text-sm" style={{ color: "var(--text-secondary)" }}>{emptyLabel}</td></tr>
             )}
           </tbody>
         </table>
@@ -119,17 +114,15 @@ function ForexTable({ rates }: { rates: ForexRate[] }) {
   );
 }
 
-// ─── Quotes Table (Actions / Matières) ────────────────────────────────────────
-
-function QuotesTable({ quotes, emptyMessage }: { quotes: Quote[]; emptyMessage: string }) {
+function QuotesTable({ quotes, emptyMessage, colLabels }: { quotes: Quote[]; emptyMessage: string; colLabels: string[] }) {
   return (
     <div style={{ overflowX: "auto" }}>
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
           <tr style={{ borderBottom: "1px solid var(--border)" }}>
-            {["Actif", "Nom", "Cours", "Var. 24h", "Haut", "Bas"].map((col) => (
+            {colLabels.map((col, idx) => (
               <th key={col}
-                className={`text-xs font-semibold uppercase tracking-widest py-3 ${col === "Actif" || col === "Nom" ? "text-left" : "text-right"} ${col === "Nom" ? "hidden md:table-cell" : ""} ${["Haut", "Bas"].includes(col) ? "hidden lg:table-cell" : ""}`}
+                className={`text-xs font-semibold uppercase tracking-widest py-3 ${idx === 0 || idx === 1 ? "text-left" : "text-right"} ${idx === 1 ? "hidden md:table-cell" : ""} ${idx >= 4 ? "hidden lg:table-cell" : ""}`}
                 style={{ color: "var(--text-secondary)", paddingLeft: "0.75rem", paddingRight: "0.75rem", whiteSpace: "nowrap" }}>
                 {col}
               </th>
@@ -173,9 +166,7 @@ function QuotesTable({ quotes, emptyMessage }: { quotes: Quote[]; emptyMessage: 
   );
 }
 
-// ─── Top Movers from CoinGecko ────────────────────────────────────────────────
-
-function TopMovers({ coins }: { coins: CoinMarket[] }) {
+function TopMovers({ coins, gainersLabel, losersLabel }: { coins: CoinMarket[]; gainersLabel: string; losersLabel: string }) {
   if (!coins.length) return null;
   const sorted = [...coins].sort(
     (a, b) => Math.abs(b.price_change_percentage_24h_in_currency ?? 0) - Math.abs(a.price_change_percentage_24h_in_currency ?? 0)
@@ -186,8 +177,8 @@ function TopMovers({ coins }: { coins: CoinMarket[] }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {[
-        { label: "Meilleurs gains 24h", items: gainers, color: "var(--bullish)", bg: "rgba(20,241,149,0.05)", border: "rgba(20,241,149,0.15)" },
-        { label: "Plus fortes baisses 24h", items: losers, color: "var(--bearish)", bg: "rgba(244,63,94,0.05)", border: "rgba(244,63,94,0.15)" },
+        { label: gainersLabel, items: gainers, color: "var(--bullish)", bg: "rgba(20,241,149,0.05)", border: "rgba(20,241,149,0.15)" },
+        { label: losersLabel,  items: losers,  color: "var(--bearish)", bg: "rgba(244,63,94,0.05)",  border: "rgba(244,63,94,0.15)" },
       ].map(({ label, items, color, bg, border }) => (
         <div key={label} className="rounded-2xl p-4 space-y-3"
           style={{ background: bg, border: `1px solid ${border}` }}>
@@ -216,11 +207,8 @@ function TopMovers({ coins }: { coins: CoinMarket[] }) {
   );
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
-
-const REFRESH_INTERVAL = 60; // seconds
-
 export default function MarchePage() {
+  const { t } = useLang();
   const [activeTab, setActiveTab] = useState<Tab>("crypto");
   const [coins, setCoins] = useState<CoinMarket[]>([]);
   const [forexRates, setForexRates] = useState<ForexRate[]>([]);
@@ -229,6 +217,28 @@ export default function MarchePage() {
   const [loading, setLoading] = useState(true);
   const [countdown, setCountdown] = useState(REFRESH_INTERVAL);
   const lastFetchTab = useRef<Tab | null>(null);
+
+  const TABS: { id: Tab; label: string }[] = [
+    { id: "crypto",   label: t("page.marche.tab.crypto") },
+    { id: "forex",    label: t("page.marche.tab.forex") },
+    { id: "actions",  label: t("page.marche.tab.actions") },
+    { id: "matieres", label: t("page.marche.tab.matieres") },
+  ];
+
+  const forexColLabels = [
+    t("page.marche.col.pair"),
+    t("page.marche.col.desc"),
+    t("page.marche.col.price"),
+    t("page.marche.col.change"),
+  ];
+  const quotesColLabels = [
+    t("page.marche.col.asset"),
+    t("page.marche.col.name"),
+    t("page.marche.col.price"),
+    t("page.marche.col.change"),
+    t("page.marche.col.high"),
+    t("page.marche.col.low"),
+  ];
 
   const fetchTabData = useCallback(async (tab: Tab) => {
     setLoading(true);
@@ -259,13 +269,11 @@ export default function MarchePage() {
     }
   }, []);
 
-  // Initial load for crypto (always fetch on mount)
   useEffect(() => {
     fetchTabData("crypto");
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Fetch when tab changes
   useEffect(() => {
     if (lastFetchTab.current === activeTab) return;
     lastFetchTab.current = activeTab;
@@ -273,7 +281,6 @@ export default function MarchePage() {
     setCountdown(REFRESH_INTERVAL);
   }, [activeTab, fetchTabData]);
 
-  // Auto-refresh countdown
   useEffect(() => {
     const interval = setInterval(() => {
       setCountdown((c) => {
@@ -297,18 +304,22 @@ export default function MarchePage() {
             <Globe size={22} />
           </div>
           <div>
-            <h1 className="font-display font-semibold text-2xl text-white">Marché</h1>
+            <h1 className="font-display font-semibold text-2xl text-white">{t("page.marche.title")}</h1>
             <p className="text-sm mt-0.5" style={{ color: "var(--text-secondary)" }}>
-              Prix en temps réel — Crypto, Forex, Actions, Matières premières
+              {t("page.marche.sub")}
             </p>
           </div>
         </div>
-        <LiveBadge countdown={countdown} />
+        <LiveBadge countdown={countdown} refreshLabel={t("page.marche.live.refresh")} />
       </div>
 
-      {/* Top Movers — crypto only */}
+      {/* Top Movers */}
       {activeTab === "crypto" && coins.length > 0 && (
-        <TopMovers coins={coins} />
+        <TopMovers
+          coins={coins}
+          gainersLabel={t("page.marche.gainers")}
+          losersLabel={t("page.marche.losers")}
+        />
       )}
 
       {/* Tabs */}
@@ -337,22 +348,31 @@ export default function MarchePage() {
               <circle cx="14" cy="14" r="11" stroke="currentColor" strokeWidth="2.5" strokeOpacity="0.2" style={{ color: "var(--bullish)" }} />
               <path d="M14 3a11 11 0 0 1 11 11" stroke="var(--bullish)" strokeWidth="2.5" strokeLinecap="round" />
             </svg>
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>Chargement des données…</p>
+            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{t("page.marche.loading")}</p>
           </div>
         ) : (
           <>
             {activeTab === "crypto" && <CryptoTable coins={coins} />}
-            {activeTab === "forex" && <ForexTable rates={forexRates} />}
+            {activeTab === "forex" && (
+              <ForexTable
+                rates={forexRates}
+                searchPlaceholder={t("page.marche.search")}
+                colLabels={forexColLabels}
+                emptyLabel={t("page.marche.empty")}
+              />
+            )}
             {activeTab === "actions" && (
               <QuotesTable
                 quotes={actionQuotes}
-                emptyMessage="Données actions indisponibles — vérifiez votre clé Twelvedata"
+                emptyMessage={t("page.marche.no.actions")}
+                colLabels={quotesColLabels}
               />
             )}
             {activeTab === "matieres" && (
               <QuotesTable
                 quotes={matieresQuotes}
-                emptyMessage="Données matières premières indisponibles — vérifiez votre clé Twelvedata"
+                emptyMessage={t("page.marche.no.matieres")}
+                colLabels={quotesColLabels}
               />
             )}
           </>
@@ -361,9 +381,9 @@ export default function MarchePage() {
 
       {/* Data sources */}
       <p className="text-xs text-center" style={{ color: "var(--text-secondary)" }}>
-        {activeTab === "crypto" && "Source: CoinGecko API · Actualisation toutes les 60s"}
-        {activeTab === "forex" && "Source: Open Exchange Rates · Actualisation toutes les heures · Paires africaines incluses"}
-        {(activeTab === "actions" || activeTab === "matieres") && "Source: Twelvedata · Actualisation toutes les 30s"}
+        {activeTab === "crypto" && t("page.marche.source.crypto")}
+        {activeTab === "forex" && t("page.marche.source.forex")}
+        {(activeTab === "actions" || activeTab === "matieres") && t("page.marche.source.quotes")}
       </p>
     </div>
   );

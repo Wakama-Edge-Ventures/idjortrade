@@ -3,18 +3,21 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
-
-const NAV_LINKS = [
-  { label: "Accueil",         href: "#hero" },
-  { label: "Wickox Pro",      href: "#features" },
-  { label: "Fonctionnalités", href: "#how" },
-  { label: "Tarifs",          href: "#pricing" },
-  { label: "À propos",        href: "#footer" },
-];
+import { useTranslation } from "@/hooks/useTranslation";
+import type { Lang } from "@/lib/i18n";
 
 export default function LandingNavbar() {
-  const [scrolled,    setScrolled]    = useState(false);
-  const [mobileOpen,  setMobileOpen]  = useState(false);
+  const [scrolled,   setScrolled]   = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const { t, lang, setLang } = useTranslation();
+
+  const NAV_LINKS = [
+    { label: t("landing.nav.home"),     href: "#hero" },
+    { label: t("landing.nav.pro"),      href: "#features" },
+    { label: t("landing.nav.features"), href: "#how" },
+    { label: t("landing.nav.pricing"),  href: "#pricing" },
+    { label: t("landing.nav.about"),    href: "#footer" },
+  ];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
@@ -36,7 +39,6 @@ export default function LandingNavbar() {
 
           {/* ── Logo ── */}
           <Link href="/" className="flex items-center gap-2 group">
-            {/* Icon mark */}
             <div
               style={{
                 width: 30, height: 30,
@@ -69,9 +71,9 @@ export default function LandingNavbar() {
           <div className="hidden md:flex items-center gap-7">
             {NAV_LINKS.map(link => (
               <a
-                key={link.label}
+                key={link.href}
                 href={link.href}
-                className="text-sm font-medium transition-colors duration-150 hover:text-white"
+                className="text-sm font-medium transition-colors duration-150"
                 style={{ color: "var(--text-secondary)" }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "white"; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)"; }}
@@ -83,6 +85,36 @@ export default function LandingNavbar() {
 
           {/* ── Actions ── */}
           <div className="flex items-center gap-3">
+
+            {/* Lang toggle */}
+            <div
+              className="flex items-center rounded-full flex-shrink-0"
+              style={{
+                border: "1px solid rgba(255,255,255,0.3)",
+                background: "rgba(255,255,255,0.15)",
+                overflow: "hidden",
+              }}
+            >
+              {(["fr", "en"] as Lang[]).map((l, i) => (
+                <button
+                  key={l}
+                  onClick={() => setLang(l)}
+                  className="cursor-pointer transition-all duration-150"
+                  style={{
+                    padding: "4px 8px",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: lang === l ? "white" : "rgba(255,255,255,0.7)",
+                    background: lang === l ? "var(--sol-purple)" : "transparent",
+                    borderRight: i === 0 ? "1px solid rgba(255,255,255,0.2)" : "none",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {l.toUpperCase()}
+                </button>
+              ))}
+            </div>
+
             <Link
               href="/login"
               className="hidden md:block px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150"
@@ -99,7 +131,7 @@ export default function LandingNavbar() {
                 (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
               }}
             >
-              Connexion
+              {t("landing.nav.login")}
             </Link>
             <Link
               href="/register"
@@ -118,7 +150,7 @@ export default function LandingNavbar() {
                 (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
               }}
             >
-              Get Started
+              {t("landing.nav.cta")}
             </Link>
 
             {/* Menu mobile */}
@@ -143,7 +175,7 @@ export default function LandingNavbar() {
           <div className="flex flex-col gap-1 px-6 py-6">
             {NAV_LINKS.map(link => (
               <a
-                key={link.label}
+                key={link.href}
                 href={link.href}
                 className="py-3 text-lg font-semibold border-b"
                 style={{ color: "var(--text-primary)", borderColor: "var(--border)" }}
@@ -159,7 +191,7 @@ export default function LandingNavbar() {
                 style={{ border: "1px solid var(--border)", color: "var(--text-primary)" }}
                 onClick={() => setMobileOpen(false)}
               >
-                Connexion
+                {t("landing.nav.login")}
               </Link>
               <Link
                 href="/register"
@@ -167,7 +199,7 @@ export default function LandingNavbar() {
                 style={{ background: "var(--sol-gradient)" }}
                 onClick={() => setMobileOpen(false)}
               >
-                Get Started
+                {t("landing.nav.cta")}
               </Link>
             </div>
           </div>

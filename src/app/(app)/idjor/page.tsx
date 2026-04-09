@@ -1,16 +1,23 @@
 import { Sparkles } from 'lucide-react';
+import { cookies } from 'next/headers';
 import { courses, quickPrompts } from '@/lib/mock-idjor';
 import CourseLibrary from '@/components/idjor/CourseLibrary';
 import IdjorChat from '@/components/idjor/IdjorChat';
+import { getT, LANG_COOKIE, type Lang } from '@/lib/i18n';
 
-// Default welcome message shown before history is loaded
-const welcomeMessage = {
-  id: 'welcome',
-  role: 'assistant' as const,
-  content: `Bonjour ! Je suis **Idjor**, ton conseiller IA en trading.\n\nJe peux t'aider à :\n- Comprendre les indicateurs (RSI, MACD, Bollinger)\n- Analyser ton journal de trading\n- Te proposer des stratégies adaptées à ton profil\n- Répondre à toutes tes questions en français\n\nComment puis-je t'aider aujourd'hui ?`,
-};
+export default async function IdjorPage() {
+  const cookieStore = await cookies();
+  const lang = (cookieStore.get(LANG_COOKIE)?.value ?? 'fr') as Lang;
+  const t = getT(lang);
 
-export default function IdjorPage() {
+  const welcomeMessage = {
+    id: 'welcome',
+    role: 'assistant' as const,
+    content: lang === 'en'
+      ? `Hello! I'm **Idjor**, your AI trading advisor.\n\nI can help you:\n- Understand indicators (RSI, MACD, Bollinger)\n- Analyse your trading journal\n- Suggest strategies adapted to your profile\n- Answer all your trading questions\n\nHow can I help you today?`
+      : `Bonjour ! Je suis **Idjor**, ton conseiller IA en trading.\n\nJe peux t'aider à :\n- Comprendre les indicateurs (RSI, MACD, Bollinger)\n- Analyser ton journal de trading\n- Te proposer des stratégies adaptées à ton profil\n- Répondre à toutes tes questions en français\n\nComment puis-je t'aider aujourd'hui ?`,
+  };
+
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6">
 
@@ -29,16 +36,16 @@ export default function IdjorPage() {
           <div>
             <h1 className="font-display font-semibold text-xl">
               <span style={{ color: '#F5A623' }}>Idjor</span>
-              <span style={{ color: 'var(--text-primary)' }}> — Conseiller IA</span>
+              <span style={{ color: 'var(--text-primary)' }}> — {t("page.idjor.adviser")}</span>
             </h1>
             <div className="flex items-center gap-3 mt-0.5">
               <div className="flex items-center gap-1.5">
                 <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--sol-gradient)' }} />
-                <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>En ligne</span>
+                <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{t("page.idjor.status")}</span>
               </div>
               <span className="text-xs" style={{ color: 'var(--border)' }}>•</span>
               <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                Formation · Analyse · Coaching
+                {t("page.idjor.desc")}
               </span>
             </div>
           </div>
@@ -48,7 +55,7 @@ export default function IdjorPage() {
         <div className="flex flex-wrap gap-2">
           <div className="card px-3 py-1.5 rounded-full text-xs font-semibold">
             <span style={{ color: 'var(--bullish)' }}>847</span>
-            <span style={{ color: 'var(--text-secondary)' }}> traders formés</span>
+            <span style={{ color: 'var(--text-secondary)' }}> {t("page.idjor.trained")}</span>
           </div>
           <div className="card px-3 py-1.5 rounded-full text-xs" style={{ color: 'var(--text-primary)' }}>
             ⭐ 4.9
@@ -59,7 +66,7 @@ export default function IdjorPage() {
         </div>
       </div>
 
-      {/* Main grid — Library on left, Chat on right */}
+      {/* Main grid */}
       <div
         className="grid grid-cols-1 lg:grid-cols-2 gap-6"
         style={{ height: 'calc(100vh - 220px)', minHeight: '500px' }}
@@ -70,12 +77,12 @@ export default function IdjorPage() {
             className="font-display font-semibold text-lg sticky top-0 pb-2 z-10"
             style={{ background: 'var(--surface-mid)' }}
           >
-            📚 Bibliothèque de Formation
+            {t("page.idjor.library")}
           </h2>
           <CourseLibrary courses={courses} />
         </div>
 
-        {/* Chat — history is loaded client-side via useEffect in IdjorChat */}
+        {/* Chat */}
         <div className="card flex flex-col overflow-hidden">
           <IdjorChat initialMessages={[welcomeMessage]} quickPrompts={quickPrompts} />
         </div>

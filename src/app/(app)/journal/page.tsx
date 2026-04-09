@@ -1,26 +1,28 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import JournalStats from '@/components/journal/JournalStats';
 import EquityCurve from '@/components/journal/EquityCurve';
 import HeatmapCalendar from '@/components/journal/HeatmapCalendar';
 import TradeTable from '@/components/journal/TradeTable';
 import TradeCards from '@/components/journal/TradeCards';
 import AssetPerf from '@/components/journal/AssetPerf';
-
-const filters = ['Ce mois', '30j', '90j', 'Tout'];
+import { getT, LANG_COOKIE, type Lang } from "@/lib/i18n";
 
 export default async function JournalPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  // Fetch all trades for the current user
+  const cookieStore = await cookies();
+  const lang = (cookieStore.get(LANG_COOKIE)?.value ?? "fr") as Lang;
+  const t = getT(lang);
+
   const trades = await prisma.trade.findMany({
     where: { userId: session.user.id },
     orderBy: { openedAt: "desc" },
   });
 
-  // Calculate stats from real data
   const closedTrades = trades.filter((t) => t.status === "closed" && t.pnlFCFA !== null);
   const winners = closedTrades.filter((t) => (t.pnlFCFA ?? 0) > 0);
   const losers = closedTrades.filter((t) => (t.pnlFCFA ?? 0) < 0);
@@ -41,7 +43,6 @@ export default async function JournalPage() {
     bestTradeAsset: bestTrade?.asset ?? "—",
   };
 
-  // Map trades to the TradeEntry shape expected by child components
   const tradeEntries = trades.map((t) => ({
     id: t.id,
     date: new Date(t.openedAt).toLocaleString("fr-FR", {
@@ -61,6 +62,13 @@ export default async function JournalPage() {
     status: t.status as "open" | "closed",
   }));
 
+  const filters = [
+    t("page.journal.filter.month"),
+    t("page.journal.filter.30"),
+    t("page.journal.filter.90"),
+    t("page.journal.filter.all"),
+  ];
+
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-6">
 
@@ -68,10 +76,10 @@ export default async function JournalPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <h1 className="font-display font-semibold text-2xl text-white">
-            Mon Journal de Trading
+            {t("page.journal.title")}
           </h1>
           <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
-            Suivez vos performances et apprenez de chaque trade
+            {t("page.journal.sub")}
           </p>
         </div>
         <div className="flex gap-3">
@@ -82,13 +90,13 @@ export default async function JournalPage() {
               color: 'var(--bullish)',
             }}
           >
-            📥 Exporter CSV
+            {t("page.journal.export")}
           </button>
           <button
             className="px-4 py-2.5 rounded-xl text-sm font-bold"
             style={{ background: 'var(--sol-gradient)', color: 'var(--surface)' }}
           >
-            ➕ Ajouter un trade
+            {t("page.journal.add")}
           </button>
         </div>
       </div>
@@ -96,7 +104,7 @@ export default async function JournalPage() {
       {/* Stats cards */}
       <JournalStats stats={stats} />
 
-      {/* Charts row — equity curve + asset perf */}
+      {/* Charts row */}
       <div className="grid md:grid-cols-3 gap-4">
         <div className="md:col-span-2">
           <EquityCurve trades={trades} />
@@ -135,7 +143,7 @@ export default async function JournalPage() {
             color: 'var(--text-secondary)',
           }}
         >
-          <option>Tous les actifs</option>
+          <option>{t("page.journal.all.assets")}</option>
           <option>SOL/USDT</option>
           <option>BTC/USDT</option>
           <option>EUR/USD</option>
@@ -149,9 +157,9 @@ export default async function JournalPage() {
             color: 'var(--text-secondary)',
           }}
         >
-          <option>Tous résultats</option>
-          <option>Gains</option>
-          <option>Pertes</option>
+          <option>{t("page.journal.all.results")}</option>
+          <option>{t("page.journal.gains")}</option>
+          <option>{t("page.journal.losses")}</option>
         </select>
       </div>
 

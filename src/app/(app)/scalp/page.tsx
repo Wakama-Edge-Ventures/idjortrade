@@ -4,14 +4,15 @@ import { useRef, useState } from "react";
 import AnalyseHeader from "@/components/analyse/AnalyseHeader";
 import RiskForm, { type RiskFormRef } from "@/components/analyse/RiskForm";
 import ChartUploadZone, { type ChartUploadRef } from "@/components/analyse/ChartUploadZone";
-import AnalyseButton from "@/components/analyse/AnalyseButton";
+import AnalyseButton, { type AnalyseButtonRef } from "@/components/analyse/AnalyseButton";
 import MarketContext from "@/components/analyse/MarketContext";
 
 export default function ScalpPage() {
-  const formRef   = useRef<RiskFormRef>(null);
-  const uploadRef = useRef<ChartUploadRef>(null);
-  const [asset, setAsset] = useState("");
-  const [productType, setProductType] = useState<"spot" | "futures">("spot");
+  const formRef    = useRef<RiskFormRef>(null);
+  const uploadRef  = useRef<ChartUploadRef>(null);
+  const analyseRef = useRef<AnalyseButtonRef>(null);
+  const [asset, setAsset]               = useState("");
+  const [productType, setProductType]   = useState<"spot" | "futures">("spot");
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-8">
@@ -36,8 +37,13 @@ export default function ScalpPage() {
           {/* Section 2 — Upload + Analyse */}
           <div className="py-6 lg:py-0 lg:px-6 lg:w-[35%] flex flex-col gap-5">
             <h2 className="font-display font-semibold text-base text-white">Charger votre graphique</h2>
-            <ChartUploadZone ref={uploadRef} accentColor="#F5A623" />
+            <ChartUploadZone
+              ref={uploadRef}
+              accentColor="#F5A623"
+              onClipboardImageLoaded={() => analyseRef.current?.trigger()}
+            />
             <AnalyseButton
+              ref={analyseRef}
               mode="scalp"
               getFormData={() => formRef.current?.getFormData() ?? null}
               getImageData={() => uploadRef.current?.getImageData() ?? null}

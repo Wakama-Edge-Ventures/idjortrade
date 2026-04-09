@@ -3,16 +3,21 @@ import { Lock } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import AnalysisHistoryCard from "@/components/historique/AnalysisHistoryCard";
 import type { AnalysisEntry } from "@/types/analyse";
+import { getT, LANG_COOKIE, type Lang } from "@/lib/i18n";
 
 export default async function HistoriquePage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
+  const cookieStore = await cookies();
+  const lang = (cookieStore.get(LANG_COOKIE)?.value ?? "fr") as Lang;
+  const t = getT(lang);
+
   const plan = session.user.plan as string;
 
-  // Determine history window by plan
   let createdAfter: Date | undefined;
   if (plan === "FREE") {
     createdAfter = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -29,11 +34,9 @@ export default async function HistoriquePage() {
     take: 50,
   });
 
-  // For FREE: show 3 max + lock the rest
   const visibleRaw = plan === "FREE" ? analyses.slice(0, 3) : analyses;
   const lockedRaw = plan === "FREE" ? analyses.slice(3) : [];
 
-  // Map to AnalysisEntry shape for AnalysisHistoryCard
   const toEntry = (a: typeof analyses[0], isLocked: boolean): AnalysisEntry => ({
     id: a.id,
     asset: a.asset,
@@ -52,7 +55,6 @@ export default async function HistoriquePage() {
     locked: isLocked,
   });
 
-  // Calculate real stats
   const thisMonth = analyses.filter(
     (a) => new Date(a.createdAt).getMonth() === new Date().getMonth()
   );
@@ -60,31 +62,30 @@ export default async function HistoriquePage() {
   const buyPct = analyses.length > 0 ? Math.round((buyCount / analyses.length) * 100) : 0;
 
   const stats = [
-    { label: "Analyses ce mois", value: String(thisMonth.length) },
-    { label: "Signaux BUY", value: `${buyPct}%` },
-    { label: "Win rate suivi", value: "—" },
+    { label: t("page.historique.month"), value: String(thisMonth.length) },
+    { label: t("page.historique.buy"), value: `${buyPct}%` },
+    { label: t("page.historique.winrate"), value: "—" },
   ];
 
-  // Empty state
   if (analyses.length === 0) {
     return (
       <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-6">
         <div>
-          <h1 className="font-display font-semibold text-2xl text-white">Historique</h1>
+          <h1 className="font-display font-semibold text-2xl text-white">{t("page.historique.title")}</h1>
           <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
-            Toutes vos analyses précédentes
+            {t("page.historique.sub")}
           </p>
         </div>
         <div className="flex flex-col items-center gap-4 py-16 text-center">
           <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-            Aucune analyse pour l'instant.
+            {t("page.historique.empty")}
           </p>
           <Link
             href="/swing"
             className="px-5 py-2.5 rounded-xl text-sm font-bold"
             style={{ background: "var(--sol-gradient)", color: "white" }}
           >
-            Faire ma première analyse →
+            {t("page.historique.first")}
           </Link>
         </div>
       </div>
@@ -97,9 +98,9 @@ export default async function HistoriquePage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h1 className="font-display font-semibold text-2xl text-white">Historique</h1>
+          <h1 className="font-display font-semibold text-2xl text-white">{t("page.historique.title")}</h1>
           <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
-            Toutes vos analyses précédentes
+            {t("page.historique.sub")}
           </p>
         </div>
       </div>
@@ -124,17 +125,17 @@ export default async function HistoriquePage() {
           }}
         >
           <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-            Plan Gratuit · 7 jours d&apos;historique seulement
+            {t("page.historique.free")}
           </p>
           <Link href="/plans" className="text-xs font-bold" style={{ color: "#F5A623" }}>
-            Upgrader →
+            {t("page.historique.upgrade")}
           </Link>
         </div>
       )}
 
       {/* Analyses visibles */}
       <section className="space-y-3">
-        <h2 className="font-display font-semibold text-lg text-white">Analyses récentes</h2>
+        <h2 className="font-display font-semibold text-lg text-white">{t("page.historique.recent")}</h2>
         {visibleRaw.map((a) => (
           <AnalysisHistoryCard key={a.id} analysis={toEntry(a, false)} />
         ))}
@@ -144,7 +145,7 @@ export default async function HistoriquePage() {
       {lockedRaw.length > 0 && (
         <section className="space-y-3">
           <h2 className="font-display font-semibold text-lg" style={{ color: "var(--text-secondary)" }}>
-            Analyses précédentes (verrouillées)
+            {t("page.historique.locked")}
           </h2>
           {lockedRaw.map((a) => (
             <AnalysisHistoryCard key={a.id} analysis={toEntry(a, true)} />
@@ -170,10 +171,10 @@ export default async function HistoriquePage() {
         </div>
         <div className="flex-1 text-center sm:text-left">
           <p className="text-sm font-semibold text-white">
-            Accédez à tout votre historique
+            {t("page.historique.unlock")}
           </p>
           <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-            Passez au plan Basic ou Pro pour débloquer 90 jours à l&apos;illimité d&apos;historique.
+            {t("page.historique.unlock.desc")}
           </p>
         </div>
         <Link
@@ -181,7 +182,7 @@ export default async function HistoriquePage() {
           className="flex-shrink-0 px-5 py-2.5 rounded-xl text-sm font-bold"
           style={{ background: "#F5A623", color: "white" }}
         >
-          Voir les plans
+          {t("page.historique.plans")}
         </Link>
       </div>
 

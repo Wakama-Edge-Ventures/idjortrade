@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getT, type Lang } from "@/lib/i18n";
 import PerformanceGrid from "@/components/dashboard/PerformanceGrid";
 import ToolCard from "@/components/dashboard/ToolCard";
 import IdjorBanner from "@/components/dashboard/IdjorBanner";
@@ -36,6 +38,10 @@ export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
+
+  const cookieStore = await cookies();
+  const lang = ((cookieStore.get("idjor_lang")?.value) as Lang | undefined) ?? "fr";
+  const t = getT(lang);
 
   const [trades, analysesCount, recents] = await Promise.all([
     prisma.trade.findMany({
@@ -82,15 +88,15 @@ export default async function DashboardPage() {
             className="font-display font-semibold text-xl text-gradient-sol-static"
             style={{ letterSpacing: "-0.02em" }}
           >
-            Outils d&apos;analyse
+            {t("dashboard.tools.title")}
           </h2>
-          <span className="section-label">3 modes</span>
+          <span className="section-label">{t("dashboard.tools.count")}</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 stagger-1 animate-fade-in-up">
           <ToolCard
-            title="Swing Trading"
-            description="Tendances long-terme. Analyses multi-jours H4/D1."
+            title={t("tool.swing.title")}
+            description={t("tool.swing.desc")}
             icon={
               <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
                 <path d="M2 14 C5 14 5 8 8 8 C11 8 11 14 14 14 C17 14 17 8 20 8"
@@ -102,8 +108,8 @@ export default async function DashboardPage() {
             href="/swing"
           />
           <ToolCard
-            title="Scalp Trading"
-            description="Précision intraday. Déséquilibres M1/M5 rapides."
+            title={t("tool.scalp.title")}
+            description={t("tool.scalp.desc")}
             icon={
               <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
                 <polyline points="2,16 6,8 10,13 14,4 18,9 22,4"
@@ -115,8 +121,8 @@ export default async function DashboardPage() {
             href="/scalp"
           />
           <ToolCard
-            title="Forecasting PRO"
-            description="IA prédictive sur les 12 prochaines bougies."
+            title={t("tool.forecast.title")}
+            description={t("tool.forecast.desc")}
             icon={
               <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
                 <circle cx="11" cy="11" r="3" stroke="currentColor" strokeWidth="2"/>
@@ -145,14 +151,14 @@ export default async function DashboardPage() {
               className="font-display font-semibold text-lg text-gradient-sol-static"
               style={{ letterSpacing: "-0.02em" }}
             >
-              Analyses Récentes
+              {t("dashboard.recent.title")}
             </h3>
             <Link
               href="/historique"
               className="text-xs font-semibold transition-colors duration-150 hover:underline"
               style={{ color: "var(--sol-purple)" }}
             >
-              Voir tout →
+              {t("dashboard.recent.seeAll")}
             </Link>
           </div>
 
@@ -160,12 +166,12 @@ export default async function DashboardPage() {
             {recents.length === 0 ? (
               <div className="card p-6 text-center">
                 <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                  Upload ton premier chart pour commencer
+                  {t("dashboard.recent.empty")}
                 </p>
                 <Link href="/swing"
                   className="inline-block mt-3 text-xs font-bold"
                   style={{ color: "var(--bullish)" }}>
-                  Analyser →
+                  {t("dashboard.recent.cta")}
                 </Link>
               </div>
             ) : (
@@ -175,7 +181,7 @@ export default async function DashboardPage() {
                   asset={a.asset}
                   signal={a.signal as "BUY" | "SELL" | "NEUTRE"}
                   score={a.confidence}
-                  time={new Date(a.createdAt).toLocaleString("fr-FR", {
+                  time={new Date(a.createdAt).toLocaleString(lang === "en" ? "en-GB" : "fr-FR", {
                     day: "2-digit", month: "short",
                     hour: "2-digit", minute: "2-digit",
                   })}
@@ -193,7 +199,7 @@ export default async function DashboardPage() {
               className="font-display font-semibold text-lg text-gradient-sol-static"
               style={{ letterSpacing: "-0.02em" }}
             >
-              Top Movers
+              {t("dashboard.movers.title")}
             </h3>
             <span
               className="text-[10px] font-bold px-2.5 py-1 rounded-full font-data"

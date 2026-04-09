@@ -1,37 +1,43 @@
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
+import { cookies } from "next/headers";
 import { courses } from "@/lib/mock-idjor";
 import CourseCard from "@/components/idjor/CourseCard";
+import { getT, LANG_COOKIE, type Lang } from "@/lib/i18n";
 
-const filterChips = [
-  "Tous",
-  "📗 Débutant",
-  "📊 Technique",
-  "🛡️ Risk Management",
-  "🧠 Psychologie",
-  "₿ Crypto",
-  "💱 Forex",
-];
+export default async function FormationPage() {
+  const cookieStore = await cookies();
+  const lang = (cookieStore.get(LANG_COOKIE)?.value ?? "fr") as Lang;
+  const t = getT(lang);
 
-export default function FormationPage() {
+  const filterChips = [
+    t("page.formation.all"),
+    "📗 " + (lang === "en" ? "Beginner" : "Débutant"),
+    "📊 " + (lang === "en" ? "Technical" : "Technique"),
+    "🛡️ Risk Management",
+    "🧠 " + (lang === "en" ? "Psychology" : "Psychologie"),
+    "₿ Crypto",
+    "💱 Forex",
+  ];
+
   return (
     <div className="max-w-5xl mx-auto p-4 md:p-8 space-y-8">
 
       {/* Header */}
       <div className="text-center space-y-3">
         <h1 className="font-display font-semibold text-3xl text-white">
-          Formation Trading
+          {t("page.formation.title")}
         </h1>
         <p className="text-base" style={{ color: "var(--text-secondary)" }}>
-          Apprends à trader pas à pas, en français
+          {t("page.formation.sub")}
         </p>
         <div className="flex items-center justify-center gap-4 flex-wrap text-xs" style={{ color: "var(--text-secondary)" }}>
           <span>
-            <span className="font-bold text-white">8</span> cours disponibles
+            <span className="font-bold text-white">8</span> {t("page.formation.courses")}
           </span>
           <span style={{ color: "var(--border)" }}>·</span>
           <span>
-            <span className="font-bold" style={{ color: "var(--bullish)" }}>Gratuit</span> pour 3 cours
+            <span className="font-bold" style={{ color: "var(--bullish)" }}>{t("page.formation.free")}</span> {t("page.formation.free.sub")}
           </span>
           <span style={{ color: "var(--border)" }}>·</span>
           <span>⭐ 4.9/5</span>
@@ -50,7 +56,7 @@ export default function FormationPage() {
         <span className="text-sm">🔍</span>
         <input
           type="text"
-          placeholder="Rechercher: RSI, MACD, scalping..."
+          placeholder={t("page.formation.search")}
           className="flex-1 bg-transparent text-sm outline-none"
           style={{ color: "var(--text-primary)" }}
         />
@@ -104,10 +110,10 @@ export default function FormationPage() {
         </div>
         <div className="flex-1 text-center sm:text-left">
           <p className="text-sm font-semibold text-white">
-            Tu as des questions sur ces cours ?
+            {t("page.formation.banner")}
           </p>
           <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-            Idjor IA peut t&apos;expliquer n&apos;importe quel concept en détail.
+            {t("page.formation.banner.sub")}
           </p>
         </div>
         <Link
@@ -116,7 +122,7 @@ export default function FormationPage() {
           style={{ background: "#F5A623", color: "white" }}
         >
           <Sparkles size={14} />
-          Demander à Idjor →
+          {t("page.formation.banner.cta")}
         </Link>
       </div>
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import NextAuthProvider from "@/components/providers/SessionProvider";
 import { ToastProvider } from "@/components/ui/Toast";
+import { LangProvider } from "@/lib/LangContext";
 import Script from "next/script";
 
 export const metadata: Metadata = {
@@ -17,11 +18,13 @@ export default function RootLayout({
   return (
     <html lang="fr" className="dark h-full" suppressHydrationWarning>
       <body className="min-h-full antialiased" suppressHydrationWarning>
-        <NextAuthProvider>
-          <ToastProvider>
-            {children}
-          </ToastProvider>
-        </NextAuthProvider>
+        <LangProvider>
+          <NextAuthProvider>
+            <ToastProvider>
+              {children}
+            </ToastProvider>
+          </NextAuthProvider>
+        </LangProvider>
         <Script src="https://cdn.kkiapay.me/k.js" strategy="beforeInteractive" />
       </body>
     </html>
